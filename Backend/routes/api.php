@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\ChuongTrinhKhuyenMaiController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\DonDatTourController;
 use App\Http\Controllers\Api\KhachHangController;
 use App\Http\Controllers\Api\TinTucController;
@@ -57,8 +58,16 @@ Route::get('/test-db', function () {
     }
 });
 
+Route::post('/bookings', [BookingController::class, 'store'])
+    ->middleware(['auth:sanctum', 'role:KH']);
+
 Route::get('/tours', [TourController::class, 'index']);
-Route::get('/tours/{id}', [TourController::class, 'show']);
+Route::get('/tours/search', [TourController::class, 'search']);
+Route::get('/tours/region/{mien}', [TourController::class, 'region']);
+Route::get('/tours/promotions', [TourController::class, 'promotions']);
+Route::get('/tours/{id}/reviews', [TourController::class, 'reviews'])->whereNumber('id');
+Route::get('/tours/{id}/schedules', [TourController::class, 'schedules'])->whereNumber('id');
+Route::get('/tours/{id}', [TourController::class, 'show'])->whereNumber('id');
 
 Route::get('/khach-hang', [KhachHangController::class, 'index']);
 Route::get('/khach-hang/{id}', [KhachHangController::class, 'show']);

@@ -3,62 +3,118 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Tour;
+use App\Services\TourService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class TourController extends Controller
 {
+    public function __construct(private TourService $tourService)
+    {
+    }
+
     public function index(Request $request)
     {
-        $query = Tour::with('anhChinh');
-
-        if ($request->filled('keyword')) {
-            $keyword = $request->query('keyword');
-            $query->where(function ($q) use ($keyword) {
-                $q->where('TenTour', 'like', "%{$keyword}%")
-                    ->orWhere('DiaDiem', 'like', "%{$keyword}%");
-            });
-        }
-
-        if ($request->filled('mien')) {
-            $query->where('Mien', $request->query('mien'));
-        }
-
-        if ($request->filled('loai_tour')) {
-            $query->where('LoaiTour', $request->query('loai_tour'));
-        }
-
-        if ($request->filled('trang_thai')) {
-            $query->where('TrangThai', $request->query('trang_thai'));
-        }
+        $filters = $request->only([
+            'page',
+            'per_page',
+            'keyword',
+            'q',
+            'mien',
+            'loai_tour',
+        ]);
 
         return response()->json([
             'success' => true,
-            'data' => $query->orderByDesc('MaTour')->paginate(12),
+            'message' => 'Lấy danh sách tour thành công',
+            'data' => $this->tourService->listActive($filters),
         ]);
     }
 
     public function show($id)
     {
-        $tour = Tour::with([
-            'anhChinh',
-            'hinhAnhs',
-            'lichTrinhs',
-            'danhGias.khachHang',
-            'nhanVien',
-            'khuyenMais',
-        ])->find($id);
-
-        if (! $tour) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Không tìm thấy dữ liệu',
-            ], 404);
+        if (! ctype_digit((string) $id)) {
+            throw ValidationException::withMessages([
+                'id' => ['ID tour phải là số.'],
+            ]);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $tour,
+            'message' => 'Lấy chi tiết tour thành công',
+            'data' => $this->tourService->detail((int) $id),
+        ]);
+    }
+
+    public function search(Request $request)
+    {
+        $filters = $request->only([
+            'page',
+            'per_page',
+            'keyword',
+            'q',
+            'dia_diem',
+            'ngay_khoi_hanh',
+            'thoi_luong',
+            'gia',
+            'loai_tour',
+            'mien',
+        ]);
+
+        $this->tourService->validateSearchFilters($filters);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tìm kiếm tour thành công',
+            'data' => $this->tourService->search($filters),
+        ]);
+    }
+
+    public function region(string $mien, Request $request)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Lọc tour theo miền thành công',
+            'data' => $this->tourService->byRegion($mien, $request->only(['page', 'per_page'])),
+        ]);
+    }
+
+    public function promotions(Request $request)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy danh sách tour khuyến mãi thành công',
+            'data' => $this->tourService->promotions($request->only(['page', 'per_page'])),
+        ]);
+    }
+
+    public function reviews($id)
+    {
+        if (! ctype_digit((string) $id)) {
+            throw ValidationException::withMessages([
+                'id' => ['ID tour phải là số.'],
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy đánh giá tour thành công',
+            'data' => $this->tourService->reviews((int) $id),
+        ]);
+    }
+
+    public function schedules($id)
+    {
+        if (! ctype_digit((string) $id)) {
+            throw ValidationException::withMessages([
+                'id' => ['ID tour phải là số.'],
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy lịch trình tour thành công',
+            'data' => $this->tourService->schedules((int) $id),
         ]);
     }
 }

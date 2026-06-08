@@ -1,0 +1,5 @@
+{
+  "terminal.integrated.env.windows": {
+    "Path": "D:\\Application\\WampServer\\bin\\php\\php8.3.31;${env:Path}"
+  }
+}

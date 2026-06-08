@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ChuongTrinhKhuyenMaiController;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DonDatTourController;
 use App\Http\Controllers\Api\KhachHangController;
 use App\Http\Controllers\Api\TinTucController;
@@ -16,6 +17,23 @@ use Illuminate\Support\Facades\Route;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/staff-login', [AuthController::class, 'staffLogin']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+    Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('/google', [AuthController::class, 'google']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me', [AuthController::class, 'me']);
+        Route::post('/change-password', [AuthController::class, 'changePassword']);
+    });
+});
 
 Route::get('/test-db', function () {
     try {

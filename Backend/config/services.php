@@ -35,4 +35,20 @@ return [
         ],
     ],
 
+    'infobip' => [
+        'base_url' => env('INFOBIP_BASE_URL'),
+        'api_key' => env('INFOBIP_API_KEY'),
+        'from' => env('INFOBIP_FROM'),
+    ],
+
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+    ],
+
+    'otp' => [
+        'expires_minutes' => env('OTP_EXPIRES_MINUTES', 5),
+        'resend_cooldown_seconds' => env('OTP_RESEND_COOLDOWN_SECONDS', 20),
+        'max_attempts' => env('OTP_MAX_ATTEMPTS', 5),
+    ],
+
 ];

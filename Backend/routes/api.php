@@ -6,9 +6,11 @@ use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\BusinessRequestController;
 use App\Http\Controllers\Api\DonDatTourController;
 use App\Http\Controllers\Api\KhachHangController;
+use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\Staff\BusinessRequestManagementController;
+use App\Http\Controllers\Api\Staff\NewsManagementController;
 use App\Http\Controllers\Api\Staff\PromotionManagementController;
 use App\Http\Controllers\Api\Staff\TourManagementController;
 use App\Http\Controllers\Api\TinTucController;
@@ -99,10 +101,18 @@ Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(functi
     Route::get('/promotions/{id}', [PromotionManagementController::class, 'show'])->whereNumber('id');
     Route::put('/promotions/{id}', [PromotionManagementController::class, 'update'])->whereNumber('id');
 
+    Route::get('/news', [NewsManagementController::class, 'index']);
+    Route::post('/news', [NewsManagementController::class, 'store']);
+    Route::patch('/news/{id}/toggle', [NewsManagementController::class, 'toggle'])->whereNumber('id');
+    Route::put('/news/{id}', [NewsManagementController::class, 'update'])->whereNumber('id');
+
     Route::get('/business-requests', [BusinessRequestManagementController::class, 'index']);
     Route::get('/business-requests/{id}', [BusinessRequestManagementController::class, 'show'])->whereNumber('id');
     Route::patch('/business-requests/{id}', [BusinessRequestManagementController::class, 'update'])->whereNumber('id');
 });
+
+Route::get('/news', [NewsController::class, 'index']);
+Route::get('/news/{id}', [NewsController::class, 'show'])->whereNumber('id');
 
 Route::get('/tours', [TourController::class, 'index']);
 Route::get('/tours/search', [TourController::class, 'search']);

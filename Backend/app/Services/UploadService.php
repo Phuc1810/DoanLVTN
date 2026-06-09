@@ -35,4 +35,18 @@ class UploadService
 
         return 'storage/'.$stored;
     }
+
+    public function storeNewsImage(UploadedFile $file, int $newsId): string
+    {
+        $extension = strtolower($file->getClientOriginalExtension());
+        $fileName = 'tin_'.$newsId.'_'.time().'.'.$extension;
+
+        $stored = Storage::disk('public')->putFileAs('news', $file, $fileName);
+
+        if (! $stored) {
+            throw new RuntimeException('Không lưu được ảnh upload.');
+        }
+
+        return 'storage/'.$stored;
+    }
 }

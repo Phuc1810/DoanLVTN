@@ -1,0 +1,111 @@
+<?php
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class StaffOrderResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        $latestPayment = $this->whenLoaded('thanhToans', fn () => $this->thanhToans->first());
+        $latestRefund = $this->whenLoaded('hoanTiens', fn () => $this->hoanTiens->first());
+
+        return [
+            'MaDon' => $this->MaDon,
+            'NgayDat' => $this->NgayDat,
+            'TrangThai' => $this->TrangThai,
+            'SoLuongNguoiLon' => $this->SoLuongNguoiLon,
+            'SoLuongTreEm' => $this->SoLuongTreEm,
+            'SoLuongTreNho' => $this->SoLuongTreNho,
+            'SoNguoi' => (int) $this->SoLuongNguoiLon + (int) $this->SoLuongTreEm + (int) $this->SoLuongTreNho,
+            'TongTienGoc' => $this->TongTienGoc,
+            'TongTienPhaiTra' => $this->TongTienPhaiTra,
+            'MaKH' => $this->MaKH,
+            'MaTour' => $this->MaTour,
+            'MaCTKM' => $this->MaCTKM,
+            'khach_hang' => $this->customerPayload(),
+            'tour' => $this->tourPayload(),
+            'payment' => $latestPayment ? $this->paymentPayload($latestPayment) : null,
+            'refund' => $latestRefund ? $this->refundPayload($latestRefund) : null,
+        ];
+    }
+
+    protected function customerPayload(): ?array
+    {
+        if (! $this->relationLoaded('khachHang') || ! $this->khachHang) {
+            return null;
+        }
+
+        return [
+            'MaKH' => $this->khachHang->MaKH,
+            'HoTen' => $this->khachHang->HoTen,
+            'Email' => $this->khachHang->Email,
+            'SoDienThoai' => $this->khachHang->SoDienThoai,
+            'DiaChi' => $this->khachHang->DiaChi,
+        ];
+    }
+
+    protected function tourPayload(): ?array
+    {
+        if (! $this->relationLoaded('tour') || ! $this->tour) {
+            return null;
+        }
+
+        $image = $this->tour->relationLoaded('anhChinh') ? $this->tour->anhChinh?->DuongDan : null;
+
+        return [
+            'MaTour' => $this->tour->MaTour,
+            'TenTour' => $this->tour->TenTour,
+            'DiaDiem' => $this->tour->DiaDiem,
+            'ThoiLuong' => $this->tour->ThoiLuong,
+            'NgayKhoiHanh' => $this->tour->NgayKhoiHanh,
+            'NgayKetThuc' => $this->tour->NgayKetThuc,
+            'SoCho' => $this->tour->SoCho,
+            'SoChoDaDat' => $this->tour->SoChoDaDat,
+            'AnhChinh' => $image,
+            'image_url' => $this->imageUrl($image),
+        ];
+    }
+
+    protected function paymentPayload($payment): array
+    {
+        return [
+            'MaTT' => $payment->MaTT,
+            'NgayTT' => $payment->NgayTT,
+            'SoTien' => $payment->SoTien,
+            'PhuongThuc' => $payment->PhuongThuc,
+            'TrangThaiTT' => $payment->TrangThaiTT,
+            'MaDon' => $payment->MaDon,
+        ];
+    }
+
+    protected function refundPayload($refund): array
+    {
+        return [
+            'MaHT' => $refund->MaHT,
+            'SoTienHoan' => $refund->SoTienHoan,
+            'NgayHoan' => $refund->NgayHoan,
+            'LyDo' => $refund->LyDo,
+            'MaDon' => $refund->MaDon,
+        ];
+    }
+
+    protected function imageUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        if (preg_match('/^https?:\/\//i', $path)) {
+            return $path;
+        }
+
+        if (str_starts_with($path, 'storage/')) {
+            return url($path);
+        }
+
+        return url('assets/'.ltrim($path, '/'));
+    }
+}

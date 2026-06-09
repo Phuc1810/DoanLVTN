@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\Staff\BusinessRequestManagementController;
 use App\Http\Controllers\Api\Staff\NewsManagementController;
+use App\Http\Controllers\Api\Staff\OrderManagementController;
 use App\Http\Controllers\Api\Staff\PromotionManagementController;
 use App\Http\Controllers\Api\Staff\TourManagementController;
 use App\Http\Controllers\Api\TinTucController;
@@ -85,6 +86,9 @@ Route::post('/orders/{id}/review', [ReviewController::class, 'store'])
     ->middleware(['auth:sanctum', 'role:KH']);
 
 Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(function () {
+    Route::get('/orders', [OrderManagementController::class, 'index']);
+    Route::get('/orders/{id}', [OrderManagementController::class, 'show'])->whereNumber('id');
+
     Route::get('/tours', [TourManagementController::class, 'index']);
     Route::post('/tours', [TourManagementController::class, 'store']);
     Route::patch('/tours/{id}/toggle', [TourManagementController::class, 'toggle'])->whereNumber('id');

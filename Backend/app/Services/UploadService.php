@@ -21,4 +21,18 @@ class UploadService
 
         return 'storage/'.$stored;
     }
+
+    public function storePromotionImage(UploadedFile $file, int $promotionId): string
+    {
+        $extension = strtolower($file->getClientOriginalExtension());
+        $fileName = 'km_'.$promotionId.'_'.time().'.'.$extension;
+
+        $stored = Storage::disk('public')->putFileAs('promotions', $file, $fileName);
+
+        if (! $stored) {
+            throw new RuntimeException('Không lưu được ảnh upload.');
+        }
+
+        return 'storage/'.$stored;
+    }
 }

@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\KhachHangController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\Staff\BusinessRequestManagementController;
+use App\Http\Controllers\Api\Staff\PromotionManagementController;
 use App\Http\Controllers\Api\Staff\TourManagementController;
 use App\Http\Controllers\Api\TinTucController;
 use App\Http\Controllers\Api\TourController;
@@ -87,6 +88,16 @@ Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(functi
     Route::patch('/tours/{id}/toggle', [TourManagementController::class, 'toggle'])->whereNumber('id');
     Route::get('/tours/{id}', [TourManagementController::class, 'show'])->whereNumber('id');
     Route::put('/tours/{id}', [TourManagementController::class, 'update'])->whereNumber('id');
+
+    Route::get('/promotions', [PromotionManagementController::class, 'index']);
+    Route::post('/promotions', [PromotionManagementController::class, 'store']);
+    Route::patch('/promotions/{id}/toggle', [PromotionManagementController::class, 'toggle'])->whereNumber('id');
+    Route::post('/promotions/{id}/tours', [PromotionManagementController::class, 'attachTours'])->whereNumber('id');
+    Route::delete('/promotions/{id}/tours/{tourId}', [PromotionManagementController::class, 'detachTour'])
+        ->whereNumber('id')
+        ->whereNumber('tourId');
+    Route::get('/promotions/{id}', [PromotionManagementController::class, 'show'])->whereNumber('id');
+    Route::put('/promotions/{id}', [PromotionManagementController::class, 'update'])->whereNumber('id');
 
     Route::get('/business-requests', [BusinessRequestManagementController::class, 'index']);
     Route::get('/business-requests/{id}', [BusinessRequestManagementController::class, 'show'])->whereNumber('id');

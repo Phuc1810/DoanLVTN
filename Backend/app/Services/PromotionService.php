@@ -3,10 +3,42 @@
 namespace App\Services;
 
 use App\Models\Tour;
+use App\Models\ChuongTrinhKhuyenMai;
 use Illuminate\Database\Eloquent\Builder;
 
 class PromotionService
 {
+    public function syncPromotionStatuses(): void
+    {
+        $today = now()->toDateString();
+
+        ChuongTrinhKhuyenMai::whereDate('NgayKetThuc', '<', $today)
+            ->update(['TrangThai' => 'Hết hạn']);
+
+        ChuongTrinhKhuyenMai::whereDate('NgayBatDau', '>', $today)
+            ->whereDate('NgayKetThuc', '>=', $today)
+            ->update(['TrangThai' => 'Sắp diễn ra']);
+
+        ChuongTrinhKhuyenMai::whereDate('NgayBatDau', '<=', $today)
+            ->whereDate('NgayKetThuc', '>=', $today)
+            ->update(['TrangThai' => 'Hoạt động']);
+    }
+
+    public function statusForDates(string $startDate, string $endDate): string
+    {
+        $today = now()->toDateString();
+
+        if ($endDate < $today) {
+            return 'Hết hạn';
+        }
+
+        if ($startDate > $today) {
+            return 'Sắp diễn ra';
+        }
+
+        return 'Hoạt động';
+    }
+
     public function activePromotionConstraint($query)
     {
         return $query->where('chuongtrinhkhuyenmai.TrangThai', 'Hoạt động')

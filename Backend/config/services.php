@@ -43,6 +43,12 @@ return [
 
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect_uri' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
+    'ai' => [
+        'openai_api_key' => env('OPENAI_API_KEY', env('AI_API_KEY')),
     ],
 
     'otp' => [

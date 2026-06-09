@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\UploadService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -25,18 +26,6 @@ class PromotionResource extends JsonResource
 
     protected function imageUrl(?string $path): ?string
     {
-        if (! $path) {
-            return null;
-        }
-
-        if (preg_match('/^https?:\/\//i', $path)) {
-            return $path;
-        }
-
-        if (str_starts_with($path, 'storage/')) {
-            return url($path);
-        }
-
-        return url('assets/'.ltrim($path, '/'));
+        return app(UploadService::class)->publicUrl($path);
     }
 }

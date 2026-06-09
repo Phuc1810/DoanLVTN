@@ -12,7 +12,17 @@ class EnsureRole
     {
         $user = $request->user();
 
-        if (! $user || ! in_array($user->VaiTro, $roles, true)) {
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần đăng nhập để sử dụng chức năng này.',
+                'errors' => [
+                    'auth' => ['Unauthenticated.'],
+                ],
+            ], 401);
+        }
+
+        if (! in_array($user->VaiTro, $roles, true)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Bạn không có quyền truy cập chức năng này',

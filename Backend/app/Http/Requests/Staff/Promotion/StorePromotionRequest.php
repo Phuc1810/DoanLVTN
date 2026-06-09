@@ -24,7 +24,7 @@ class StorePromotionRequest extends FormRequest
             'PhanTramGiam' => ['required', 'numeric', 'min:0', 'max:100'],
             'NgayBatDau' => ['required', 'date'],
             'NgayKetThuc' => ['required', 'date', 'after_or_equal:NgayBatDau'],
-            'AnhDaiDien' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'AnhDaiDien' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'tours' => ['nullable', 'array'],
             'tours.*.MaTour' => ['required_with:tours', 'integer', 'exists:tour,MaTour'],
             'tours.*.PhanTramGiamKM' => ['required_with:tours', 'numeric', 'min:0', 'max:100'],

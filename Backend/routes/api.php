@@ -80,7 +80,8 @@ Route::get('/payments/{orderId}', [PaymentController::class, 'show'])
 Route::get('/payments/{orderId}/check', [PaymentController::class, 'check'])
     ->whereNumber('orderId')
     ->middleware(['auth:sanctum', 'role:KH']);
-Route::post('/webhooks/sepay', [PaymentController::class, 'sepayWebhook']);
+Route::post('/webhooks/sepay', [PaymentController::class, 'sepayWebhook'])
+    ->middleware('sepay.webhook');
 
 Route::post('/orders/{id}/review', [ReviewController::class, 'store'])
     ->whereNumber('id')

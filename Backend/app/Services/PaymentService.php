@@ -21,7 +21,8 @@ class PaymentService
 
     public function __construct(
         private PromotionService $promotionService,
-        private NotificationService $notificationService
+        private NotificationService $notificationService,
+        private UploadService $uploadService
     ) {
     }
 
@@ -338,7 +339,14 @@ class PaymentService
         return [
             'MaDon' => $orderId,
             'amount' => $amount,
+            'HoTen' => $order?->khachHang?->HoTen,
             'TenTour' => $order?->tour?->TenTour,
+            'DiaDiem' => $order?->tour?->DiaDiem,
+            'NgayKhoiHanh' => $order?->tour?->NgayKhoiHanh,
+            'SoLuongNguoiLon' => $order?->SoLuongNguoiLon,
+            'SoLuongTreEm' => $order?->SoLuongTreEm,
+            'SoLuongTreNho' => $order?->SoLuongTreNho,
+            'TongTienPhaiTra' => $order?->TongTienPhaiTra,
             'Email' => $order?->khachHang?->Email,
             'SoDienThoai' => $order?->khachHang?->SoDienThoai,
             'TenDangNhap' => $order?->khachHang?->taiKhoan?->TenDangNhap,
@@ -364,15 +372,7 @@ class PaymentService
 
     private function imageUrl(?string $path): ?string
     {
-        if (! $path) {
-            return null;
-        }
-
-        if (preg_match('/^https?:\/\//i', $path)) {
-            return $path;
-        }
-
-        return url('assets/'.ltrim($path, '/'));
+        return $this->uploadService->publicUrl($path);
     }
 
     private function ignored(string $reason, array $extra = []): array

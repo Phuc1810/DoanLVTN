@@ -41,7 +41,7 @@ class StoreNewsRequest extends FormRequest
             'NoiDung' => ['required', 'string'],
             'LoaiTin' => ['required', Rule::in(['tintuc', 'kinhnghiem'])],
             'TrangThai' => ['required', Rule::in(['Hiển thị', 'Ẩn'])],
-            'AnhDaiDien' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'AnhDaiDien' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];
     }
 

@@ -57,7 +57,7 @@ class OtpService
             'created_at' => now(),
         ]);
 
-        $this->notificationService->sendOtp($channel, $destination, $otp);
+        $this->sendOtpOrFail($channel, $destination, $otp);
 
         return [
             'message' => 'Đã gửi OTP. Vui lòng kiểm tra thông tin nhận mã.',
@@ -101,7 +101,7 @@ class OtpService
             'created_at' => now(),
         ]);
 
-        $this->notificationService->sendOtp($record->channel, $record->destination, $otp);
+        $this->sendOtpOrFail($record->channel, $record->destination, $otp);
 
         return [
             'otp_id' => $record->id,
@@ -194,5 +194,14 @@ class OtpService
         }
 
         return substr($destination, 0, 2).str_repeat('*', 6).substr($destination, -2);
+    }
+
+    private function sendOtpOrFail(string $channel, string $destination, string $otp): void
+    {
+        if (! $this->notificationService->sendOtp($channel, $destination, $otp)) {
+            throw ValidationException::withMessages([
+                'contact' => ['Gửi OTP thất bại. Vui lòng kiểm tra cấu hình email/SMS hoặc thử lại sau.'],
+            ]);
+        }
     }
 }

@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
+            'sepay.webhook' => \App\Http\Middleware\VerifySepayWebhook::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
@@ -21,7 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('api/*')) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Dữ liệu không hợp lệ.',
+                    'message' => 'Dữ liệu không hợp lệ',
                     'errors' => $e->errors(),
                 ], 422);
             }

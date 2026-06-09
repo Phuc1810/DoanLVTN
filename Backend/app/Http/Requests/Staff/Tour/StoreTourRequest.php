@@ -33,7 +33,7 @@ class StoreTourRequest extends FormRequest
             'NgayKhoiHanh' => ['required', 'date', 'after:today'],
             'NgayKetThuc' => ['required', 'date', 'after:today', 'after_or_equal:NgayKhoiHanh'],
             'LoaiAnh' => ['nullable', Rule::in(['', 'banner', 'noibat'])],
-            'AnhChinh' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'AnhChinh' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'lich_trinh' => ['required', 'array', 'min:1'],
             'lich_trinh.*.NgayThu' => ['required', 'integer', 'min:1'],
             'lich_trinh.*.TieuDe' => ['required', 'string', 'max:255'],

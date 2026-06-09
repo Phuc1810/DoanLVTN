@@ -7,7 +7,7 @@ class UpdateNewsRequest extends StoreNewsRequest
     public function rules(): array
     {
         $rules = parent::rules();
-        $rules['AnhDaiDien'] = ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'];
+        $rules['AnhDaiDien'] = ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'];
 
         return $rules;
     }

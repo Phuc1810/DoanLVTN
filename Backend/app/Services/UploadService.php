@@ -4,49 +4,104 @@ namespace App\Services;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class UploadService
 {
-    public function storeTourImage(UploadedFile $file, int $tourId): string
+    public function uploadTourImage(UploadedFile $file, ?int $tourId = null): string
     {
-        $extension = strtolower($file->getClientOriginalExtension());
-        $fileName = 'tour_'.$tourId.'_'.time().'.'.$extension;
-
-        $stored = Storage::disk('public')->putFileAs('tours', $file, $fileName);
-
-        if (! $stored) {
-            throw new RuntimeException('Không lưu được ảnh upload.');
-        }
-
-        return 'storage/'.$stored;
+        return $this->storeImage($file, 'tours', 'tour', $tourId);
     }
 
-    public function storePromotionImage(UploadedFile $file, int $promotionId): string
+    public function uploadNewsImage(UploadedFile $file, ?int $newsId = null): string
     {
-        $extension = strtolower($file->getClientOriginalExtension());
-        $fileName = 'km_'.$promotionId.'_'.time().'.'.$extension;
+        return $this->storeImage($file, 'news', 'news', $newsId);
+    }
 
-        $stored = Storage::disk('public')->putFileAs('promotions', $file, $fileName);
+    public function uploadPromotionImage(UploadedFile $file, ?int $promotionId = null): string
+    {
+        return $this->storeImage($file, 'promotions', 'promotion', $promotionId);
+    }
 
-        if (! $stored) {
-            throw new RuntimeException('Không lưu được ảnh upload.');
-        }
-
-        return 'storage/'.$stored;
+    public function storeTourImage(UploadedFile $file, int $tourId): string
+    {
+        return $this->uploadTourImage($file, $tourId);
     }
 
     public function storeNewsImage(UploadedFile $file, int $newsId): string
     {
-        $extension = strtolower($file->getClientOriginalExtension());
-        $fileName = 'tin_'.$newsId.'_'.time().'.'.$extension;
+        return $this->uploadNewsImage($file, $newsId);
+    }
 
-        $stored = Storage::disk('public')->putFileAs('news', $file, $fileName);
+    public function storePromotionImage(UploadedFile $file, int $promotionId): string
+    {
+        return $this->uploadPromotionImage($file, $promotionId);
+    }
+
+    public function publicUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        if (preg_match('/^https?:\/\//i', $path)) {
+            return $path;
+        }
+
+        $path = ltrim($path, '/');
+
+        if (str_starts_with($path, 'storage/')) {
+            return url($path);
+        }
+
+        if (str_starts_with($path, 'tours/') || str_starts_with($path, 'news/') || str_starts_with($path, 'promotions/')) {
+            return url(Storage::url($path));
+        }
+
+        return url('assets/'.$path);
+    }
+
+    public function deletePublicFile(?string $path): bool
+    {
+        if (! $path) {
+            return false;
+        }
+
+        $path = ltrim($path, '/');
+        if (str_starts_with($path, 'storage/')) {
+            $path = substr($path, strlen('storage/'));
+        }
+
+        if (! (str_starts_with($path, 'tours/') || str_starts_with($path, 'news/') || str_starts_with($path, 'promotions/'))) {
+            return false;
+        }
+
+        return Storage::disk('public')->delete($path);
+    }
+
+    public function validateImageRule(bool $required = false): array
+    {
+        return array_filter([
+            $required ? 'required' : 'nullable',
+            'image',
+            'mimes:jpg,jpeg,png,webp',
+            'max:5120',
+        ]);
+    }
+
+    private function storeImage(UploadedFile $file, string $directory, string $prefix, ?int $id): string
+    {
+        $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+        $suffix = $id ? (string) $id : (string) Str::uuid();
+        $fileName = $prefix.'_'.$suffix.'_'.time().'.'.$extension;
+
+        $stored = Storage::disk('public')->putFileAs($directory, $file, $fileName);
 
         if (! $stored) {
             throw new RuntimeException('Không lưu được ảnh upload.');
         }
 
-        return 'storage/'.$stored;
+        return $stored;
     }
 }

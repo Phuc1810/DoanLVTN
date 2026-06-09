@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\KhachHangController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\Staff\BusinessRequestManagementController;
+use App\Http\Controllers\Api\Staff\TourManagementController;
 use App\Http\Controllers\Api\TinTucController;
 use App\Http\Controllers\Api\TourController;
 use App\Models\DonDatTour;
@@ -81,6 +82,12 @@ Route::post('/orders/{id}/review', [ReviewController::class, 'store'])
     ->middleware(['auth:sanctum', 'role:KH']);
 
 Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(function () {
+    Route::get('/tours', [TourManagementController::class, 'index']);
+    Route::post('/tours', [TourManagementController::class, 'store']);
+    Route::patch('/tours/{id}/toggle', [TourManagementController::class, 'toggle'])->whereNumber('id');
+    Route::get('/tours/{id}', [TourManagementController::class, 'show'])->whereNumber('id');
+    Route::put('/tours/{id}', [TourManagementController::class, 'update'])->whereNumber('id');
+
     Route::get('/business-requests', [BusinessRequestManagementController::class, 'index']);
     Route::get('/business-requests/{id}', [BusinessRequestManagementController::class, 'show'])->whereNumber('id');
     Route::patch('/business-requests/{id}', [BusinessRequestManagementController::class, 'update'])->whereNumber('id');

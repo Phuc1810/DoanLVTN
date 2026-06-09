@@ -3,10 +3,12 @@
 use App\Http\Controllers\Api\ChuongTrinhKhuyenMaiController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\BusinessRequestController;
 use App\Http\Controllers\Api\DonDatTourController;
 use App\Http\Controllers\Api\KhachHangController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\Staff\BusinessRequestManagementController;
 use App\Http\Controllers\Api\TinTucController;
 use App\Http\Controllers\Api\TourController;
 use App\Models\DonDatTour;
@@ -63,6 +65,9 @@ Route::get('/test-db', function () {
 Route::post('/bookings', [BookingController::class, 'store'])
     ->middleware(['auth:sanctum', 'role:KH']);
 
+Route::post('/business-requests', [BusinessRequestController::class, 'store'])
+    ->middleware(['auth:sanctum', 'role:KH']);
+
 Route::get('/payments/{orderId}', [PaymentController::class, 'show'])
     ->whereNumber('orderId')
     ->middleware(['auth:sanctum', 'role:KH']);
@@ -74,6 +79,12 @@ Route::post('/webhooks/sepay', [PaymentController::class, 'sepayWebhook']);
 Route::post('/orders/{id}/review', [ReviewController::class, 'store'])
     ->whereNumber('id')
     ->middleware(['auth:sanctum', 'role:KH']);
+
+Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(function () {
+    Route::get('/business-requests', [BusinessRequestManagementController::class, 'index']);
+    Route::get('/business-requests/{id}', [BusinessRequestManagementController::class, 'show'])->whereNumber('id');
+    Route::patch('/business-requests/{id}', [BusinessRequestManagementController::class, 'update'])->whereNumber('id');
+});
 
 Route::get('/tours', [TourController::class, 'index']);
 Route::get('/tours/search', [TourController::class, 'search']);

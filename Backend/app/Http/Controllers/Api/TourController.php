@@ -3,13 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\ReviewService;
 use App\Services\TourService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class TourController extends Controller
 {
-    public function __construct(private TourService $tourService)
+    public function __construct(
+        private TourService $tourService,
+        private ReviewService $reviewService
+    )
     {
     }
 
@@ -98,8 +102,8 @@ class TourController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Lấy đánh giá tour thành công',
-            'data' => $this->tourService->reviews((int) $id),
+            'message' => 'Lấy danh sách đánh giá thành công',
+            'data' => $this->reviewService->tourReviews((int) $id),
         ]);
     }
 

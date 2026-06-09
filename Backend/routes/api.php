@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\DonDatTourController;
 use App\Http\Controllers\Api\KhachHangController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\TinTucController;
 use App\Http\Controllers\Api\TourController;
 use App\Models\DonDatTour;
@@ -69,6 +70,10 @@ Route::get('/payments/{orderId}/check', [PaymentController::class, 'check'])
     ->whereNumber('orderId')
     ->middleware(['auth:sanctum', 'role:KH']);
 Route::post('/webhooks/sepay', [PaymentController::class, 'sepayWebhook']);
+
+Route::post('/orders/{id}/review', [ReviewController::class, 'store'])
+    ->whereNumber('id')
+    ->middleware(['auth:sanctum', 'role:KH']);
 
 Route::get('/tours', [TourController::class, 'index']);
 Route::get('/tours/search', [TourController::class, 'search']);

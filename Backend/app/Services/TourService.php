@@ -2,10 +2,8 @@
 
 namespace App\Services;
 
-use App\Http\Resources\ReviewResource;
 use App\Http\Resources\TourDetailResource;
 use App\Http\Resources\TourResource;
-use App\Models\DanhGia;
 use App\Models\LichTrinhTour;
 use App\Models\Tour;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -84,23 +82,6 @@ class TourService
             $query->orderBy('NgayKhoiHanh')->orderBy('GiaGiam'),
             (int) ($filters['per_page'] ?? 12)
         );
-    }
-
-    public function reviews(int $tourId): array
-    {
-        $this->ensureActiveTourExists($tourId);
-
-        $reviews = DanhGia::with('khachHang')
-            ->where('MaTour', $tourId)
-            ->orderByDesc('NgayDG')
-            ->orderByDesc('MaDG')
-            ->get();
-
-        return [
-            'items' => ReviewResource::collection($reviews)->resolve(),
-            'average_rating' => round((float) $reviews->avg('SoSao'), 1),
-            'total_reviews' => $reviews->count(),
-        ];
     }
 
     public function schedules(int $tourId): array

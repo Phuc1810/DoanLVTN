@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\BusinessRequestController;
 use App\Http\Controllers\Api\DonDatTourController;
 use App\Http\Controllers\Api\KhachHangController;
 use App\Http\Controllers\Api\NewsController;
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\Staff\BusinessRequestManagementController;
@@ -83,6 +84,11 @@ Route::get('/payments/{orderId}/check', [PaymentController::class, 'check'])
 Route::post('/webhooks/sepay', [PaymentController::class, 'sepayWebhook'])
     ->middleware('sepay.webhook');
 
+Route::get('/orders', [OrderController::class, 'index'])
+    ->middleware(['auth:sanctum', 'role:KH']);
+Route::get('/orders/{id}', [OrderController::class, 'show'])
+    ->whereNumber('id')
+    ->middleware(['auth:sanctum', 'role:KH']);
 Route::post('/orders/{id}/review', [ReviewController::class, 'store'])
     ->whereNumber('id')
     ->middleware(['auth:sanctum', 'role:KH']);

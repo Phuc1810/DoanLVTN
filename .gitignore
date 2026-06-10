@@ -1,0 +1,24 @@
+# Laravel backend
+Backend/.env
+Backend/vendor/
+Backend/node_modules/
+Backend/storage/*.key
+Backend/public/build/
+
+# React frontend
+Frontend/.env
+Frontend/.env.local
+Frontend/node_modules/
+Frontend/dist/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*

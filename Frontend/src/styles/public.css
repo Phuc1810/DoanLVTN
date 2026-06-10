@@ -1,0 +1,58 @@
+@import '../assets/css/chung.css';
+@import '../assets/css/trangchu.css';
+@import '../assets/css/timkiem.css';
+@import '../assets/css/chitiet-tour.css';
+@import '../assets/css/tintuc.css';
+@import '../assets/css/chitietin.css';
+@import '../assets/css/khuyenmai.css';
+@import '../assets/css/khuyenmaichitiet.css';
+@import '../assets/css/tour_doanhnghiep.css';
+@import '../assets/css/xemtour_doanhnghiep.css';
+@import '../assets/css/banggia.css';
+
+body {
+  margin: 0;
+  background: #fff;
+  color: #222;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  text-decoration: none;
+}
+
+.status-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #fff;
+  z-index: 2;
+}
+
+.bg-sap-dien-ra {
+  background-color: #fd7e14;
+}
+
+.bg-hoat-dong {
+  background-color: #198754;
+}
+
+.business-tour-wrapper,
+.news-detail-wrapper,
+.km-detail-wrapper {
+  padding-top: 150px;
+  padding-bottom: 70px;
+}
+
+.news-detail-content img {
+  max-width: 100%;
+  height: auto;
+}

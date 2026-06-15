@@ -1,7 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../auth/useAuth'
 
 export default function Header() {
   const navigate = useNavigate()
+  const { user, isAuthenticated, logout } = useAuth()
 
   function submitQuickSearch(event) {
     event.preventDefault()
@@ -119,11 +121,39 @@ export default function Header() {
                 </a>
               </li>
 
-              <li className="nav-item login-item">
-                <Link className="nav-link login-link" to="/auth/login">
-                  <i className="fa-regular fa-user me-1"></i> ĐĂNG NHẬP
-                </Link>
-              </li>
+              {!isAuthenticated ? (
+                <li className="nav-item login-item">
+                  <Link className="nav-link login-link" to="/auth/login">
+                    <i className="fa-regular fa-user me-1"></i> ĐĂNG NHẬP
+                  </Link>
+                </li>
+              ) : (
+                <li className="nav-item dropdown">
+                  <a className="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                    <i className="fa-regular fa-user me-1"></i>
+                    CHÀO {user?.HoTen || user?.khach_hang?.HoTen || user?.TenDangNhap || 'BẠN'}
+                  </a>
+                  <ul className="dropdown-menu dropdown-menu-end">
+                    <li><Link className="dropdown-item" to="/profile"><i className="fa-regular fa-id-card me-2"></i> Thông tin cá nhân</Link></li>
+                    <li><hr className="dropdown-divider" /></li>
+                    <li><Link className="dropdown-item" to="/orders"><i className="fa-solid fa-receipt me-2"></i> Đơn hàng (đặt tour)</Link></li>
+                    <li><Link className="dropdown-item" to="/business-requests"><i className="fa-solid fa-briefcase me-2"></i> Yêu cầu doanh nghiệp</Link></li>
+                    <li><hr className="dropdown-divider" /></li>
+                    <li>
+                      <button
+                        type="button"
+                        className="dropdown-item text-danger"
+                        onClick={async () => {
+                          await logout()
+                          navigate('/auth/login')
+                        }}
+                      >
+                        <i className="fa-solid fa-right-from-bracket me-2"></i> Đăng xuất
+                      </button>
+                    </li>
+                  </ul>
+                </li>
+              )}
             </ul>
           </div>
         </div>

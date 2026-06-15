@@ -1,5 +1,7 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import ProtectedRoute from '../auth/ProtectedRoute'
 import AuthLayout from '../components/layout/AuthLayout'
+import CustomerLayout from '../components/layout/CustomerLayout'
 import PublicLayout from '../components/layout/PublicLayout'
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage'
 import GoogleCallbackPage from '../pages/auth/GoogleCallbackPage'
@@ -8,6 +10,18 @@ import RegisterPage from '../pages/auth/RegisterPage'
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage'
 import ResetSuccessPage from '../pages/auth/ResetSuccessPage'
 import VerifyOtpPage from '../pages/auth/VerifyOtpPage'
+import BookingSuccessPage from '../pages/customer/BookingSuccessPage'
+import BusinessRequestDetailPage from '../pages/customer/BusinessRequestDetailPage'
+import BusinessRequestsPage from '../pages/customer/BusinessRequestsPage'
+import CancelOrderPage from '../pages/customer/CancelOrderPage'
+import ChangePasswordPage from '../pages/customer/ChangePasswordPage'
+import CreateBookingPage from '../pages/customer/CreateBookingPage'
+import CreateBusinessRequestPage from '../pages/customer/CreateBusinessRequestPage'
+import OrderDetailPage from '../pages/customer/OrderDetailPage'
+import OrdersPage from '../pages/customer/OrdersPage'
+import PaymentPage from '../pages/customer/PaymentPage'
+import ProfilePage from '../pages/customer/ProfilePage'
+import ReviewOrderPage from '../pages/customer/ReviewOrderPage'
 import BusinessTourDetailPage from '../pages/public/BusinessTourDetailPage'
 import BusinessToursPage from '../pages/public/BusinessToursPage'
 import HomePage from '../pages/public/HomePage'
@@ -32,6 +46,27 @@ const router = createBrowserRouter([
       { path: '/auth/reset-password', element: <ResetPasswordPage /> },
       { path: '/auth/reset-success', element: <ResetSuccessPage /> },
       { path: '/auth/google-callback', element: <GoogleCallbackPage /> },
+    ],
+  },
+  {
+    element: (
+      <ProtectedRoute roles={['KH']}>
+        <CustomerLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { path: '/profile', element: <ProfilePage /> },
+      { path: '/change-password', element: <ChangePasswordPage /> },
+      { path: '/bookings/create/:tourId', element: <CreateBookingPage /> },
+      { path: '/payments/:orderId', element: <PaymentPage /> },
+      { path: '/booking-success/:orderId', element: <BookingSuccessPage /> },
+      { path: '/orders', element: <OrdersPage /> },
+      { path: '/orders/:id', element: <OrderDetailPage /> },
+      { path: '/orders/:id/cancel', element: <CancelOrderPage /> },
+      { path: '/orders/:id/review', element: <ReviewOrderPage /> },
+      { path: '/business-requests/create', element: <CreateBusinessRequestPage /> },
+      { path: '/business-requests', element: <BusinessRequestsPage /> },
+      { path: '/business-requests/:id', element: <BusinessRequestDetailPage /> },
     ],
   },
   {

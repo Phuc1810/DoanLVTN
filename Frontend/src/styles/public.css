@@ -10,6 +10,7 @@
 @import '../assets/css/tour_doanhnghiep.css';
 @import '../assets/css/xemtour_doanhnghiep.css';
 @import '../assets/css/banggia.css';
+@import './customer.css';
 
 body {
   margin: 0;

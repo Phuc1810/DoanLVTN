@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import ProtectedRoute from '../auth/ProtectedRoute'
+import AdminLayout from '../components/admin/AdminLayout'
 import AuthLayout from '../components/layout/AuthLayout'
 import CustomerLayout from '../components/layout/CustomerLayout'
 import PublicLayout from '../components/layout/PublicLayout'
@@ -11,6 +12,11 @@ import RegisterPage from '../pages/auth/RegisterPage'
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage'
 import ResetSuccessPage from '../pages/auth/ResetSuccessPage'
 import VerifyOtpPage from '../pages/auth/VerifyOtpPage'
+import AdminAccountDetailPage from '../pages/admin/AdminAccountDetailPage'
+import AdminAccountsPage from '../pages/admin/AdminAccountsPage'
+import AdminCreateStaffPage from '../pages/admin/AdminCreateStaffPage'
+import AdminDashboardPage from '../pages/admin/AdminDashboardPage'
+import AdminLoginPage from '../pages/admin/AdminLoginPage'
 import BookingSuccessPage from '../pages/customer/BookingSuccessPage'
 import BusinessRequestDetailPage from '../pages/customer/BusinessRequestDetailPage'
 import BusinessRequestsPage from '../pages/customer/BusinessRequestsPage'
@@ -55,6 +61,23 @@ import StaffTourEditPage from '../pages/staff/StaffTourEditPage'
 import StaffToursPage from '../pages/staff/StaffToursPage'
 
 const router = createBrowserRouter([
+  {
+    path: '/admin/login',
+    element: <AdminLoginPage />,
+  },
+  {
+    element: (
+      <ProtectedRoute roles={['AD']} loginPath="/admin/login">
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { path: '/admin', element: <AdminDashboardPage /> },
+      { path: '/admin/accounts', element: <AdminAccountsPage /> },
+      { path: '/admin/accounts/create-staff', element: <AdminCreateStaffPage /> },
+      { path: '/admin/accounts/:id', element: <AdminAccountDetailPage /> },
+    ],
+  },
   {
     path: '/staff/login',
     element: <StaffLoginPage />,

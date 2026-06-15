@@ -5,7 +5,7 @@ export const tourApi = {
   detail: (id) => axiosClient.get(`/tours/${id}`),
   search: (params = {}) => axiosClient.get('/tours/search', { params }),
   region: (mien, params = {}) => axiosClient.get(`/tours/region/${mien}`, { params }),
-  promotions: (params = {}) => axiosClient.get('/tours/promotions', { params }),
+  promotions: (params = {}) => axiosClient.get('/tours', { params }),
   reviews: (id) => axiosClient.get(`/tours/${id}/reviews`),
   schedules: (id) => axiosClient.get(`/tours/${id}/schedules`),
 }

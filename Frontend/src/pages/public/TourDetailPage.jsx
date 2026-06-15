@@ -5,21 +5,27 @@ import ErrorState from '../../components/common/ErrorState'
 import Loading from '../../components/common/Loading'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { formatDate } from '../../utils/formatDate'
-import { buildImageUrl } from '../../utils/imageUrl'
+import { buildImageUrl, tourImagePath } from '../../utils/imageUrl'
 
 export default function TourDetailPage() {
   const { id } = useParams()
   const [state, setState] = useState({ loading: true, error: '', tour: null, schedules: [], reviews: [] })
 
   useEffect(() => {
-    Promise.all([tourApi.detail(id), tourApi.schedules(id), tourApi.reviews(id)])
+    Promise.allSettled([tourApi.detail(id), tourApi.schedules(id), tourApi.reviews(id)])
       .then(([tour, schedules, reviews]) => {
+        if (tour.status === 'rejected') throw tour.reason
+        const tourData = tour.value
         setState({
           loading: false,
           error: '',
-          tour,
-          schedules: Array.isArray(schedules) ? schedules : schedules.items || schedules.data || tour.lichTrinhs || [],
-          reviews: Array.isArray(reviews) ? reviews : reviews.items || reviews.data || tour.danhGias || [],
+          tour: tourData,
+          schedules: schedules.status === 'fulfilled'
+            ? (Array.isArray(schedules.value) ? schedules.value : schedules.value.items || schedules.value.data || tourData.lich_trinhs || tourData.lichTrinhs || [])
+            : (tourData.lich_trinhs || tourData.lichTrinhs || []),
+          reviews: reviews.status === 'fulfilled'
+            ? (Array.isArray(reviews.value) ? reviews.value : reviews.value.items || reviews.value.data || tourData.danh_gias || tourData.danhGias || [])
+            : (tourData.danh_gias || tourData.danhGias || []),
         })
       })
       .catch((error) => setState({ loading: false, error: error.message, tour: null, schedules: [], reviews: [] }))
@@ -30,7 +36,7 @@ export default function TourDetailPage() {
   if (!state.tour) return <ErrorState message="Không tìm thấy tour." />
 
   const tour = state.tour
-  const images = Array.isArray(tour.hinhAnhs) ? tour.hinhAnhs : []
+  const images = Array.isArray(tour.hinh_anhs) ? tour.hinh_anhs : Array.isArray(tour.hinhAnhs) ? tour.hinhAnhs : []
   const discount = Number(tour.discount_percent || tour.PhanTramGiam || 0)
   const stats = tour.review_stats || {}
 
@@ -41,13 +47,13 @@ export default function TourDetailPage() {
       <div className="row g-4">
         <div className="col-lg-8">
           <div className="tour-main-img position-relative mb-3">
-            <img src={buildImageUrl(tour.image_url || tour.AnhChinh)} className="img-fluid w-100 rounded-4" alt="" />
+            <img src={buildImageUrl(tourImagePath(tour))} className="img-fluid w-100 rounded-4" alt="" />
             {discount > 0 && <div className="tour-detail-discount">-{discount}%</div>}
           </div>
 
           {images.length > 1 && (
             <div className="tour-gallery d-flex gap-3 flex-wrap">
-              {images.filter((image) => image.DuongDan !== tour.AnhChinh).map((image) => (
+              {images.filter((image) => image.DuongDan !== tourImagePath(tour)).map((image) => (
                 <div className="tour-gallery-item" key={image.MaAnh || image.DuongDan}>
                   <img src={buildImageUrl(image.image_url || image.DuongDan)} className="img-fluid rounded-3" alt="" />
                 </div>

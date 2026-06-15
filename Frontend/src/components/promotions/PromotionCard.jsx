@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom'
 import { formatDate } from '../../utils/formatDate'
-import { buildImageUrl } from '../../utils/imageUrl'
+import { buildImageUrl, promotionImagePath } from '../../utils/imageUrl'
 
 export default function PromotionCard({ promotion }) {
   return (
     <div className="km-card h-100">
       <div className="km-img-box position-relative">
-        <img src={buildImageUrl(promotion.image_url || promotion.AnhDaiDien)} className="km-img" alt="" />
+        <img src={buildImageUrl(promotionImagePath(promotion))} className="km-img" alt="" />
         {promotion.TrangThai === 'Sắp diễn ra' && (
           <span className="status-badge bg-sap-dien-ra">Sắp diễn ra</span>
         )}

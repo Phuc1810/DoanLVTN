@@ -13,3 +13,23 @@ export function buildImageUrl(pathOrUrl, fallback = '/assets/img/no-image.jpg') 
 
   return `/assets/img/${path.replace(/^\/+/, '')}`
 }
+
+export function tourImagePath(tour) {
+  return (
+    tour?.image_url ||
+    tour?.AnhChinh ||
+    tour?.anh_chinh?.DuongDan ||
+    tour?.anhChinh?.DuongDan ||
+    tour?.hinh_anhs?.[0]?.DuongDan ||
+    tour?.hinhAnhs?.[0]?.DuongDan ||
+    tour?.images?.[0]?.DuongDan
+  )
+}
+
+export function newsImagePath(news) {
+  return news?.image_url || news?.AnhDaiDien || news?.anh_dai_dien
+}
+
+export function promotionImagePath(promotion) {
+  return promotion?.image_url || promotion?.AnhDaiDien || promotion?.anh_dai_dien
+}

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { formatCurrency } from '../../utils/formatCurrency'
-import { buildImageUrl } from '../../utils/imageUrl'
+import { buildImageUrl, tourImagePath } from '../../utils/imageUrl'
 
 export default function TourCard({ tour }) {
   const discount = Number(tour.discount_percent || tour.PhanTramGiam || 0)
@@ -8,7 +8,7 @@ export default function TourCard({ tour }) {
   return (
     <div className="tour-card shadow-sm">
       <div className="tour-img">
-        <img src={buildImageUrl(tour.image_url || tour.AnhChinh)} alt={tour.TenTour || ''} />
+        <img src={buildImageUrl(tourImagePath(tour))} alt={tour.TenTour || ''} />
       </div>
 
       {discount > 0 && <div className="tour-discount-badge">-{discount}%</div>}

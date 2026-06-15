@@ -5,7 +5,7 @@ import ErrorState from '../../components/common/ErrorState'
 import Loading from '../../components/common/Loading'
 import TourGrid from '../../components/tours/TourGrid'
 import { formatDate } from '../../utils/formatDate'
-import { buildImageUrl } from '../../utils/imageUrl'
+import { buildImageUrl, promotionImagePath } from '../../utils/imageUrl'
 
 export default function PromotionDetailPage() {
   const { id } = useParams()
@@ -26,7 +26,7 @@ export default function PromotionDetailPage() {
       <h2 className="fw-bold text-center mb-4 km-detail-title">{promotion.TenKM}</h2>
       <div className="row g-4 mb-5">
         <div className="col-lg-5">
-          <img src={buildImageUrl(promotion.image_url || promotion.AnhDaiDien)} className="img-fluid rounded-4 shadow-sm" alt="" />
+          <img src={buildImageUrl(promotionImagePath(promotion))} className="img-fluid rounded-4 shadow-sm" alt="" />
         </div>
         <div className="col-lg-7">
           <div className="km-detail-card">

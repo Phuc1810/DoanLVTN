@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom'
 import { formatDate } from '../../utils/formatDate'
-import { buildImageUrl } from '../../utils/imageUrl'
+import { buildImageUrl, newsImagePath } from '../../utils/imageUrl'
 
 export default function NewsCard({ news }) {
   return (
     <div className="blog-card">
       <div className="blog-card-img-box">
-        <img src={buildImageUrl(news.image_url || news.AnhDaiDien)} alt="" className="blog-card-img" />
+        <img src={buildImageUrl(newsImagePath(news))} alt="" className="blog-card-img" />
       </div>
       <div className="blog-card-body">
         <h5 className="blog-card-title">{news.TieuDe}</h5>

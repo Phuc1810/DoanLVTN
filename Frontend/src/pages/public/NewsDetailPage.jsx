@@ -4,7 +4,7 @@ import { newsApi } from '../../api/newsApi'
 import ErrorState from '../../components/common/ErrorState'
 import Loading from '../../components/common/Loading'
 import { formatDate } from '../../utils/formatDate'
-import { buildImageUrl } from '../../utils/imageUrl'
+import { buildImageUrl, newsImagePath } from '../../utils/imageUrl'
 import { sanitizeHtml } from '../../utils/sanitizeHtml'
 
 export default function NewsDetailPage() {
@@ -28,7 +28,7 @@ export default function NewsDetailPage() {
       <div className="news-detail-meta mb-3">
         <i className="fa-regular fa-calendar-days me-1"></i>{formatDate(news.NgayDang)}
       </div>
-      <img src={buildImageUrl(news.image_url || news.AnhDaiDien)} className="img-fluid rounded-4 shadow-sm mb-4 w-100" alt="" />
+      <img src={buildImageUrl(newsImagePath(news))} className="img-fluid rounded-4 shadow-sm mb-4 w-100" alt="" />
       <p className="lead">{news.MoTa}</p>
       <div className="news-detail-content" dangerouslySetInnerHTML={{ __html: sanitizeHtml(news.NoiDung || '') }} />
     </div>

@@ -7,23 +7,27 @@ import AdvancedSearchBox from '../../components/tours/AdvancedSearchBox'
 import HomeTourCard from '../../components/tours/HomeTourCard'
 import { listFrom } from '../../utils/data'
 import { formatCurrency } from '../../utils/formatCurrency'
-import { buildImageUrl } from '../../utils/imageUrl'
+import { buildImageUrl, newsImagePath, tourImagePath } from '../../utils/imageUrl'
 
 export default function HomePage() {
   const [state, setState] = useState({ loading: true, tours: [], promotions: [], news: [] })
 
   useEffect(() => {
-    Promise.all([
+    Promise.allSettled([
       tourApi.list({ per_page: 8 }),
       tourApi.promotions({ per_page: 9 }),
       newsApi.list({ per_page: 6 }),
     ])
       .then(([tours, promotions, news]) => {
+        const tourRows = tours.status === 'fulfilled' ? listFrom(tours.value) : []
+        const promotionRows = promotions.status === 'fulfilled'
+          ? listFrom(promotions.value).filter((tour) => Number(tour.PhanTramGiam || tour.discount_percent || 0) > 0)
+          : []
         setState({
           loading: false,
-          tours: listFrom(tours),
-          promotions: listFrom(promotions),
-          news: listFrom(news),
+          tours: tourRows,
+          promotions: promotionRows.length ? promotionRows : tourRows.filter((tour) => Number(tour.PhanTramGiam || 0) > 0),
+          news: news.status === 'fulfilled' ? listFrom(news.value) : [],
         })
       })
       .catch(() => setState((current) => ({ ...current, loading: false })))
@@ -40,7 +44,7 @@ export default function HomePage() {
               key={tour.MaTour}
               className={`carousel-item ${index === 0 ? 'active' : ''}`}
               style={{
-                backgroundImage: `url('${buildImageUrl(tour.image_url || tour.AnhChinh)}')`,
+                backgroundImage: `url('${buildImageUrl(tourImagePath(tour))}')`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 height: '100vh',
@@ -86,7 +90,7 @@ export default function HomePage() {
                 {state.promotions.slice(0, 9).map((tour) => (
                   <div className="col-md-4" key={tour.MaTour}>
                     <div className="km-card">
-                      <img src={buildImageUrl(tour.image_url || tour.AnhChinh)} className="km-img" alt="" />
+                      <img src={buildImageUrl(tourImagePath(tour))} className="km-img" alt="" />
                       {Number(tour.discount_percent || tour.PhanTramGiam) > 0 && (
                         <span className="km-discount">-{Number(tour.discount_percent || tour.PhanTramGiam)}%</span>
                       )}
@@ -111,7 +115,7 @@ export default function HomePage() {
                   <div className="col-md-4" key={item.MaTin}>
                     <div className="blog-mini-card">
                       <div className="blog-mini-img-box">
-                        <img src={buildImageUrl(item.image_url || item.AnhDaiDien)} className="blog-mini-img" alt="" />
+                        <img src={buildImageUrl(newsImagePath(item))} className="blog-mini-img" alt="" />
                       </div>
                       <div className="blog-mini-body">
                         <h5 className="blog-mini-title">{item.TieuDe}</h5>

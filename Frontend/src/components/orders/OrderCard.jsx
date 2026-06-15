@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { formatDate } from '../../utils/formatDate'
-import { buildImageUrl } from '../../utils/imageUrl'
+import { buildImageUrl, tourImagePath } from '../../utils/imageUrl'
 import OrderStatusBadge from './OrderStatusBadge'
 
 export default function OrderCard({ order }) {
@@ -13,8 +13,8 @@ export default function OrderCard({ order }) {
 
   return (
     <div className="order-item">
-      {tour.AnhChinh || tour.image_url ? (
-        <img className="thumb" src={buildImageUrl(tour.image_url || tour.AnhChinh)} alt="" />
+      {tourImagePath(tour) ? (
+        <img className="thumb" src={buildImageUrl(tourImagePath(tour))} alt="" />
       ) : (
         <div className="thumb"></div>
       )}

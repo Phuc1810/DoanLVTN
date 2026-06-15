@@ -1,5 +1,13 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import AuthLayout from '../components/layout/AuthLayout'
 import PublicLayout from '../components/layout/PublicLayout'
+import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage'
+import GoogleCallbackPage from '../pages/auth/GoogleCallbackPage'
+import LoginPage from '../pages/auth/LoginPage'
+import RegisterPage from '../pages/auth/RegisterPage'
+import ResetPasswordPage from '../pages/auth/ResetPasswordPage'
+import ResetSuccessPage from '../pages/auth/ResetSuccessPage'
+import VerifyOtpPage from '../pages/auth/VerifyOtpPage'
 import BusinessTourDetailPage from '../pages/public/BusinessTourDetailPage'
 import BusinessToursPage from '../pages/public/BusinessToursPage'
 import HomePage from '../pages/public/HomePage'
@@ -14,6 +22,18 @@ import TourDetailPage from '../pages/public/TourDetailPage'
 import ToursPage from '../pages/public/ToursPage'
 
 const router = createBrowserRouter([
+  {
+    element: <AuthLayout />,
+    children: [
+      { path: '/auth/login', element: <LoginPage /> },
+      { path: '/auth/register', element: <RegisterPage /> },
+      { path: '/auth/forgot-password', element: <ForgotPasswordPage /> },
+      { path: '/auth/verify-otp', element: <VerifyOtpPage /> },
+      { path: '/auth/reset-password', element: <ResetPasswordPage /> },
+      { path: '/auth/reset-success', element: <ResetSuccessPage /> },
+      { path: '/auth/google-callback', element: <GoogleCallbackPage /> },
+    ],
+  },
   {
     element: <PublicLayout />,
     children: [

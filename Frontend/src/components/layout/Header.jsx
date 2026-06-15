@@ -120,7 +120,7 @@ export default function Header() {
               </li>
 
               <li className="nav-item login-item">
-                <Link className="nav-link login-link" to="/login">
+                <Link className="nav-link login-link" to="/auth/login">
                   <i className="fa-regular fa-user me-1"></i> ĐĂNG NHẬP
                 </Link>
               </li>

@@ -3,6 +3,7 @@ import ProtectedRoute from '../auth/ProtectedRoute'
 import AuthLayout from '../components/layout/AuthLayout'
 import CustomerLayout from '../components/layout/CustomerLayout'
 import PublicLayout from '../components/layout/PublicLayout'
+import StaffLayout from '../components/staff/StaffLayout'
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage'
 import GoogleCallbackPage from '../pages/auth/GoogleCallbackPage'
 import LoginPage from '../pages/auth/LoginPage'
@@ -34,8 +35,56 @@ import RegionToursPage from '../pages/public/RegionToursPage'
 import SearchPage from '../pages/public/SearchPage'
 import TourDetailPage from '../pages/public/TourDetailPage'
 import ToursPage from '../pages/public/ToursPage'
+import StaffBusinessRequestDetailPage from '../pages/staff/StaffBusinessRequestDetailPage'
+import StaffBusinessRequestsPage from '../pages/staff/StaffBusinessRequestsPage'
+import StaffChangePasswordPage from '../pages/staff/StaffChangePasswordPage'
+import StaffDashboardPage from '../pages/staff/StaffDashboardPage'
+import StaffLoginPage from '../pages/staff/StaffLoginPage'
+import StaffNewsCreatePage from '../pages/staff/StaffNewsCreatePage'
+import StaffNewsEditPage from '../pages/staff/StaffNewsEditPage'
+import StaffNewsPage from '../pages/staff/StaffNewsPage'
+import StaffOrderDetailPage from '../pages/staff/StaffOrderDetailPage'
+import StaffOrdersPage from '../pages/staff/StaffOrdersPage'
+import StaffPromotionCreatePage from '../pages/staff/StaffPromotionCreatePage'
+import StaffPromotionDetailPage from '../pages/staff/StaffPromotionDetailPage'
+import StaffPromotionEditPage from '../pages/staff/StaffPromotionEditPage'
+import StaffPromotionsPage from '../pages/staff/StaffPromotionsPage'
+import StaffTourCreatePage from '../pages/staff/StaffTourCreatePage'
+import StaffTourDetailPage from '../pages/staff/StaffTourDetailPage'
+import StaffTourEditPage from '../pages/staff/StaffTourEditPage'
+import StaffToursPage from '../pages/staff/StaffToursPage'
 
 const router = createBrowserRouter([
+  {
+    path: '/staff/login',
+    element: <StaffLoginPage />,
+  },
+  {
+    element: (
+      <ProtectedRoute roles={['NV', 'AD']} loginPath="/staff/login">
+        <StaffLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { path: '/staff', element: <StaffDashboardPage /> },
+      { path: '/staff/tours', element: <StaffToursPage /> },
+      { path: '/staff/tours/create', element: <StaffTourCreatePage /> },
+      { path: '/staff/tours/:id', element: <StaffTourDetailPage /> },
+      { path: '/staff/tours/:id/edit', element: <StaffTourEditPage /> },
+      { path: '/staff/orders', element: <StaffOrdersPage /> },
+      { path: '/staff/orders/:id', element: <StaffOrderDetailPage /> },
+      { path: '/staff/promotions', element: <StaffPromotionsPage /> },
+      { path: '/staff/promotions/create', element: <StaffPromotionCreatePage /> },
+      { path: '/staff/promotions/:id', element: <StaffPromotionDetailPage /> },
+      { path: '/staff/promotions/:id/edit', element: <StaffPromotionEditPage /> },
+      { path: '/staff/news', element: <StaffNewsPage /> },
+      { path: '/staff/news/create', element: <StaffNewsCreatePage /> },
+      { path: '/staff/news/:id/edit', element: <StaffNewsEditPage /> },
+      { path: '/staff/business-requests', element: <StaffBusinessRequestsPage /> },
+      { path: '/staff/business-requests/:id', element: <StaffBusinessRequestDetailPage /> },
+      { path: '/staff/change-password', element: <StaffChangePasswordPage /> },
+    ],
+  },
   {
     element: <AuthLayout />,
     children: [

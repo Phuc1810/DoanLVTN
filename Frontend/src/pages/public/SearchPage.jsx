@@ -14,7 +14,13 @@ export default function SearchPage() {
   const [state, setState] = useState({ loading: true, error: '', tours: [] })
 
   useEffect(() => {
-    tourApi.search(Object.fromEntries(new URLSearchParams(queryString).entries()))
+    const raw = Object.fromEntries(new URLSearchParams(queryString).entries())
+    const mapped = {
+      ...raw,
+      keyword: raw.keyword || raw.dia_diem || raw.q || '',
+    }
+
+    tourApi.search(mapped)
       .then((payload) => setState({ loading: false, error: '', tours: listFrom(payload) }))
       .catch((error) => setState({ loading: false, error: error.message, tours: [] }))
   }, [queryString])
@@ -24,7 +30,7 @@ export default function SearchPage() {
       <div className="search-result-wrapper">
         <AdvancedSearchBox initial={params} />
       </div>
-      <div className="container pb-5">
+      <div className="container search-results-area pb-5">
         <h2 className="fw-bold text-center mb-4">KẾT QUẢ TÌM KIẾM</h2>
         {state.loading && <Loading />}
         {state.error && <ErrorState message={state.error} />}

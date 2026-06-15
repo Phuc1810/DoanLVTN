@@ -8,6 +8,7 @@ import TourGrid from '../../components/tours/TourGrid'
 import { listFrom, paginationFrom } from '../../utils/data'
 
 const titles = { bac: 'TOUR MIỀN BẮC', trung: 'TOUR MIỀN TRUNG', nam: 'TOUR MIỀN NAM' }
+const regionValues = { bac: 'Bắc', trung: 'Trung', nam: 'Nam' }
 
 export default function RegionToursPage() {
   const { mien } = useParams()
@@ -16,7 +17,7 @@ export default function RegionToursPage() {
   const title = useMemo(() => titles[mien] || `TOUR MIỀN ${String(mien || '').toUpperCase()}`, [mien])
 
   useEffect(() => {
-    tourApi.region(mien, { page: searchParams.get('page') || 1, per_page: 9 })
+    tourApi.region(regionValues[mien] || mien, { page: searchParams.get('page') || 1, per_page: 9 })
       .then((payload) => setState({ loading: false, error: '', tours: listFrom(payload), pagination: paginationFrom(payload) }))
       .catch((error) => setState({ loading: false, error: error.message, tours: [], pagination: null }))
   }, [mien, searchParams])

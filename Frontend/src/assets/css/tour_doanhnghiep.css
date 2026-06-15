@@ -2,7 +2,7 @@ body{ background:#fff; }
 .wrap{ padding-top:160px; padding-bottom:60px; }
 
 /* Title */
-.page-title{
+.wrap .page-title{
   font-weight:800;
   letter-spacing:.5px;
   text-align:center;
@@ -12,7 +12,7 @@ body{ background:#fff; }
 }
 
 /* Card */
-.tour-card{
+.wrap .tour-card{
   border:0;
   border-radius:22px;
   overflow:hidden;
@@ -26,26 +26,26 @@ body{ background:#fff; }
   will-change: transform;
 }
 
-.tour-card:hover{
+.wrap .tour-card:hover{
   transform: translateY(-6px);
   box-shadow:0 18px 46px rgba(16,24,40,.16);
 }
 
 /* Image */
-.thumb-wrap{ position:relative; }
-.thumb{
+.wrap .thumb-wrap{ position:relative; }
+.wrap .thumb{
   width:100%;
   height:240px;
   object-fit:cover;
   display:block;
 }
 
-.thumb-placeholder{
+.wrap .thumb-placeholder{
   background:#e2e8f0;
 }
 
 /* Sale badge */
-.badge-sale{
+.wrap .badge-sale{
   position:absolute;
   top:18px; left:18px;
   width:64px; height:64px;
@@ -62,7 +62,7 @@ body{ background:#fff; }
 }
 
 /* Body */
-.card-bodyx{
+.wrap .card-bodyx{
   padding:18px 22px 18px;
   display:flex;
   flex-direction:column;
@@ -70,7 +70,7 @@ body{ background:#fff; }
 }
 
 /* Name */
-.tour-name{
+.wrap .tour-name{
   font-weight:700;
   font-size:20px;
   margin:0 0 6px 0;
@@ -83,7 +83,7 @@ body{ background:#fff; }
 }
 
 /* Location */
-.tour-loc{
+.wrap .tour-loc{
   color:#64748b;
   font-weight:600;
   display:flex;
@@ -92,21 +92,21 @@ body{ background:#fff; }
   margin-bottom:10px;
   font-size:15px;
 }
-.loc-ic{ color:#e11d48; }
+.wrap .loc-ic{ color:#e11d48; }
 
 /* Price */
-.price-row{
+.wrap .price-row{
   display:flex;
   align-items:baseline;
   gap:10px;
   margin-bottom:18px;
 }
-.price-new{
+.wrap .price-new{
   color:#e11d48;
   font-weight:800;
   font-size:18px;
 }
-.price-old{
+.wrap .price-old{
   color:#0f172a;
   font-weight:700;
   text-decoration:line-through;
@@ -115,7 +115,7 @@ body{ background:#fff; }
 }
 
 /* Button */
-.btn-view{
+.wrap .btn-view{
   width:100%;
   border-radius:999px;
   padding:14px 18px;
@@ -128,7 +128,7 @@ body{ background:#fff; }
   will-change: transform;
 }
 
-.btn-view:hover{
+.wrap .btn-view:hover{
   background:#ff7a00;
   border-color:#ff7a00;
   color:#fff;
@@ -136,9 +136,9 @@ body{ background:#fff; }
   box-shadow: 0 14px 28px rgba(255,122,0,.28);
 }
 
-.btn-view:active{
+.wrap .btn-view:active{
   transform: translateY(-1px);
 }
 
 /* grid spacing */
-.g-4{ --bs-gutter-x: 26px; --bs-gutter-y: 26px; }
+.wrap .g-4{ --bs-gutter-x: 26px; --bs-gutter-y: 26px; }

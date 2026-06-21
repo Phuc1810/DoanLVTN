@@ -23,6 +23,10 @@ class PasswordResetOtp extends Model
         'used_at',
     ];
 
+    protected $hidden = [
+        'otp_hash',
+    ];
+
     public function taiKhoan()
     {
         return $this->belongsTo(TaiKhoan::class, 'MaTK', 'MaTK');

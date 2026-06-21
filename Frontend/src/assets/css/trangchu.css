@@ -424,9 +424,9 @@ transform: translateY(-6px);
   transform: translateY(-6px);
 }
 
-.km-img {
+#tour_khuyen_mai .km-img {
   width: 100%;
-  height: 420px;
+  height: 450px; /* Chỗ này anh/chị cứ đổi thoải mái là nó sẽ nhận nhé */
   object-fit: cover;
   transition: .35s ease;
 }

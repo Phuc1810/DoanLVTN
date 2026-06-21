@@ -9,7 +9,6 @@ import { listFrom } from '../../utils/data'
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams()
-  const params = Object.fromEntries(searchParams.entries())
   const queryString = searchParams.toString()
   const quickKeyword = searchParams.get('keyword')?.trim() || ''
   const isQuickSearch = Boolean(quickKeyword)

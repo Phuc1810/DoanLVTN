@@ -4,7 +4,14 @@ export function buildImageUrl(pathOrUrl, fallback = '/assets/img/no-image.jpg') 
   if (!pathOrUrl) return fallback
 
   const path = String(pathOrUrl).trim()
-  if (/^https?:\/\//i.test(path)) return path
+  if (/^https?:\/\//i.test(path)) {
+    const url = new URL(path)
+
+    // Legacy database paths live in Frontend/public/assets, not Laravel/public.
+    if (url.pathname.startsWith('/assets/')) return `${url.pathname}${url.search}`
+
+    return path
+  }
   if (path.startsWith('/storage')) return ASSET_BASE_URL + path
   if (path.startsWith('storage/')) return `${ASSET_BASE_URL}/${path}`
   if (path.startsWith('/assets/')) return path

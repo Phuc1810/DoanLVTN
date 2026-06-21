@@ -135,12 +135,17 @@ Route::get('/news', [NewsController::class, 'index']);
 Route::get('/news/{id}', [NewsController::class, 'show'])->whereNumber('id');
 
 Route::get('/tours', [TourController::class, 'index']);
+<<<<<<< Updated upstream
 Route::get('/tours/search', [TourController::class, 'search']);
 Route::get('/tours/region/{mien}', [TourController::class, 'region']);
 Route::get('/tours/promotions', [TourController::class, 'promotions']);
 Route::get('/tours/{id}/reviews', [TourController::class, 'reviews'])->whereNumber('id');
 Route::get('/tours/{id}/schedules', [TourController::class, 'schedules'])->whereNumber('id');
 Route::get('/tours/{id}', [TourController::class, 'show'])->whereNumber('id');
+=======
+Route::get('/tours/locations', [TourController::class, 'locations']);
+Route::get('/tours/{id}', [TourController::class, 'show']);
+>>>>>>> Stashed changes
 
 Route::get('/khach-hang', [KhachHangController::class, 'index']);
 Route::get('/khach-hang/{id}', [KhachHangController::class, 'show']);

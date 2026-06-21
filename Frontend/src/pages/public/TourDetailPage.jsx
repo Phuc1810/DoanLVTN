@@ -6,9 +6,12 @@ import Loading from '../../components/common/Loading'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { formatDate } from '../../utils/formatDate'
 import { buildImageUrl, tourImagePath } from '../../utils/imageUrl'
+import { useAuth } from '../../auth/useAuth'
 
 export default function TourDetailPage() {
   const { id } = useParams()
+  const { user } = useAuth()
+  const [showLoginModal, setShowLoginModal] = useState(false)
   const [state, setState] = useState({ loading: true, error: '', tour: null, schedules: [], reviews: [] })
 
   useEffect(() => {
@@ -77,7 +80,18 @@ export default function TourDetailPage() {
               <span>Giá chỉ còn:</span>
               <span className="ms-2">{formatCurrency(tour.GiaGiam)}</span>
             </p>
-            <Link to={`/bookings/create/${tour.MaTour}`} className="btn btn-book-detail w-100">ĐẶT TOUR</Link>
+            <Link 
+              to={`/bookings/create/${tour.MaTour}`} 
+              className="btn btn-book-detail w-100"
+              onClick={(e) => {
+                if (!user) {
+                  e.preventDefault();
+                  setShowLoginModal(true);
+                }
+              }}
+            >
+              ĐẶT TOUR
+            </Link>
             {tour.LoaiTour === 'Doanh nghiệp' && (
               <Link to={`/business-requests/create?tourId=${tour.MaTour}`} className="btn btn-outline-primary w-100 mt-2">
                 YÊU CẦU DOANH NGHIỆP
@@ -135,6 +149,32 @@ export default function TourDetailPage() {
           </div>
         )}
       </div>
+
+      {/* MODAL YÊU CẦU ĐĂNG NHẬP */}
+      {showLoginModal && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+              <div className="modal-header border-0 pb-0">
+                <button type="button" className="btn-close" onClick={() => setShowLoginModal(false)}></button>
+              </div>
+              <div className="modal-body text-center pt-2 pb-4">
+                <div className="mb-3">
+                  <div style={{ width: '80px', height: '80px', background: '#fff2f2', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <i className="fa-solid fa-lock text-danger" style={{ fontSize: '2rem' }}></i>
+                  </div>
+                </div>
+                <h4 className="fw-bold mb-2">Yêu cầu đăng nhập</h4>
+                <p className="text-muted mb-4 px-3">Bạn cần đăng nhập hoặc đăng ký để tiến hành đặt tour.</p>
+                <div className="d-flex justify-content-center gap-2 px-3">
+                  <button type="button" className="btn btn-light px-4 fw-bold rounded-pill" onClick={() => setShowLoginModal(false)}>Hủy</button>
+                  <Link to={`/auth/login?redirect=/tours/${tour.MaTour}`} className="btn btn-primary px-4 fw-bold rounded-pill" style={{ background: '#1a5cb0', border: 'none' }}>Đăng nhập / Đăng ký</Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

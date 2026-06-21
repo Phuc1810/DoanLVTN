@@ -1,8 +1,8 @@
 export default function AuthShell({ children, narrow = false }) {
   return (
-    <div className="container auth-shell">
+    <div className="container-fluid auth-shell">
       <div className="row justify-content-center">
-        <div className={narrow ? 'col-lg-7 col-xl-6' : 'col-lg-9 col-xl-8'}>
+        <div className={narrow ? 'col-lg-6 col-xl-5' : 'col-lg-10 col-xl-9'}>
           {children}
         </div>
       </div>

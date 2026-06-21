@@ -1,21 +1,22 @@
 import { useState } from 'react'
 
-export default function PasswordInput({ id, name, value, onChange, placeholder, className = '' }) {
+export default function PasswordInput({ id, name, value, onChange, placeholder, className = '', invalid = false }) {
   const [visible, setVisible] = useState(false)
 
   return (
-    <div className="input-group">
+    <div className={`password-wrapper ${invalid ? 'is-invalid' : ''}`}>
       <input
         id={id}
         type={visible ? 'text' : 'password'}
-        className={`form-control ${className}`}
+        className={`auth-input ${className} ${invalid ? 'is-invalid' : ''}`}
         name={name}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
       />
+      {invalid && <i className="fa-solid fa-circle-exclamation auth-error-icon"></i>}
       <button
-        className="btn btn-outline-secondary btn-pass"
+        className="btn-eye"
         type="button"
         onClick={() => setVisible((current) => !current)}
         aria-label="Hiện/ẩn mật khẩu"

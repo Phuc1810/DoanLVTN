@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { tourApi } from '../../api/tourApi'
 import ErrorState from '../../components/common/ErrorState'
+import EmptyState from '../../components/common/EmptyState'
 import Loading from '../../components/common/Loading'
 import AdvancedSearchBox from '../../components/tours/AdvancedSearchBox'
 import TourGrid from '../../components/tours/TourGrid'
@@ -11,6 +12,8 @@ export default function SearchPage() {
   const [searchParams] = useSearchParams()
   const params = Object.fromEntries(searchParams.entries())
   const queryString = searchParams.toString()
+  const quickKeyword = searchParams.get('keyword')?.trim() || ''
+  const isQuickSearch = Boolean(quickKeyword)
   const [state, setState] = useState({ loading: true, error: '', tours: [] })
 
   useEffect(() => {
@@ -27,14 +30,22 @@ export default function SearchPage() {
 
   return (
     <>
-      <div className="search-result-wrapper">
-        <AdvancedSearchBox initial={params} />
-      </div>
-      <div className="container search-results-area pb-5">
-        <h2 className="fw-bold text-center mb-4">KẾT QUẢ TÌM KIẾM</h2>
+      {!isQuickSearch && (
+        <div className="search-result-wrapper">
+          <AdvancedSearchBox initial={params} />
+        </div>
+      )}
+      <div className={`container search-results-area pb-5 ${isQuickSearch ? 'search-result-wrapper' : ''}`}>
+        <h2 className="fw-bold text-center mb-4">
+          {isQuickSearch ? `Kết quả tìm kiếm: "${quickKeyword}"` : 'KẾT QUẢ TÌM KIẾM'}
+        </h2>
         {state.loading && <Loading />}
         {state.error && <ErrorState message={state.error} />}
-        {!state.loading && !state.error && <TourGrid tours={state.tours} />}
+        {!state.loading && !state.error && (
+          state.tours.length > 0
+            ? <TourGrid tours={state.tours} />
+            : <EmptyState message="Không có tour phù hợp" />
+        )}
       </div>
     </>
   )

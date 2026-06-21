@@ -14,6 +14,7 @@
 @import './customer.css';
 @import './staff.css';
 @import './admin.css';
+@import './home-parity.css';
 
 body {
   margin: 0;
@@ -60,4 +61,18 @@ a {
 .news-detail-content img {
   max-width: 100%;
   height: auto;
+}
+
+
+/* Riêng trang chủ: hotline trắng */
+.public-site.public-home-shell #header .phone-hotline {
+  color: #fff !important;
+}
+
+.public-site #header .searchbox {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.public-site #header .searchbox:focus {
+  background: rgba(255, 255, 255, 1);
 }

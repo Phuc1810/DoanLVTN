@@ -15,6 +15,7 @@ function chunk(items, size) {
 
 export default function HomePage() {
   const [state, setState] = useState({ loading: true, tours: [], promotions: [], news: [] })
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 767px)').matches)
 
   useEffect(() => {
     Promise.allSettled([
@@ -38,15 +39,23 @@ export default function HomePage() {
       .catch(() => setState((current) => ({ ...current, loading: false })))
   }, [])
 
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 767px)')
+    const update = () => setIsMobile(media.matches)
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+
+  // TODO: API public currently does not expose LoaiAnh="banner"; use the newest tour images.
   const heroTours = state.tours.slice(0, 4)
-  const featuredSlides = chunk(state.tours.slice(0, 8), 4)
-  const blogSlides = chunk(state.news.slice(0, 6), 3)
+  const featuredSlides = chunk(state.tours.slice(0, 8), isMobile ? 1 : 4)
+  const blogSlides = chunk(state.news.slice(0, 6), isMobile ? 1 : 3)
   const firstNews = state.news.find((item) => item.LoaiTin === 'tintuc') || state.news[0]
   const firstExperience = state.news.find((item) => item.LoaiTin === 'kinhnghiem') || state.news[1] || state.news[0]
 
   return (
     <main className="page-home">
-      <div id="anh_truot" className="carousel slide" data-bs-ride="carousel">
+      <div id="anh_truot" className="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
         <div className="carousel-inner">
           {heroTours.map((tour, index) => (
             <div

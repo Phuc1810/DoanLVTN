@@ -49,64 +49,7 @@
 }
 
 
-/* ===== THANH DIEU HUONG ===== */
-.thanh_dieu_huong {
-  top: 38px;
-  background: rgba(207, 204, 204, 0.25);
-  height: 85px;
-  padding: 10px 0;
-}
 
-/* Logo PNG */
-.logo_img {
-  height: 140px;  /* chỉnh kích thước logo */
-  object-fit: contain;        /* giữ tỉ lệ */
-  filter: brightness(1.2);   /* tăng độ sáng logo trắng */
-  margin-right: 60px;
-}
-
-/* CĂN MENU CÁCH ĐỀU */
-.navbar-nav {
-  gap: 18px;
-  align-items: center;
-}
-
-.navbar-nav .nav-link {
-  font-weight: 600;
-  font-size: 16px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #ffffff !important;
-  white-space: nowrap; 
-  padding: 8px 12px;
-  
-}
-
-.navbar-nav .nav-link:hover,
-.navbar-nav .nav-link.active {
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 6px;
-}
-
-/* ĐĂNG NHẬP / ĐĂNG KÝ – nhẹ hơn, không bị thô */
-.navbar-nav .nav-item.login-item {
-  margin-left: 70px;           /* tạo khoảng cách với LIÊN HỆ */
-}
-
-/* Style riêng cho nút ĐĂNG NHẬP */
-.navbar-nav .nav-link.login-link {
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  padding: 6px 20px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* Ghi đè hover: không đổi nền, giữ y nguyên */
-.navbar-nav .nav-link.login-link:hover {
-  color: #ffffff;
-}
 
 /* =======================================
     DROPDOWN MENU – DU LỊCH STYLE

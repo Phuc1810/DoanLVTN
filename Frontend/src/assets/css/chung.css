@@ -13,7 +13,7 @@
   padding: 4px 12px;
   border: none;
   outline: none;
-  background: rgba(213, 207, 207, 0.8);
+  background: rgba(255, 255, 255, 0.8);
   transition: 0.25s ease;
 }
 
@@ -32,8 +32,8 @@
 
 /* MÀU CHO SỐ ĐIỆN THOẠI TRÊN TOPBAR */
 .phone-hotline {
-  color: #0d6efd;          /* xanh dương đậm */
-  font-size: 15px;
+  color: #000;
+  font-size: 16px;
 }
 
 /* NÚT LIÊN HỆ */
@@ -56,34 +56,49 @@
 /* ===== THANH DIEU HUONG ===== */
 .thanh_dieu_huong {
   top: 38px;
-  background: rgba(24, 24, 24, 0.25);
+  background: rgba(0, 0, 0, 0.4); /* Màu đen trong suốt nhạt giống như trong ảnh */
   height: 85px;
   padding: 10px 0;
 }
 
+/* Ép container giãn rộng toàn màn hình để chứa các nút không bị đè */
+.thanh_dieu_huong .container {
+  max-width: 100% !important;
+  padding: 0 40px; /* Cách mép trái/phải 40px */
+}
+
 /* Logo PNG */
 .logo_img {
-  height: 140px;  /* chỉnh kích thước logo */
+  height: 145px;  /* Tăng kích thước logo lên 120px */
+  margin-left: 90px; /* Đẩy logo sang phải khoảng 2cm */
   object-fit: contain;        /* giữ tỉ lệ */
   filter: brightness(1.2);   /* tăng độ sáng logo trắng */
-  margin-right: 60px;
 }
 
 /* CĂN MENU CÁCH ĐỀU */
 .navbar-nav {
-  gap: 18px;
+  width: 100%;
+  gap: 32px; /* Tăng khoảng cách các mục menu để cân đối */
   align-items: center;
+  justify-content: center; /* Căn giữa cụm menu chính xác vào giữa màn hình */
+  margin-top: 5px; /* Giảm khoảng cách cho vừa với logo nhỏ */
+  transform: translateX(-115px); /* Đẩy cụm menu sang trái khoảng 3cm */
 }
 
 .navbar-nav .nav-link {
-  font-weight: 600;
-  font-size: 16px;
+  font-family: inherit; /* Đồng bộ kiểu chữ y hệt trang chủ */
+  font-weight: 500; /* Nét chữ thanh mảnh nhưng vẫn rõ */
+  font-size: 15px; /* Tăng kích thước chữ lên 2px (từ 14px lên 16px) */
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: #ffffff !important;
   white-space: nowrap; 
-  padding: 8px 12px;
-  
+  padding: 8px 16px;
+}
+
+/* Kéo mũi tên dropdown thật sát vào chữ */
+.navbar-nav .dropdown-toggle::after {
+  margin-left: -6px;
 }
 
 .navbar-nav .nav-link:hover,
@@ -92,26 +107,27 @@
   border-radius: 6px;
 }
 
-/* ĐĂNG NHẬP / ĐĂNG KÝ – nhẹ hơn, không bị thô */
-.navbar-nav .nav-item.login-item {
-  margin-left: 70px;           /* tạo khoảng cách với LIÊN HỆ */
+/* Nút ĐĂNG NHẬP / User Dropdown - Đẩy ra sát viền ngoài cùng bên phải của màn hình */
+.navbar-nav .nav-item.login-item,
+.navbar-nav > .nav-item.dropdown:last-child {
+  position: absolute;
+  right: -100px; /* Đẩy nút đăng nhập sang phải thêm khoảng 2cm nữa */
 }
 
 /* Style riêng cho nút ĐĂNG NHẬP */
 .navbar-nav .nav-link.login-link {
   border: 1px solid rgba(255, 255, 255, 0.9);
-  padding: 6px 20px;
+  padding: 8px 24px; /* Nút đăng nhập to hơn */
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px; /* Tăng khoảng cách icon và chữ */
 }
 
 /* Ghi đè hover: không đổi nền, giữ y nguyên */
 .navbar-nav .nav-link.login-link:hover {
   color: #ffffff;
 }
-
 
 /* =======================================
     DROPDOWN MENU – DU LỊCH STYLE
@@ -229,10 +245,9 @@ transform: translateY(-6px);
 }
 
 /*  FOOTER */
-/* Logo lớn và cân đối */
 /* ====== LOGO ====== */
 .footer-logo {
-  height: 90px;         /* kích thước lý tưởng */
+  height: 120px;         /* kích thước lý tưởng */
   max-width: 220px;
   width: auto;
   display: block;

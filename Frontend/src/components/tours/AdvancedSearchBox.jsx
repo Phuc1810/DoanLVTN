@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 export default function AdvancedSearchBox({ initial = {} }) {
   const navigate = useNavigate()
+  const today = new Date().toISOString().slice(0, 10)
   const [form, setForm] = useState({
     dia_diem: initial.dia_diem || initial.keyword || initial.q || '',
     ngay_khoi_hanh: initial.ngay_khoi_hanh || '',
@@ -43,7 +44,7 @@ export default function AdvancedSearchBox({ initial = {} }) {
 
         <div className="search-item">
           <label><i className="fa-solid fa-calendar-days"></i> Ngày khởi hành</label>
-          <input type="date" name="ngay_khoi_hanh" value={form.ngay_khoi_hanh} onChange={update} />
+          <input type="date" name="ngay_khoi_hanh" min={today} value={form.ngay_khoi_hanh} onChange={update} />
         </div>
 
         <div className="search-item">

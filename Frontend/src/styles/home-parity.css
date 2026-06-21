@@ -1,0 +1,224 @@
+.public-home-shell {
+  overflow-x: clip;
+  background: #fff;
+}
+
+.public-home-shell #header .phone-hotline {
+  color: #fff !important;
+}
+
+.public-home-shell #header .searchbox {
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.public-home-shell #header .searchbox:focus {
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.public-home-shell .page-home #anh_truot,
+.public-home-shell .page-home #anh_truot .carousel-inner {
+  min-height: 100vh;
+  background: #111 url('/assets/img/sapa.jpg') center / cover no-repeat;
+}
+
+.public-home-shell .page-home #tour_noi_bat .tour-title {
+  color: #f8a404;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.public-home-shell .page-home #tour_khuyen_mai .km-card::after {
+  content: '';
+  position: absolute;
+  inset: 35% 0 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.78), transparent);
+}
+
+.public-home-shell .page-home #tour_khuyen_mai .km-overlay,
+.public-home-shell .page-home #tour_khuyen_mai .km-discount {
+  z-index: 2;
+}
+
+.public-home-shell .page-home .custom-padding {
+  padding-inline: 12px;
+}
+
+@media (max-width: 1599px) and (min-width: 992px) {
+  .public-home-shell #header .thanh_dieu_huong .container {
+    max-width: none;
+    padding-inline: 24px;
+  }
+}
+
+@media (max-width: 991px) {
+  .public-home-shell #header .topbar {
+    height: 38px;
+    padding-inline: 10px;
+    gap: 8px !important;
+  }
+
+  .public-home-shell #header .phone-hotline {
+    flex: 0 0 auto;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .public-home-shell #header .search-container {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .public-home-shell #header .search-container form {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .public-home-shell #header .searchbox {
+    width: 100%;
+    min-width: 0;
+    font-size: 13px;
+  }
+
+  .public-home-shell #header .search-container .btn {
+    flex: 0 0 auto;
+    margin-left: 6px !important;
+    padding: 5px 10px !important;
+    font-size: 12px;
+  }
+
+  .public-home-shell #header .thanh_dieu_huong {
+    top: 38px;
+    height: 85px;
+    padding: 0;
+  }
+
+  .public-home-shell #header .thanh_dieu_huong .container {
+    max-width: none;
+    height: 85px;
+    padding-inline: 12px;
+    flex-wrap: wrap;
+  }
+
+  .public-home-shell #header .navbar-brand {
+    width: auto;
+    max-width: calc(100% - 64px);
+    height: 85px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .public-home-shell #header .logo_img {
+    width: 190px;
+    max-width: 100%;
+    height: 108px;
+    margin: 0;
+  }
+
+  .public-home-shell #header .navbar-toggler {
+    margin-left: auto;
+  }
+
+  .public-home-shell #header .navbar-collapse {
+    position: absolute;
+    top: 85px;
+    left: 0;
+    right: 0;
+    padding: 12px;
+    background: rgba(24, 24, 24, 0.94);
+  }
+
+  .public-home-shell #header .navbar-nav {
+    align-items: stretch !important;
+    gap: 2px !important;
+  }
+
+  .public-home-shell .page-home .noi_dung_banner {
+    left: 8%;
+    right: 16%;
+  }
+
+  .public-home-shell .page-home .noi_dung_banner h1 {
+    font-size: 30px;
+  }
+
+  .public-home-shell .page-home .advanced-search {
+    margin-top: 32px !important;
+  }
+
+  .public-home-shell .page-home .advanced-search .search-box {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .public-home-shell .page-home .advanced-search .search-btn-box {
+    grid-column: 1 / -1;
+  }
+
+  .public-home-shell .page-home .advanced-search .search-btn-box button {
+    min-height: 46px;
+  }
+
+  .public-home-shell .thanh_mxh {
+    right: 12px;
+  }
+}
+
+@media (max-width: 767px) {
+  .public-home-shell .page-home #anh_truot,
+  .public-home-shell .page-home #anh_truot .carousel-inner,
+  .public-home-shell .page-home #anh_truot .carousel-item,
+  .public-home-shell .page-home .lop_mo {
+    min-height: 100svh;
+    height: 100svh !important;
+  }
+
+  .public-home-shell .page-home .advanced-search .search-box {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .public-home-shell .page-home .advanced-search .search-btn-box {
+    grid-column: auto;
+  }
+
+  .public-home-shell .page-home section h2 {
+    font-size: 24px;
+    line-height: 1.25;
+  }
+
+  .public-home-shell .page-home #tour_noi_bat .carousel-item .col-md-3,
+  .public-home-shell .page-home #blogSlider .carousel-item .col-md-4 {
+    width: 100%;
+  }
+
+  .public-home-shell .page-home #tour_noi_bat .tour-img {
+    height: 450px;
+  }
+
+  .public-home-shell .page-home #tour_khuyen_mai .km-img {
+    height: 420px;
+  }
+
+  .public-home-shell .page-home .blog-hero-card {
+    height: 380px;
+  }
+
+  .public-home-shell .page-home #tourSlider .carousel-control-prev {
+    left: 2px;
+  }
+
+  .public-home-shell .page-home #tourSlider .carousel-control-next {
+    right: 2px;
+  }
+
+  .public-home-shell #footer-site .footer-logo {
+    transform: scale(1.7);
+  }
+}

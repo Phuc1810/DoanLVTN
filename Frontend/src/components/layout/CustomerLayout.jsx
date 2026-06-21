@@ -5,11 +5,12 @@ import SocialBar from './SocialBar'
 
 export default function CustomerLayout() {
   return (
-    <>
+    <div className="customer-site">
+      <div id="top"></div>
       <Header />
       <SocialBar />
       <Outlet />
       <Footer />
-    </>
+    </div>
   )
 }

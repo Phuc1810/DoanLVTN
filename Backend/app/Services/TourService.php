@@ -30,6 +30,18 @@ class TourService
         );
     }
 
+    public function locations(): array
+    {
+        return Tour::query()
+            ->whereNotNull('DiaDiem')
+            ->where('DiaDiem', '<>', '')
+            ->distinct()
+            ->orderBy('DiaDiem')
+            ->pluck('DiaDiem')
+            ->values()
+            ->all();
+    }
+
     public function detail(int $id): TourDetailResource
     {
         $tour = $this->baseActiveQuery()
@@ -154,7 +166,7 @@ class TourService
         }
 
         if (! empty($filters['ngay_khoi_hanh'])) {
-            $query->whereDate('NgayKhoiHanh', '>=', $filters['ngay_khoi_hanh']);
+            $query->whereDate('NgayKhoiHanh', $filters['ngay_khoi_hanh']);
         }
 
         if (! empty($filters['thoi_luong'])) {

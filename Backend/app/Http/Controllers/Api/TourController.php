@@ -10,33 +10,23 @@ use Illuminate\Validation\ValidationException;
 
 class TourController extends Controller
 {
-<<<<<<< Updated upstream
     public function __construct(
         private TourService $tourService,
         private ReviewService $reviewService
     )
     {
-=======
+    }
+
     public function locations()
     {
-        $locations = Tour::query()
-            ->whereNotNull('DiaDiem')
-            ->where('DiaDiem', '<>', '')
-            ->distinct()
-            ->orderBy('DiaDiem')
-            ->pluck('DiaDiem')
-            ->values();
-
         return response()->json([
             'success' => true,
-            'data' => $locations,
+            'data' => $this->tourService->locations(),
         ]);
->>>>>>> Stashed changes
     }
 
     public function index(Request $request)
     {
-<<<<<<< Updated upstream
         $filters = $request->only([
             'page',
             'per_page',
@@ -45,56 +35,6 @@ class TourController extends Controller
             'mien',
             'loai_tour',
         ]);
-=======
-        $query = Tour::with('anhChinh');
-
-        if ($request->filled('keyword')) {
-            $keyword = $request->query('keyword');
-            $query->where(function ($q) use ($keyword) {
-                $q->where('TenTour', 'like', "%{$keyword}%")
-                    ->orWhere('DiaDiem', 'like', "%{$keyword}%");
-            });
-        }
-
-        if ($request->filled('mien')) {
-            $query->where('Mien', $request->query('mien'));
-        }
-
-        if ($request->filled('loai_tour')) {
-            $query->where('LoaiTour', $request->query('loai_tour'));
-        }
-
-        if ($request->filled('ngay_khoi_hanh')) {
-            $query->whereDate('NgayKhoiHanh', $request->query('ngay_khoi_hanh'));
-        }
-
-        if ($request->filled('thoi_luong')) {
-            $query->where('ThoiLuong', $request->query('thoi_luong'));
-        }
-
-        if ($request->filled('gia')) {
-            switch ((string) $request->query('gia')) {
-                case '1':
-                    $query->where('GiaGiam', '<', 1000000);
-                    break;
-                case '2':
-                    $query->where('GiaGiam', '>=', 1000000)
-                        ->where('GiaGiam', '<', 2000000);
-                    break;
-                case '3':
-                    $query->where('GiaGiam', '>=', 2000000)
-                        ->where('GiaGiam', '<', 3000000);
-                    break;
-                case '4':
-                    $query->where('GiaGiam', '>=', 3000000);
-                    break;
-            }
-        }
-
-        if ($request->filled('trang_thai')) {
-            $query->where('TrangThai', $request->query('trang_thai'));
-        }
->>>>>>> Stashed changes
 
         return response()->json([
             'success' => true,

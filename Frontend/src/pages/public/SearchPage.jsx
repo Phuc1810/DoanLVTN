@@ -4,7 +4,6 @@ import { tourApi } from '../../api/tourApi'
 import ErrorState from '../../components/common/ErrorState'
 import EmptyState from '../../components/common/EmptyState'
 import Loading from '../../components/common/Loading'
-import AdvancedSearchBox from '../../components/tours/AdvancedSearchBox'
 import TourGrid from '../../components/tours/TourGrid'
 import { listFrom } from '../../utils/data'
 
@@ -17,6 +16,9 @@ export default function SearchPage() {
   const [state, setState] = useState({ loading: true, error: '', tours: [] })
 
   useEffect(() => {
+    // Luôn cuộn lên đầu trang mỗi khi tìm kiếm
+    window.scrollTo(0, 0)
+
     const raw = Object.fromEntries(new URLSearchParams(queryString).entries())
     const mapped = {
       ...raw,
@@ -30,12 +32,7 @@ export default function SearchPage() {
 
   return (
     <>
-      {!isQuickSearch && (
-        <div className="search-result-wrapper">
-          <AdvancedSearchBox initial={params} />
-        </div>
-      )}
-      <div className={`container search-results-area pb-5 ${isQuickSearch ? 'search-result-wrapper' : ''}`}>
+      <div className={`container search-results-area pb-5 search-result-wrapper`}>
         <h2 className="fw-bold text-center mb-4">
           {isQuickSearch ? `Kết quả tìm kiếm: "${quickKeyword}"` : 'KẾT QUẢ TÌM KIẾM'}
         </h2>

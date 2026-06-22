@@ -92,11 +92,6 @@ export default function TourDetailPage() {
             >
               ĐẶT TOUR
             </Link>
-            {tour.LoaiTour === 'Doanh nghiệp' && (
-              <Link to={`/business-requests/create?tourId=${tour.MaTour}`} className="btn btn-outline-primary w-100 mt-2">
-                YÊU CẦU DOANH NGHIỆP
-              </Link>
-            )}
           </div>
         </div>
       </div>

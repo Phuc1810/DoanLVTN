@@ -22,11 +22,14 @@
 
 /* ===== BẢNG GIÁ TOUR ===== */
 .price-table {
-  border-radius: 18px;             /* bo tròn 4 góc */
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;             /* bo tròn 4 góc giống ảnh */
   overflow: hidden;                /* thead + tbody cũng bo tròn theo */
   border: 1px solid #e3e6ee;
   background: #ffffff;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.09);
+  margin-bottom: 0;
 }
 
 /* Dòng tiêu đề – gradient nhẹ, chữ trắng */
@@ -34,21 +37,27 @@
   background: linear-gradient(90deg, #0d6efd, #00a2ff);
   color: #ffffff;
   font-weight: 700;
-  border-bottom: none;
+  border: none;
   font-size: 14px;
+  padding: 16px 20px;
 }
 
 /* Căn lề chung */
-.price-table th,
 .price-table td {
   vertical-align: middle;
   font-size: 15px;
-  padding-top: 14px;
-  padding-bottom: 14px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #f1f3f8;
+  border-top: none;
+}
+
+/* Bỏ border dòng cuối */
+.price-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 /* Stripe nhẹ cho các dòng thân bảng */
-.price-table tbody tr:nth-child(even) {
+.price-table tbody tr:nth-child(even) td {
   background: #fafbff;
 }
 
@@ -112,7 +121,7 @@
 /* ===== Nút xem tour ===== */
 .btn-view {
   border-radius: 999px;
-  padding: 7px 20px;
+  padding: 7px 24px;
   font-weight: 600;
   font-size: 14px;
   background: #005bbb;
@@ -120,6 +129,8 @@
   border: none;
   transition: 0.2s ease;
   box-shadow: 0 6px 14px rgba(0, 91, 187, 0.35);
+  white-space: nowrap;
+  min-width: 120px;
 }
 
 .btn-view:hover {

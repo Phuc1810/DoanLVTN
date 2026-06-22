@@ -24,8 +24,8 @@ export default function Header() {
       </div>
 
       <nav className="navbar navbar-expand-lg navbar-dark fixed-top thanh_dieu_huong">
-        <div className="container d-flex justify-content-between align-items-center">
-          <Link className="navbar-brand fw-bold text-white" to="/">
+        <div className="container-fluid ps-4 ps-xl-5 pe-0 d-flex justify-content-between align-items-center">
+          <Link className="navbar-brand fw-bold text-white" to="/" style={{ position: 'relative', right: '75px' }}>
             <img src="/assets/img/logo_1.png" className="logo_img" alt="VietJourney" />
           </Link>
 
@@ -33,8 +33,8 @@ export default function Header() {
             <span className="navbar-toggler-icon"></span>
           </button>
 
-          <div className="collapse navbar-collapse justify-content-end" id="menu_chinh">
-            <ul className="navbar-nav align-items-center">
+          <div className="collapse navbar-collapse" id="menu_chinh">
+            <ul className="navbar-nav align-items-center mx-auto" style={{ position: 'relative', left: '35px' }}>
               <li className="nav-item"><Link className="nav-link active" to="/">TRANG CHỦ</Link></li>
               <li className="nav-item dropdown">
                 <a className="nav-link dropdown-toggle" href="#tour_noi_bat" data-bs-toggle="dropdown">TOUR</a>
@@ -55,14 +55,16 @@ export default function Header() {
                 </ul>
               </li>
               <li className="nav-item"><a className="nav-link" href="#footer-site">LIÊN HỆ</a></li>
+            </ul>
 
+            <ul className="navbar-nav align-items-center">
               {!isAuthenticated ? (
                 <li className="nav-item login-item">
                   <Link className="nav-link login-link" to="/auth/login"><i className="fa-regular fa-user"></i> ĐĂNG NHẬP</Link>
                 </li>
               ) : (
                 <li className="nav-item dropdown">
-                  <a className="nav-link dropdown-toggle" href="#account-menu" data-bs-toggle="dropdown">
+                  <a className="nav-link dropdown-toggle d-flex align-items-center" href="#account-menu" data-bs-toggle="dropdown">
                     <i className="fa-regular fa-user me-1"></i>
                     CHÀO {user?.HoTen || user?.khach_hang?.HoTen || user?.TenDangNhap || 'BẠN'}
                   </a>

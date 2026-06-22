@@ -43,8 +43,8 @@ export default function PricingPage() {
                     <div className="tour-name">{tour.TenTour}</div>
                     <div className="tour-sub"><i className="fa-solid fa-location-dot me-1 text-danger"></i>{tour.DiaDiem}</div>
                   </td>
-                  <td className="d-none d-md-table-cell">
-                    <span className="badge bg-light text-dark border"><i className="fa-solid fa-map-pin me-1 text-primary"></i>{tour.DiaDiem}</span>
+                  <td>
+                    <span className="badge bg-light text-dark border rounded-pill py-2 px-3 fw-normal" style={{ fontSize: '13px' }}><i className="fa-solid fa-map-pin me-1 text-primary"></i>{tour.DiaDiem || 'Đang cập nhật'}</span>
                   </td>
                   <td><span className="badge duration-badge"><i className="fa-regular fa-clock me-1"></i>{tour.ThoiLuong}</span></td>
                   <td>

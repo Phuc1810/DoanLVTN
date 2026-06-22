@@ -45,6 +45,7 @@ return [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect_uri' => env('GOOGLE_REDIRECT_URI'),
+        'ca_bundle' => env('GOOGLE_CA_BUNDLE'),
     ],
 
     'ai' => [

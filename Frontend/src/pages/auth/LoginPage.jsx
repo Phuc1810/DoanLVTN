@@ -1,22 +1,84 @@
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import FormError from '../../components/common/FormError'
 import PasswordInput from '../../components/common/PasswordInput'
 import { roleRedirect } from '../../utils/roleRedirect'
 import { useAuth } from '../../auth/useAuth'
 
 export default function LoginPage() {
-  const { login, staffLogin } = useAuth()
+  const { googleLogin, login, staffLogin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams] = useSearchParams()
-  const [mode, setMode] = useState('customer')
+  const googleButtonRef = useRef(null)
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+  const mode = 'customer'
   const [form, setForm] = useState({
     login_key: searchParams.get('prefill') || '',
     password: '',
   })
   const [error, setError] = useState({ message: '', errors: {} })
   const [submitting, setSubmitting] = useState(false)
+
+  const handleGoogleCredential = useCallback(async (googleResponse) => {
+    if (!googleResponse?.credential) {
+      setError({ message: 'Google không trả về thông tin đăng nhập.', errors: {} })
+      return
+    }
+
+    setError({ message: '', errors: {} })
+    setSubmitting(true)
+
+    try {
+      const auth = await googleLogin({ credential: googleResponse.credential })
+      const fallback = location.state?.from?.pathname || searchParams.get('redirect') || '/'
+      navigate(roleRedirect(auth.user, fallback), { replace: true })
+    } catch (err) {
+      setError({ message: err.message, errors: err.errors || {} })
+    } finally {
+      setSubmitting(false)
+    }
+  }, [googleLogin, location.state, navigate, searchParams])
+
+  useEffect(() => {
+    if (!googleClientId || !googleButtonRef.current) return undefined
+
+    const renderGoogleButton = () => {
+      if (!window.google?.accounts?.id || !googleButtonRef.current) return
+
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: handleGoogleCredential,
+      })
+      googleButtonRef.current.replaceChildren()
+      window.google.accounts.id.renderButton(googleButtonRef.current, {
+        type: 'standard',
+        theme: 'outline',
+        size: 'large',
+        shape: 'pill',
+        text: 'signin_with',
+        locale: 'vi',
+        width: Math.min(400, googleButtonRef.current.clientWidth || 320),
+      })
+    }
+
+    const existingScript = document.querySelector('script[data-google-identity]')
+    if (existingScript) {
+      if (window.google?.accounts?.id) renderGoogleButton()
+      else existingScript.addEventListener('load', renderGoogleButton, { once: true })
+      return () => existingScript.removeEventListener('load', renderGoogleButton)
+    }
+
+    const script = document.createElement('script')
+    script.src = 'https://accounts.google.com/gsi/client'
+    script.async = true
+    script.defer = true
+    script.dataset.googleIdentity = 'true'
+    script.addEventListener('load', renderGoogleButton, { once: true })
+    document.head.appendChild(script)
+
+    return () => script.removeEventListener('load', renderGoogleButton)
+  }, [googleClientId, handleGoogleCredential])
 
   function update(event) {
     setForm((current) => ({ ...current, [event.target.name]: event.target.value }))
@@ -124,10 +186,13 @@ export default function LoginPage() {
 
             <div className="auth-divider"><span>hoặc</span></div>
 
-            <Link to={`/auth/google-callback${searchParams.get('redirect') ? `?redirect=${encodeURIComponent(searchParams.get('redirect'))}` : ''}`} className="auth-google-btn">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" width="20" height="20" />
-              Đăng nhập bằng Google
-            </Link>
+            {googleClientId ? (
+              <div className="auth-google-render" ref={googleButtonRef} />
+            ) : (
+              <div className="field-error text-center">
+                Chưa cấu hình VITE_GOOGLE_CLIENT_ID trong Frontend/.env.
+              </div>
+            )}
           </form>
         </div>
       </div>

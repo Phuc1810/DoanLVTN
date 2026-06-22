@@ -322,6 +322,19 @@
   color: #000;
 }
 
+.auth-google-render {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  justify-content: center;
+}
+
+.auth-google-render > div {
+  width: 100% !important;
+  display: flex;
+  justify-content: center;
+}
+
 /* =======================================
    PASSWORD WRAPPER – Con mắt nằm trong ô
 ======================================= */

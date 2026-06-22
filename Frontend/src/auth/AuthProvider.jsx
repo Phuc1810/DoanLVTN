@@ -69,6 +69,20 @@ export function AuthProvider({ children }) {
     return auth
   }
 
+  async function googleLogin(payload) {
+    const response = await authApi.googleLogin(payload)
+    const auth = extractAuthPayload(response)
+    if (auth.token) {
+      setToken(auth.token)
+      setTokenState(auth.token)
+    }
+    if (auth.user) {
+      setUser(auth.user)
+      setStoredUser(auth.user)
+    }
+    return auth
+  }
+
   async function logout() {
     if (getToken()) {
       try {
@@ -98,6 +112,7 @@ export function AuthProvider({ children }) {
     isAuthenticated: Boolean(token && user),
     login,
     staffLogin,
+    googleLogin,
     register: authApi.register,
     logout,
     refreshMe,

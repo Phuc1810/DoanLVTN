@@ -1,4 +1,4 @@
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useState } from 'react'
 import { authApi } from '../../api/authApi'
 import PasswordInput from '../../components/common/PasswordInput'
@@ -55,7 +55,6 @@ function InputField({ label, name, type = 'text', value, onChange, placeholder, 
 }
 
 export default function RegisterPage() {
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const redirectParam = searchParams.get('redirect') ? `&redirect=${encodeURIComponent(searchParams.get('redirect'))}` : ''
   

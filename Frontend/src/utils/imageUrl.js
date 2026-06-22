@@ -28,7 +28,9 @@ export function tourImagePath(tour) {
     tour?.anh_chinh?.DuongDan ||
     tour?.anhChinh?.DuongDan ||
     tour?.hinh_anhs?.[0]?.DuongDan ||
+    tour?.hinh_anh?.[0]?.DuongDan ||
     tour?.hinhAnhs?.[0]?.DuongDan ||
+    tour?.hinhAnh?.[0]?.DuongDan ||
     tour?.images?.[0]?.DuongDan
   )
 }

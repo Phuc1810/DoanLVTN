@@ -38,7 +38,9 @@ export default function PromotionDetailPage() {
         </div>
       </div>
       <h3 className="fw-bold text-center mb-4">TOUR ÁP DỤNG</h3>
-      <TourGrid tours={promotion.tours || []} />
+      <div className="search-results-area">
+        <TourGrid tours={promotion.tours || []} />
+      </div>
     </div>
   )
 }

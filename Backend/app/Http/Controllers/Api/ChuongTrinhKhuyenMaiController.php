@@ -24,7 +24,7 @@ class ChuongTrinhKhuyenMaiController extends Controller
 
     public function show($id)
     {
-        $chuongTrinhKhuyenMai = ChuongTrinhKhuyenMai::with('tours')->find($id);
+        $chuongTrinhKhuyenMai = ChuongTrinhKhuyenMai::with('tours.anhChinh')->find($id);
 
         if (! $chuongTrinhKhuyenMai) {
             return response()->json([

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\KhachHang;
 use App\Models\NhanVien;
 use App\Models\TaiKhoan;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -178,9 +179,28 @@ class AuthService
             ]);
         }
 
-        $response = Http::timeout(10)->get('https://oauth2.googleapis.com/tokeninfo', [
-            'id_token' => $credential,
-        ]);
+        $googleRequest = Http::timeout(10);
+        $caBundle = config('services.google.ca_bundle');
+
+        if ($caBundle) {
+            if (! is_file($caBundle)) {
+                throw ValidationException::withMessages([
+                    'google' => ['CA bundle cấu hình cho Google không tồn tại.'],
+                ]);
+            }
+
+            $googleRequest = $googleRequest->withOptions(['verify' => $caBundle]);
+        }
+
+        try {
+            $response = $googleRequest->get('https://oauth2.googleapis.com/tokeninfo', [
+                'id_token' => $credential,
+            ]);
+        } catch (ConnectionException) {
+            throw ValidationException::withMessages([
+                'google' => ['Không thể kết nối an toàn tới Google. Vui lòng kiểm tra CA bundle và kết nối mạng.'],
+            ]);
+        }
 
         if (! $response->successful()) {
             throw ValidationException::withMessages([

@@ -17,6 +17,11 @@ function extractAuthPayload(response) {
   }
 }
 
+function extractCurrentUser(response) {
+  const data = response?.data || response || {}
+  return data.tai_khoan || data.user || data.account || data
+}
+
 export function AuthProvider({ children }) {
   const [token, setTokenState] = useState(() => getToken())
   const [user, setUser] = useState(() => getStoredUser())
@@ -29,7 +34,7 @@ export function AuthProvider({ children }) {
 
     authApi.me()
       .then((response) => {
-        const currentUser = response?.data?.user || response?.data || response?.user || response
+        const currentUser = extractCurrentUser(response)
         setUser(currentUser)
         setStoredUser(currentUser)
       })
@@ -99,7 +104,7 @@ export function AuthProvider({ children }) {
 
   async function refreshMe() {
     const response = await authApi.me()
-    const currentUser = response?.data?.user || response?.data || response?.user || response
+    const currentUser = extractCurrentUser(response)
     setUser(currentUser)
     setStoredUser(currentUser)
     return currentUser

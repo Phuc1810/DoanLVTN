@@ -163,7 +163,7 @@ export default function TourDetailPage() {
                 <p className="text-muted mb-4 px-3">Bạn cần đăng nhập hoặc đăng ký để tiến hành đặt tour.</p>
                 <div className="d-flex justify-content-center gap-2 px-3">
                   <button type="button" className="btn btn-light px-4 fw-bold rounded-pill" onClick={() => setShowLoginModal(false)}>Hủy</button>
-                  <Link to={`/auth/login?redirect=/tours/${tour.MaTour}`} className="btn btn-primary px-4 fw-bold rounded-pill" style={{ background: '#1a5cb0', border: 'none' }}>Đăng nhập / Đăng ký</Link>
+                  <Link to={`/auth/login?redirect=${encodeURIComponent(`/bookings/create/${tour.MaTour}`)}`} className="btn btn-primary px-4 fw-bold rounded-pill" style={{ background: '#1a5cb0', border: 'none' }}>Đăng nhập / Đăng ký</Link>
                 </div>
               </div>
             </div>

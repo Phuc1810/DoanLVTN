@@ -24,9 +24,11 @@ axiosClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) clearAuthStorage()
 
-    const message =
-      error.response?.data?.message || 'Không tải được dữ liệu. Vui lòng thử lại sau.'
-    return Promise.reject(new Error(message))
+    const payload = error.response?.data || {}
+    const normalized = new Error(payload.message || 'Không tải được dữ liệu. Vui lòng thử lại sau.')
+    normalized.errors = payload.errors || {}
+    normalized.status = error.response?.status
+    return Promise.reject(normalized)
   },
 )
 

@@ -127,6 +127,45 @@
   top: 120px;
 }
 
+.booking-page .card {
+  border: 0;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(16, 24, 40, .08);
+}
+
+.booking-page .badge-soft {
+  padding: .35em .65em;
+  border-radius: 6px;
+  background: #eaf2ff;
+  color: #0b5ed7;
+  font-size: .75em;
+  font-weight: 600;
+}
+
+.booking-page .qty {
+  display: grid;
+  grid-template-columns: 42px minmax(64px, 90px) 42px;
+}
+
+.booking-page .qty input {
+  width: 100%;
+}
+
+@media (max-width: 575px) {
+  .booking-page .tour-hero {
+    align-items: flex-start !important;
+  }
+
+  .booking-page .tour-thumb {
+    width: 96px;
+    height: 76px;
+  }
+
+  .booking-page .summary {
+    position: static;
+  }
+}
+
 .total {
   font-size: 26px;
   font-weight: 800;

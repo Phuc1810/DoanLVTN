@@ -31,7 +31,10 @@ export default function LoginPage() {
 
     try {
       const auth = await googleLogin({ credential: googleResponse.credential })
-      const fallback = location.state?.from?.pathname || searchParams.get('redirect') || '/'
+      const from = location.state?.from
+      const fallback = from
+        ? `${from.pathname}${from.search || ''}${from.hash || ''}`
+        : searchParams.get('redirect') || '/'
       navigate(roleRedirect(auth.user, fallback), { replace: true })
     } catch (err) {
       setError({ message: err.message, errors: err.errors || {} })
@@ -108,7 +111,10 @@ export default function LoginPage() {
       const auth = mode === 'staff'
         ? await staffLogin(form)
         : await login(form)
-      const fallback = location.state?.from?.pathname || searchParams.get('redirect') || '/'
+      const from = location.state?.from
+      const fallback = from
+        ? `${from.pathname}${from.search || ''}${from.hash || ''}`
+        : searchParams.get('redirect') || '/'
       navigate(roleRedirect(auth.user, fallback), { replace: true })
     } catch (err) {
       setError({ message: err.message, errors: err.errors })

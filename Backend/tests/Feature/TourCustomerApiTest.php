@@ -2,13 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\ChuongTrinhKhuyenMai;
 use App\Models\HinhAnhTour;
 use App\Models\NhanVien;
 use App\Models\TaiKhoan;
 use App\Models\Tour;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class TourCustomerApiTest extends TestCase
@@ -158,44 +156,58 @@ class TourCustomerApiTest extends TestCase
             ->assertJsonPath('success', true);
     }
 
-    public function test_promotion_tours_are_sorted_by_highest_active_discount(): void
+    public function test_promotion_tours_follow_legacy_discount_query_conditions(): void
     {
         $staff = $this->staff();
-        $highTour = $this->tour($staff, ['TenTour' => 'Promo High '.uniqid(), 'PhanTramGiam' => 0, 'GiaGiam' => 5000000]);
-        $midTour = $this->tour($staff, ['TenTour' => 'Promo Mid '.uniqid(), 'PhanTramGiam' => 0, 'GiaGiam' => 5000000]);
-        $lowTour = $this->tour($staff, ['TenTour' => 'Promo Low '.uniqid(), 'PhanTramGiam' => 0, 'GiaGiam' => 5000000]);
+        $eligibleTour = $this->tour($staff, [
+            'TenTour' => 'Promo Eligible '.uniqid(),
+            'PhanTramGiam' => 25,
+            'TrangThai' => 'Hoạt động',
+        ]);
+        $lowDiscountTour = $this->tour($staff, [
+            'TenTour' => 'Promo Low Discount '.uniqid(),
+            'PhanTramGiam' => 10,
+            'TrangThai' => 'Hoạt động',
+        ]);
+        $inactiveTour = $this->tour($staff, [
+            'TenTour' => 'Promo Inactive '.uniqid(),
+            'PhanTramGiam' => 30,
+            'TrangThai' => 'Tạm ngưng',
+        ]);
 
-        $this->attachPromotion($highTour, 99);
-        $this->attachPromotion($midTour, 98);
-        $this->attachPromotion($lowTour, 97);
+        HinhAnhTour::create([
+            'DuongDan' => 'promo-eligible.jpg',
+            'LaAnhChinh' => 1,
+            'LoaiAnh' => 'banner',
+            'MaTour' => $eligibleTour->MaTour,
+        ]);
 
-        $items = $this->getJson('/api/tours/promotions?per_page=3')
+        HinhAnhTour::create([
+            'DuongDan' => 'promo-low.jpg',
+            'LaAnhChinh' => 1,
+            'LoaiAnh' => 'banner',
+            'MaTour' => $lowDiscountTour->MaTour,
+        ]);
+
+        HinhAnhTour::create([
+            'DuongDan' => 'promo-inactive.jpg',
+            'LaAnhChinh' => 1,
+            'LoaiAnh' => 'banner',
+            'MaTour' => $inactiveTour->MaTour,
+        ]);
+
+        $items = $this->getJson('/api/tours/promotions?per_page=50')
             ->assertOk()
             ->json('data.items');
 
-        $this->assertSame($highTour->MaTour, $items[0]['MaTour']);
-        $this->assertSame(99, (int) $items[0]['discount_percent']);
-        $this->assertSame($midTour->MaTour, $items[1]['MaTour']);
-        $this->assertSame($lowTour->MaTour, $items[2]['MaTour']);
-    }
+        $tourIds = array_column($items, 'MaTour');
 
-    private function attachPromotion(Tour $tour, int $percent): void
-    {
-        $promotion = ChuongTrinhKhuyenMai::create([
-            'TenKM' => 'CTKM '.uniqid(),
-            'NoiDung' => 'Test khuyen mai',
-            'AnhDaiDien' => null,
-            'PhanTramGiam' => $percent,
-            'NgayBatDau' => now()->subDay()->toDateString(),
-            'NgayKetThuc' => now()->addDay()->toDateString(),
-            'TrangThai' => 'Hoạt động',
-        ]);
-
-        DB::table('tour_khuyenmai')->insert([
-            'MaTour' => $tour->MaTour,
-            'MaCTKM' => $promotion->MaCTKM,
-            'PhanTramGiamKM' => $percent,
-        ]);
+        $this->assertContains($eligibleTour->MaTour, $tourIds);
+        $this->assertNotContains($lowDiscountTour->MaTour, $tourIds);
+        $this->assertNotContains($inactiveTour->MaTour, $tourIds);
+        $matched = collect($items)->firstWhere('MaTour', $eligibleTour->MaTour);
+        $this->assertSame(25, (int) $matched['discount_percent']);
+        $this->assertSame('promo-eligible.jpg', $matched['AnhChinh']);
     }
 
     private function staff(): NhanVien

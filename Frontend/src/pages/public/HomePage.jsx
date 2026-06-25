@@ -33,7 +33,7 @@ export default function HomePage() {
           loading: false,
           banners: bannerRows,
           tours: tourRows,
-          promotions: promotionRows.length ? promotionRows : tourRows.filter((tour) => Number(tour.PhanTramGiam || 0) > 0),
+          promotions: promotionRows,
           news: news.status === 'fulfilled' ? listFrom(news.value) : [],
         })
       })
@@ -125,8 +125,8 @@ export default function HomePage() {
 
               <div className="row g-4">
                 {state.promotions.slice(0, 9).map((tour) => {
-                  const discount = Number(tour.promotion?.PhanTramGiamApDung ?? tour.discount_percent ?? tour.PhanTramGiam ?? 0)
-                  const currentPrice = Number(tour.promotion?.GiaSauKhuyenMai ?? tour.GiaGiam ?? 0)
+                  const discount = Number(tour.discount_percent ?? tour.PhanTramGiam ?? 0)
+                  const currentPrice = Number(tour.GiaGiam ?? 0)
                   const originalPrice = Number(tour.GiaGoc ?? 0)
                   return (
                     <div className="col-md-4" key={tour.MaTour}>
@@ -143,6 +143,9 @@ export default function HomePage() {
                     </div>
                   )
                 })}
+                {!state.promotions.length && (
+                  <div className="col-12 text-center text-muted py-4">Không có tour khuyến mãi nổi bật.</div>
+                )}
               </div>
             </div>
           </section>

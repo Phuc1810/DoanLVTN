@@ -179,25 +179,56 @@ class TourService
 
     public function promotions(array $filters): array
     {
-        $today = now()->toDateString();
-        $query = $this->promotionService->withActivePromotions($this->baseActiveQuery())
-            ->select('tour.*')
-            ->selectSub(function ($subQuery) use ($today) {
-                $subQuery->from('tour_khuyenmai')
-                    ->join('chuongtrinhkhuyenmai', 'chuongtrinhkhuyenmai.MaCTKM', '=', 'tour_khuyenmai.MaCTKM')
-                    ->whereColumn('tour_khuyenmai.MaTour', 'tour.MaTour')
-                    ->where('chuongtrinhkhuyenmai.TrangThai', 'Hoạt động')
-                    ->whereDate('chuongtrinhkhuyenmai.NgayBatDau', '<=', $today)
-                    ->whereDate('chuongtrinhkhuyenmai.NgayKetThuc', '>=', $today)
-                    ->selectRaw('MAX(COALESCE(tour_khuyenmai.PhanTramGiamKM, chuongtrinhkhuyenmai.PhanTramGiam, 0))');
-            }, 'promotion_discount_percent');
+        $limit = (int) ($filters['per_page'] ?? 9);
+        if ($limit <= 0) {
+            $limit = 9;
+        }
 
-        return $this->paginatedResponse(
-            $query->orderByDesc(DB::raw('COALESCE(promotion_discount_percent, 0)'))
-                ->orderBy('NgayKhoiHanh')
-                ->orderBy('GiaGiam'),
-            (int) ($filters['per_page'] ?? 12)
-        );
+        $limit = min($limit, 50);
+
+        $items = DB::table('tour as t')
+            ->join('hinhanhtour as h', function ($join) {
+                $join->on('t.MaTour', '=', 'h.MaTour')
+                    ->where('h.LaAnhChinh', '=', 1);
+            })
+            ->where('t.PhanTramGiam', '>=', 20)
+            ->where('t.TrangThai', 'Hoạt động')
+            ->groupBy('t.MaTour', 't.TenTour', 't.GiaGoc', 't.GiaGiam', 't.PhanTramGiam', 'h.DuongDan')
+            ->limit($limit)
+            ->get([
+                't.MaTour',
+                't.TenTour',
+                't.GiaGoc',
+                't.GiaGiam',
+                't.PhanTramGiam',
+                'h.DuongDan as AnhChinh',
+            ])
+            ->map(function ($item) {
+                $path = $item->AnhChinh;
+
+                return [
+                    'MaTour' => $item->MaTour,
+                    'TenTour' => $item->TenTour,
+                    'GiaGoc' => $item->GiaGoc,
+                    'GiaGiam' => $item->GiaGiam,
+                    'PhanTramGiam' => $item->PhanTramGiam,
+                    'discount_percent' => (int) round((float) $item->PhanTramGiam),
+                    'AnhChinh' => $path,
+                    'image_url' => app(\App\Services\UploadService::class)->publicUrl($path),
+                ];
+            })
+            ->values()
+            ->all();
+
+        return [
+            'items' => $items,
+            'pagination' => [
+                'current_page' => 1,
+                'per_page' => $limit,
+                'total' => count($items),
+                'last_page' => 1,
+            ],
+        ];
     }
 
     public function schedules(int $tourId): array

@@ -1,0 +1,175 @@
+import { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { tourApi } from '../../api/tourApi'
+import ErrorState from '../../components/common/ErrorState'
+import Loading from '../../components/common/Loading'
+import { formatCurrency } from '../../utils/formatCurrency'
+import { formatDate } from '../../utils/formatDate'
+import { buildImageUrl, tourImagePath } from '../../utils/imageUrl'
+import { useAuth } from '../../auth/useAuth'
+
+export default function TourDetailPage() {
+  const { id } = useParams()
+  const { user } = useAuth()
+  const [showLoginModal, setShowLoginModal] = useState(false)
+  const [state, setState] = useState({ loading: true, error: '', tour: null, schedules: [], reviews: [] })
+
+  useEffect(() => {
+    Promise.allSettled([tourApi.detail(id), tourApi.schedules(id), tourApi.reviews(id)])
+      .then(([tour, schedules, reviews]) => {
+        if (tour.status === 'rejected') throw tour.reason
+        const tourData = tour.value
+        setState({
+          loading: false,
+          error: '',
+          tour: tourData,
+          schedules: schedules.status === 'fulfilled'
+            ? (Array.isArray(schedules.value) ? schedules.value : schedules.value.items || schedules.value.data || tourData.lich_trinhs || tourData.lichTrinhs || [])
+            : (tourData.lich_trinhs || tourData.lichTrinhs || []),
+          reviews: reviews.status === 'fulfilled'
+            ? (Array.isArray(reviews.value) ? reviews.value : reviews.value.items || reviews.value.data || tourData.danh_gias || tourData.danhGias || [])
+            : (tourData.danh_gias || tourData.danhGias || []),
+        })
+      })
+      .catch((error) => setState({ loading: false, error: error.message, tour: null, schedules: [], reviews: [] }))
+  }, [id])
+
+  if (state.loading) return <div className="tour-detail-wrapper"><Loading /></div>
+  if (state.error) return <ErrorState message={state.error} />
+  if (!state.tour) return <ErrorState message="Không tìm thấy tour." />
+
+  const tour = state.tour
+  const images = Array.isArray(tour.hinh_anhs) ? tour.hinh_anhs : Array.isArray(tour.hinhAnhs) ? tour.hinhAnhs : []
+  const discount = Number(tour.discount_percent || tour.PhanTramGiam || 0)
+  const stats = tour.review_stats || {}
+
+  return (
+    <div className="container tour-detail-wrapper">
+      <h2 className="fw-bold mb-3 tour-detail-title">{tour.TenTour}</h2>
+
+      <div className="row g-4">
+        <div className="col-lg-8">
+          <div className="tour-main-img position-relative mb-3">
+            <img src={buildImageUrl(tourImagePath(tour))} className="img-fluid w-100 rounded-4" alt="" />
+            {discount > 0 && <div className="tour-detail-discount">-{discount}%</div>}
+          </div>
+
+          {images.length > 1 && (
+            <div className="tour-gallery d-flex gap-3 flex-wrap">
+              {images.filter((image) => image.DuongDan !== tourImagePath(tour)).map((image) => (
+                <div className="tour-gallery-item" key={image.MaAnh || image.DuongDan}>
+                  <img src={buildImageUrl(image.image_url || image.DuongDan)} className="img-fluid rounded-3" alt="" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="col-lg-4">
+          <div className="tour-info-card shadow-sm rounded-4 p-3">
+            <p className="mb-2"><i className="fa-solid fa-location-dot text-danger me-1"></i><strong>Địa điểm:</strong> {tour.DiaDiem}</p>
+            <p className="mb-2"><i className="fa-regular fa-clock text-primary me-1"></i><strong>Thời lượng:</strong> {tour.ThoiLuong}</p>
+            <p className="mb-2"><i className="fa-regular fa-calendar-days text-primary me-1"></i><strong>Khởi hành:</strong> {formatDate(tour.NgayKhoiHanh)}</p>
+            <p className="mb-2"><i className="fa-solid fa-users me-1"></i><strong>Số chỗ:</strong> {tour.SoCho} (Đã đặt: {tour.SoChoDaDat || 0})</p>
+            <hr />
+            <p className="mb-1">
+              <span className="text-muted">Giá gốc:</span>
+              <span className="text-decoration-line-through ms-1">{formatCurrency(tour.GiaGoc)}</span>
+            </p>
+            <p className="tour-detail-price mb-3">
+              <span>Giá chỉ còn:</span>
+              <span className="ms-2">{formatCurrency(tour.GiaGiam)}</span>
+            </p>
+            <Link 
+              to={`/bookings/create/${tour.MaTour}`} 
+              className="btn btn-book-detail w-100"
+              onClick={(e) => {
+                if (!user) {
+                  e.preventDefault();
+                  setShowLoginModal(true);
+                }
+              }}
+            >
+              ĐẶT TOUR
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <h4 className="fw-bold mb-3">LỊCH TRÌNH CHI TIẾT</h4>
+        {state.schedules.length ? (
+          <div className="accordion" id="lichTrinhAccordion">
+            {state.schedules.map((schedule, index) => (
+              <div className="accordion-item" key={schedule.MaLT || index}>
+                <h2 className="accordion-header">
+                  <button className={`accordion-button ${index > 0 ? 'collapsed' : ''}`} type="button" data-bs-toggle="collapse" data-bs-target={`#collapse${index}`}>
+                    {schedule.TieuDe || `Ngày ${schedule.NgayThu}`}
+                  </button>
+                </h2>
+                <div id={`collapse${index}`} className={`accordion-collapse collapse ${index === 0 ? 'show' : ''}`} data-bs-parent="#lichTrinhAccordion">
+                  <div className="accordion-body">{schedule.NoiDung}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted">Lịch trình đang được cập nhật.</p>
+        )}
+      </div>
+
+      <div className="mt-5" id="danhgia">
+        <div className="d-flex justify-content-between align-items-start flex-wrap gap-2">
+          <div>
+            <h4 className="fw-bold mb-1">ĐÁNH GIÁ KHÁCH HÀNG</h4>
+            <div className="text-muted">{stats.average_rating || 0}/5 • {stats.total_reviews || state.reviews.length} đánh giá</div>
+          </div>
+          <span className="badge bg-secondary p-2">Đăng nhập để đánh giá</span>
+        </div>
+        <hr />
+        {!state.reviews.length ? (
+          <div className="text-muted">Chưa có đánh giá nào cho tour này.</div>
+        ) : (
+          <div className="d-grid gap-3">
+            {state.reviews.map((review, index) => (
+              <div className="p-3 rounded-4 border bg-white" key={review.MaDG || index}>
+                <div className="d-flex justify-content-between align-items-center gap-2">
+                  <div className="fw-bold">{review.khach_hang?.HoTen || review.HoTen || 'Khách'}</div>
+                  <div className="text-muted small">{formatDate(review.NgayDG)}</div>
+                </div>
+                <div className="mt-1">{Array.from({ length: 5 }, (_, i) => <i key={i} className={`${i < Number(review.SoSao) ? 'fa-solid' : 'fa-regular'} fa-star text-warning`}></i>)}</div>
+                {review.NoiDung && <div className="mt-2">{review.NoiDung}</div>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* MODAL YÊU CẦU ĐĂNG NHẬP */}
+      {showLoginModal && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+              <div className="modal-header border-0 pb-0">
+                <button type="button" className="btn-close" onClick={() => setShowLoginModal(false)}></button>
+              </div>
+              <div className="modal-body text-center pt-2 pb-4">
+                <div className="mb-3">
+                  <div style={{ width: '80px', height: '80px', background: '#fff2f2', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <i className="fa-solid fa-lock text-danger" style={{ fontSize: '2rem' }}></i>
+                  </div>
+                </div>
+                <h4 className="fw-bold mb-2">Yêu cầu đăng nhập</h4>
+                <p className="text-muted mb-4 px-3">Bạn cần đăng nhập hoặc đăng ký để tiến hành đặt tour.</p>
+                <div className="d-flex justify-content-center gap-2 px-3">
+                  <button type="button" className="btn btn-light px-4 fw-bold rounded-pill" onClick={() => setShowLoginModal(false)}>Hủy</button>
+                  <Link to={`/auth/login?redirect=${encodeURIComponent(`/bookings/create/${tour.MaTour}`)}`} className="btn btn-primary px-4 fw-bold rounded-pill" style={{ background: '#1a5cb0', border: 'none' }}>Đăng nhập / Đăng ký</Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

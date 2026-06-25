@@ -19,15 +19,13 @@ export default function HomePage() {
 
   useEffect(() => {
     Promise.allSettled([
-      tourApi.list({ per_page: 8 }),
+      tourApi.featured({ per_page: 8 }),
       tourApi.promotions({ per_page: 9 }),
       newsApi.list({ per_page: 6 }),
     ])
       .then(([tours, promotions, news]) => {
         const tourRows = tours.status === 'fulfilled' ? listFrom(tours.value) : []
-        const promotionRows = promotions.status === 'fulfilled'
-          ? listFrom(promotions.value).filter((tour) => Number(tour.PhanTramGiam || tour.discount_percent || 0) > 0)
-          : []
+        const promotionRows = promotions.status === 'fulfilled' ? listFrom(promotions.value) : []
 
         setState({
           loading: false,
@@ -126,7 +124,9 @@ export default function HomePage() {
 
               <div className="row g-4">
                 {state.promotions.slice(0, 9).map((tour) => {
-                  const discount = Number(tour.discount_percent || tour.PhanTramGiam || 0)
+                  const discount = Number(tour.promotion?.PhanTramGiamApDung ?? tour.discount_percent ?? tour.PhanTramGiam ?? 0)
+                  const currentPrice = Number(tour.promotion?.GiaSauKhuyenMai ?? tour.GiaGiam ?? 0)
+                  const originalPrice = Number(tour.GiaGoc ?? 0)
                   return (
                     <div className="col-md-4" key={tour.MaTour}>
                       <div className="km-card">
@@ -134,8 +134,8 @@ export default function HomePage() {
                         {discount > 0 && <span className="km-discount">-{discount}%</span>}
                         <div className="km-overlay">
                           <h5 className="km-title">{tour.TenTour}</h5>
-                          <p className="km-old">{formatCurrency(tour.GiaGoc)}</p>
-                          <p className="km-new">{formatCurrency(tour.GiaGiam)}</p>
+                          <p className="km-old">{formatCurrency(originalPrice)}</p>
+                          <p className="km-new">{formatCurrency(currentPrice)}</p>
                           <Link to={`/tours/${tour.MaTour}`} className="btn km-btn">ĐẶT TOUR</Link>
                         </div>
                       </div>

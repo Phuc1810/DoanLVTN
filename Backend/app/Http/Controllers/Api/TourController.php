@@ -43,6 +43,15 @@ class TourController extends Controller
         ]);
     }
 
+    public function featured(Request $request)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy danh sách tour nổi bật thành công',
+            'data' => $this->tourService->featured($request->only(['per_page'])),
+        ]);
+    }
+
     public function show($id)
     {
         if (! ctype_digit((string) $id)) {

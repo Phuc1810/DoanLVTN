@@ -45,15 +45,7 @@ class TourResource extends JsonResource
 
     protected function discountPercent(): int
     {
-        if ((float) $this->PhanTramGiam > 0) {
-            return (int) round((float) $this->PhanTramGiam);
-        }
-
-        if ((float) $this->GiaGoc > 0 && (float) $this->GiaGiam > 0 && (float) $this->GiaGiam < (float) $this->GiaGoc) {
-            return (int) round(100 - ((float) $this->GiaGiam / (float) $this->GiaGoc * 100));
-        }
-
-        return 0;
+        return (int) round(max($this->tourDiscountPercent(), $this->promotionDiscountPercent()));
     }
 
     protected function promotionPayload(): ?array
@@ -62,7 +54,9 @@ class TourResource extends JsonResource
             return null;
         }
 
-        $promotion = $this->khuyenMais->first();
+        $promotion = $this->khuyenMais
+            ->sortByDesc(fn ($item) => (float) ($item->pivot->PhanTramGiamKM ?? $item->PhanTramGiam ?? 0))
+            ->first();
         $percent = (float) ($promotion->pivot->PhanTramGiamKM ?? $promotion->PhanTramGiam ?? 0);
 
         return [
@@ -71,5 +65,29 @@ class TourResource extends JsonResource
             'PhanTramGiamApDung' => $percent,
             'GiaSauKhuyenMai' => (float) $this->GiaGoc * (100 - $percent) / 100,
         ];
+    }
+
+    protected function tourDiscountPercent(): float
+    {
+        if ((float) $this->PhanTramGiam > 0) {
+            return (float) $this->PhanTramGiam;
+        }
+
+        if ((float) $this->GiaGoc > 0 && (float) $this->GiaGiam > 0 && (float) $this->GiaGiam < (float) $this->GiaGoc) {
+            return 100 - ((float) $this->GiaGiam / (float) $this->GiaGoc * 100);
+        }
+
+        return 0.0;
+    }
+
+    protected function promotionDiscountPercent(): float
+    {
+        if (! $this->relationLoaded('khuyenMais') || $this->khuyenMais->isEmpty()) {
+            return 0.0;
+        }
+
+        return (float) $this->khuyenMais
+            ->map(fn ($item) => (float) ($item->pivot->PhanTramGiamKM ?? $item->PhanTramGiam ?? 0))
+            ->max();
     }
 }

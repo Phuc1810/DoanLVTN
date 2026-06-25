@@ -70,6 +70,47 @@ class TourCustomerApiTest extends TestCase
             ->assertJsonPath('success', true);
     }
 
+    public function test_can_get_banner_tours_from_banner_images_sorted_by_image_id_desc(): void
+    {
+        $staff = $this->staff();
+        $olderTour = $this->tour($staff, ['TenTour' => 'Banner Old '.uniqid()]);
+        $newerTour = $this->tour($staff, ['TenTour' => 'Banner New '.uniqid()]);
+        $ignoredTour = $this->tour($staff, ['TenTour' => 'Banner Ignore '.uniqid()]);
+
+        $oldBanner = HinhAnhTour::create([
+            'DuongDan' => 'banner-old.jpg',
+            'LaAnhChinh' => 1,
+            'LoaiAnh' => 'banner',
+            'MaTour' => $olderTour->MaTour,
+        ]);
+
+        $newBanner = HinhAnhTour::create([
+            'DuongDan' => 'banner-new.jpg',
+            'LaAnhChinh' => 1,
+            'LoaiAnh' => 'banner',
+            'MaTour' => $newerTour->MaTour,
+        ]);
+
+        HinhAnhTour::create([
+            'DuongDan' => 'featured-ignore.jpg',
+            'LaAnhChinh' => 1,
+            'LoaiAnh' => 'noibat',
+            'MaTour' => $ignoredTour->MaTour,
+        ]);
+
+        $items = $this->getJson('/api/tours/banners?per_page=4')
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->json('data.items');
+
+        $matching = array_values(array_filter($items, fn ($item) => in_array($item['MaTour'], [$olderTour->MaTour, $newerTour->MaTour], true)));
+        $tourIds = array_column($matching, 'MaTour');
+
+        $this->assertTrue($newBanner->MaAnh > $oldBanner->MaAnh);
+        $this->assertSame([$newerTour->MaTour, $olderTour->MaTour], $tourIds);
+        $this->assertNotContains($ignoredTour->MaTour, array_column($items, 'MaTour'));
+    }
+
     public function test_can_get_featured_tours_from_noibat_images_sorted_by_tour_id_desc(): void
     {
         $staff = $this->staff();

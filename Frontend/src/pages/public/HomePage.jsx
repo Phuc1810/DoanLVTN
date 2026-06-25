@@ -14,21 +14,24 @@ function chunk(items, size) {
 }
 
 export default function HomePage() {
-  const [state, setState] = useState({ loading: true, tours: [], promotions: [], news: [] })
+  const [state, setState] = useState({ loading: true, banners: [], tours: [], promotions: [], news: [] })
   const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 767px)').matches)
 
   useEffect(() => {
     Promise.allSettled([
+      tourApi.banners({ per_page: 4 }),
       tourApi.featured({ per_page: 8 }),
       tourApi.promotions({ per_page: 9 }),
       newsApi.list({ per_page: 6 }),
     ])
-      .then(([tours, promotions, news]) => {
+      .then(([banners, tours, promotions, news]) => {
+        const bannerRows = banners.status === 'fulfilled' ? listFrom(banners.value) : []
         const tourRows = tours.status === 'fulfilled' ? listFrom(tours.value) : []
         const promotionRows = promotions.status === 'fulfilled' ? listFrom(promotions.value) : []
 
         setState({
           loading: false,
+          banners: bannerRows,
           tours: tourRows,
           promotions: promotionRows.length ? promotionRows : tourRows.filter((tour) => Number(tour.PhanTramGiam || 0) > 0),
           news: news.status === 'fulfilled' ? listFrom(news.value) : [],
@@ -43,9 +46,7 @@ export default function HomePage() {
     media.addEventListener('change', update)
     return () => media.removeEventListener('change', update)
   }, [])
-
-  // TODO: API public currently does not expose LoaiAnh="banner"; use the newest tour images.
-  const heroTours = state.tours.slice(0, 4)
+  const heroTours = state.banners.slice(0, 4)
   const featuredSlides = chunk(state.tours.slice(0, 8), isMobile ? 1 : 4)
   const blogSlides = chunk(state.news.slice(0, 6), isMobile ? 1 : 3)
   const firstNews = state.news.find((item) => item.LoaiTin === 'tintuc') || state.news[0]

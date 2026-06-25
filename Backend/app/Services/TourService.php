@@ -88,6 +88,51 @@ class TourService
         ];
     }
 
+    public function banners(array $filters = []): array
+    {
+        $limit = (int) ($filters['per_page'] ?? 4);
+        if ($limit <= 0) {
+            $limit = 4;
+        }
+
+        $limit = min($limit, 50);
+
+        $items = DB::table('tour as t')
+            ->join('hinhanhtour as h', 't.MaTour', '=', 'h.MaTour')
+            ->where('h.LoaiAnh', 'banner')
+            ->orderByDesc('h.MaAnh')
+            ->limit($limit)
+            ->get([
+                't.MaTour',
+                't.TenTour',
+                't.GiaGiam',
+                'h.DuongDan as AnhChinh',
+            ])
+            ->map(function ($item) {
+                $path = $item->AnhChinh;
+
+                return [
+                    'MaTour' => $item->MaTour,
+                    'TenTour' => $item->TenTour,
+                    'GiaGiam' => $item->GiaGiam,
+                    'AnhChinh' => $path,
+                    'image_url' => app(\App\Services\UploadService::class)->publicUrl($path),
+                ];
+            })
+            ->values()
+            ->all();
+
+        return [
+            'items' => $items,
+            'pagination' => [
+                'current_page' => 1,
+                'per_page' => $limit,
+                'total' => count($items),
+                'last_page' => 1,
+            ],
+        ];
+    }
+
     public function detail(int $id): TourDetailResource
     {
         $tour = $this->baseActiveQuery()

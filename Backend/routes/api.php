@@ -135,6 +135,7 @@ Route::get('/news', [NewsController::class, 'index']);
 Route::get('/news/{id}', [NewsController::class, 'show'])->whereNumber('id');
 
 Route::get('/tours', [TourController::class, 'index']);
+Route::get('/tours/banners', [TourController::class, 'banners']);
 Route::get('/tours/featured', [TourController::class, 'featured']);
 Route::get('/tours/locations', [TourController::class, 'locations']);
 Route::get('/tours/search', [TourController::class, 'search']);

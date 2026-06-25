@@ -52,6 +52,15 @@ class TourController extends Controller
         ]);
     }
 
+    public function banners(Request $request)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy danh sách banner tour thành công',
+            'data' => $this->tourService->banners($request->only(['per_page'])),
+        ]);
+    }
+
     public function show($id)
     {
         if (! ctype_digit((string) $id)) {

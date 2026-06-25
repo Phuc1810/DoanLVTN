@@ -2,6 +2,7 @@ import axiosClient from './axiosClient'
 
 export const tourApi = {
   list: (params = {}) => axiosClient.get('/tours', { params }),
+  banners: (params = {}) => axiosClient.get('/tours/banners', { params }),
   featured: (params = {}) => axiosClient.get('/tours/featured', { params }),
   locations: () => axiosClient.get('/tours/locations'),
   detail: (id) => axiosClient.get(`/tours/${id}`),

@@ -12,6 +12,7 @@ export default function BusinessToursPage() {
   const [state, setState] = useState({ loading: true, error: '', tours: [], pagination: null })
 
   useEffect(() => {
+    window.scrollTo(0, 0)
     tourApi.list({ loai_tour: 'Doanh nghiệp', page: searchParams.get('page') || 1, per_page: 9 })
       .then((payload) => setState({ loading: false, error: '', tours: listFrom(payload), pagination: paginationFrom(payload) }))
       .catch((error) => setState({ loading: false, error: error.message, tours: [], pagination: null }))

@@ -17,6 +17,7 @@ export default function RegionToursPage() {
   const title = useMemo(() => titles[mien] || `TOUR MIỀN ${String(mien || '').toUpperCase()}`, [mien])
 
   useEffect(() => {
+    window.scrollTo(0, 0)
     tourApi.region(regionValues[mien] || mien, { page: searchParams.get('page') || 1, per_page: 9 })
       .then((payload) => setState({ loading: false, error: '', tours: listFrom(payload), pagination: paginationFrom(payload) }))
       .catch((error) => setState({ loading: false, error: error.message, tours: [], pagination: null }))

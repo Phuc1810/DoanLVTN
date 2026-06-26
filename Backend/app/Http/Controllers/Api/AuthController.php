@@ -10,6 +10,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\ResendOtpRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Http\Requests\Auth\UpdateProfileRequest;
 use App\Http\Requests\Auth\VerifyOtpRequest;
 use App\Services\AuthService;
 use App\Services\OtpService;
@@ -67,6 +68,15 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Lấy thông tin người dùng thành công.',
             'data' => $this->authService->me($request->user()),
+        ]);
+    }
+
+    public function updateProfile(UpdateProfileRequest $request)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Lưu thông tin thành công.',
+            'data' => $this->authService->updateCustomerProfile($request->user(), $request->validated()),
         ]);
     }
 

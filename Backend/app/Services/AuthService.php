@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\KhachHang;
-use App\Models\NhanVien;
 use App\Models\TaiKhoan;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
@@ -134,12 +133,60 @@ class AuthService
     public function me(TaiKhoan $taiKhoan): array
     {
         $taiKhoan->loadMissing(['khachHang', 'nhanVien', 'admin']);
+        $khachHang = $taiKhoan->VaiTro === 'KH' ? $this->ensureCustomerProfile($taiKhoan) : $taiKhoan->khachHang;
 
         return [
-            'tai_khoan' => $this->accountPayload($taiKhoan),
-            'khach_hang' => $taiKhoan->VaiTro === 'KH' ? $taiKhoan->khachHang : null,
+            'tai_khoan' => $this->accountPayload($taiKhoan, $khachHang),
+            'khach_hang' => $taiKhoan->VaiTro === 'KH' ? $this->customerProfilePayload($taiKhoan, $khachHang) : null,
             'nhan_vien' => in_array($taiKhoan->VaiTro, ['NV', 'AD'], true) ? $taiKhoan->nhanVien : null,
             'admin' => $taiKhoan->VaiTro === 'AD' ? $taiKhoan->admin : null,
+        ];
+    }
+
+    public function updateCustomerProfile(TaiKhoan $taiKhoan, array $data): array
+    {
+        if ($taiKhoan->VaiTro !== 'KH') {
+            throw ValidationException::withMessages([
+                'account' => ['Chỉ tài khoản khách hàng mới có thể cập nhật hồ sơ này.'],
+            ]);
+        }
+
+        $khachHang = $this->ensureCustomerProfile($taiKhoan);
+        $current = [
+            'HoTen' => (string) ($khachHang->HoTen ?? ''),
+            'Email' => (string) ($khachHang->Email ?? ''),
+            'SoDienThoai' => (string) ($khachHang->SoDienThoai ?? ''),
+            'DiaChi' => (string) ($khachHang->DiaChi ?? ''),
+            'NgaySinh' => (string) ($khachHang->NgaySinh ?? ''),
+            'GioiTinh' => (string) ($khachHang->GioiTinh ?? ''),
+        ];
+
+        $payload = [
+            'HoTen' => trim((string) ($data['HoTen'] ?? $current['HoTen'])),
+            'Email' => trim((string) ($data['Email'] ?? $current['Email'])),
+            'SoDienThoai' => trim((string) ($data['SoDienThoai'] ?? $current['SoDienThoai'])),
+            'DiaChi' => trim((string) ($data['DiaChi'] ?? $current['DiaChi'])),
+            'NgaySinh' => trim((string) ($data['NgaySinh'] ?? $current['NgaySinh'])),
+            'GioiTinh' => trim((string) ($data['GioiTinh'] ?? $current['GioiTinh'])),
+        ];
+
+        $this->validateCustomerProfileChanges($current, $payload);
+
+        $khachHang->update([
+            'HoTen' => $payload['HoTen'] !== '' ? $payload['HoTen'] : null,
+            'Email' => $payload['Email'] !== '' ? $payload['Email'] : null,
+            'SoDienThoai' => $payload['SoDienThoai'] !== '' ? $payload['SoDienThoai'] : null,
+            'DiaChi' => $payload['DiaChi'] !== '' ? $payload['DiaChi'] : null,
+            'NgaySinh' => $payload['NgaySinh'] !== '' ? $payload['NgaySinh'] : null,
+            'GioiTinh' => $payload['GioiTinh'] !== '' ? $payload['GioiTinh'] : null,
+        ]);
+
+        $khachHang->refresh();
+        $taiKhoan->setRelation('khachHang', $khachHang);
+
+        return [
+            'tai_khoan' => $this->accountPayload($taiKhoan, $khachHang),
+            'khach_hang' => $this->customerProfilePayload($taiKhoan, $khachHang),
         ];
     }
 
@@ -289,6 +336,80 @@ class AuthService
             'Email' => $khachHang->Email ?? $nhanVien->Email ?? null,
             'SoDienThoai' => $khachHang->SoDienThoai ?? $nhanVien->SDT ?? null,
         ];
+    }
+
+    private function customerProfilePayload(TaiKhoan $taiKhoan, KhachHang $khachHang): array
+    {
+        return [
+            'MaKH' => $khachHang->MaKH,
+            'MaTK' => $khachHang->MaTK,
+            'HoTen' => $khachHang->HoTen,
+            'Email' => $khachHang->Email,
+            'SoDienThoai' => $khachHang->SoDienThoai,
+            'DiaChi' => $khachHang->DiaChi,
+            'NgaySinh' => $khachHang->NgaySinh,
+            'GioiTinh' => $khachHang->GioiTinh,
+            'TenDangNhap' => $taiKhoan->TenDangNhap,
+        ];
+    }
+
+    private function ensureCustomerProfile(TaiKhoan $taiKhoan): KhachHang
+    {
+        $taiKhoan->loadMissing('khachHang');
+
+        if ($taiKhoan->khachHang) {
+            return $taiKhoan->khachHang;
+        }
+
+        $khachHang = KhachHang::create([
+            'HoTen' => $taiKhoan->HoTen ?? null,
+            'Email' => $taiKhoan->Email ?? null,
+            'SoDienThoai' => $taiKhoan->SoDienThoai ?? null,
+            'DiaChi' => null,
+            'NgaySinh' => null,
+            'GioiTinh' => null,
+            'MaTK' => $taiKhoan->MaTK,
+        ]);
+
+        $taiKhoan->setRelation('khachHang', $khachHang);
+
+        return $khachHang;
+    }
+
+    private function validateCustomerProfileChanges(array $current, array $payload): void
+    {
+        $errors = [];
+
+        if ($payload['Email'] !== $current['Email'] && $payload['Email'] !== '' && ! filter_var($payload['Email'], FILTER_VALIDATE_EMAIL)) {
+            $errors['Email'][] = 'Email không hợp lệ.';
+        }
+
+        if (
+            $payload['SoDienThoai'] !== $current['SoDienThoai']
+            && $payload['SoDienThoai'] !== ''
+            && ! preg_match('/^\d{10}$/', $payload['SoDienThoai'])
+        ) {
+            $errors['SoDienThoai'][] = 'SĐT phải đúng 10 số (vd: 0xxxxxxxxx).';
+        }
+
+        if ($payload['NgaySinh'] !== $current['NgaySinh'] && $payload['NgaySinh'] !== '') {
+            $date = \DateTime::createFromFormat('Y-m-d', $payload['NgaySinh']);
+            $isValidDate = $date && $date->format('Y-m-d') === $payload['NgaySinh'];
+
+            if (! $isValidDate) {
+                $errors['NgaySinh'][] = 'Ngày sinh không hợp lệ.';
+            } elseif ($payload['NgaySinh'] >= now()->toDateString()) {
+                $errors['NgaySinh'][] = 'Ngày sinh không được là ngày hiện tại hoặc tương lai.';
+            }
+        }
+
+        if ($payload['GioiTinh'] !== $current['GioiTinh'] && ! in_array($payload['GioiTinh'], ['Nam', 'Nữ', 'Khác', ''], true)) {
+            $errors['GioiTinh'][] = 'Giới tính không hợp lệ.';
+        }
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
     }
 
     private function validateFullName(string $fullName): void

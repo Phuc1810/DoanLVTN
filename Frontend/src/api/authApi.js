@@ -34,6 +34,7 @@ export const authApi = {
   staffLogin: (payload) => authClient.post('/auth/staff-login', payload),
   logout: () => authClient.post('/auth/logout'),
   me: () => authClient.get('/auth/me'),
+  updateProfile: (payload) => authClient.put('/auth/profile', payload),
   forgotPassword: (payload) => authClient.post('/auth/forgot-password', payload),
   verifyOtp: (payload) => authClient.post('/auth/verify-otp', payload),
   resendOtp: (payload) => authClient.post('/auth/resend-otp', payload),

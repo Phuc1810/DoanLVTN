@@ -16,10 +16,13 @@ export default function PromotionsPage() {
 
   return (
     <div className="container km-wrapper">
-      <h2 className="fw-bold text-center mb-4 km-title">CHƯƠNG TRÌNH KHUYẾN MÃI</h2>
+      <h2 className="fw-bold text-center mb-4 km-title" style={{ color: 'black', fontSize: '33px', marginTop: '10px' }}>CHƯƠNG TRÌNH KHUYẾN MÃI</h2>
       {state.loading && <Loading />}
       {state.error && <ErrorState message={state.error} />}
       <div className="row g-4">
+        {!state.loading && !state.error && state.promotions.length === 0 && (
+          <h5 className="text-center text-muted mb-5">Hiện chưa có chương trình khuyến mãi nào.</h5>
+        )}
         {state.promotions.map((promotion) => (
           <div className="col-md-4" key={promotion.MaCTKM}>
             <PromotionCard promotion={promotion} />

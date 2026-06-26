@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { tourApi } from '../../api/tourApi'
 import ErrorState from '../../components/common/ErrorState'
 import Loading from '../../components/common/Loading'
+import Pagination from '../../components/common/Pagination'
 import BusinessTourCard from '../../components/tours/BusinessTourCard'
-import { listFrom } from '../../utils/data'
+import { listFrom, paginationFrom } from '../../utils/data'
 
 export default function BusinessToursPage() {
-  const [state, setState] = useState({ loading: true, error: '', tours: [] })
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [state, setState] = useState({ loading: true, error: '', tours: [], pagination: null })
 
   useEffect(() => {
-    tourApi.list({ loai_tour: 'Doanh nghiệp', per_page: 12 })
-      .then((payload) => setState({ loading: false, error: '', tours: listFrom(payload) }))
-      .catch((error) => setState({ loading: false, error: error.message, tours: [] }))
-  }, [])
+    tourApi.list({ loai_tour: 'Doanh nghiệp', page: searchParams.get('page') || 1, per_page: 9 })
+      .then((payload) => setState({ loading: false, error: '', tours: listFrom(payload), pagination: paginationFrom(payload) }))
+      .catch((error) => setState({ loading: false, error: error.message, tours: [], pagination: null }))
+  }, [searchParams])
 
   return (
     <div className="container wrap">
@@ -20,13 +23,16 @@ export default function BusinessToursPage() {
       {state.loading && <Loading />}
       {state.error && <ErrorState message={state.error} />}
       {!state.loading && !state.error && (
-        <div className="row g-4">
-          {state.tours.map((tour) => (
-            <div className="col-12 col-md-6 col-lg-4" key={tour.MaTour}>
-              <BusinessTourCard tour={tour} />
-            </div>
-          ))}
-        </div>
+        <>
+          <div className="row g-4 mb-5">
+            {state.tours.map((tour) => (
+              <div className="col-12 col-md-6 col-lg-4" key={tour.MaTour}>
+                <BusinessTourCard tour={tour} />
+              </div>
+            ))}
+          </div>
+          <Pagination pagination={state.pagination} onPageChange={(page) => setSearchParams({ page })} />
+        </>
       )}
     </div>
   )

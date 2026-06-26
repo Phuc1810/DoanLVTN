@@ -28,7 +28,7 @@ export default function BusinessTourCard({ tour }) {
           <div className="price-new">{formatCurrency(displayPrice)}</div>
           {hasSale && <div className="price-old">{formatCurrency(tour.GiaGoc)}</div>}
         </div>
-        <Link className="btn btn-view" to={`/business-tours/${tour.MaTour}`} style={{ color: 'black' }}>
+        <Link className="btn btn-view" to={`/business-tours/${tour.MaTour}`} style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>
           XEM TOUR
         </Link>
       </div>

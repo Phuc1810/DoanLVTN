@@ -11,6 +11,12 @@ export default function ForgotPasswordPage() {
 
   async function submit(event) {
     event.preventDefault()
+    
+    if (!contact.trim()) {
+      setError({ message: '', errors: { contact: ['Vui lòng nhập Email hoặc SĐT.'] } })
+      return
+    }
+
     setSubmitting(true)
     setError({ message: '', errors: {} })
 

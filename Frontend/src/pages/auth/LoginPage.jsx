@@ -117,7 +117,11 @@ export default function LoginPage() {
         : searchParams.get('redirect') || '/'
       navigate(roleRedirect(auth.user, fallback), { replace: true })
     } catch (err) {
-      setError({ message: err.message, errors: err.errors })
+      let topMsg = err.message;
+      if (topMsg === 'Dữ liệu không hợp lệ' || topMsg === 'Dữ liệu không hợp lệ.') {
+        topMsg = '';
+      }
+      setError({ message: topMsg, errors: err.errors || {} })
     } finally {
       setSubmitting(false)
     }

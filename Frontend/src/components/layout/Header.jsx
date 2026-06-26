@@ -63,12 +63,16 @@ export default function Header() {
                   <Link className="nav-link login-link" to="/auth/login"><i className="fa-regular fa-user"></i> ĐĂNG NHẬP</Link>
                 </li>
               ) : (
-                <li className="nav-item dropdown">
-                  <a className="nav-link dropdown-toggle d-flex align-items-center" href="#account-menu" data-bs-toggle="dropdown">
-                    <i className="fa-regular fa-user me-1"></i>
-                    CHÀO {user?.HoTen || user?.khach_hang?.HoTen || user?.TenDangNhap || 'BẠN'}
+                <li className="nav-item dropdown" style={{ minWidth: '240px' }}>
+                  <a className="nav-link dropdown-toggle d-flex align-items-center" href="#account-menu" data-bs-toggle="dropdown" style={{ width: 'max-content' }}>
+                    <span className="d-flex align-items-center text-truncate">
+                      <i className="fa-regular fa-user me-2"></i>
+                      <span className="text-truncate" style={{ maxWidth: '180px' }}>
+                        CHÀO {user?.HoTen || user?.khach_hang?.HoTen || user?.TenDangNhap || 'BẠN'}
+                      </span>
+                    </span>
                   </a>
-                  <ul className="dropdown-menu dropdown-menu-end">
+                  <ul className="dropdown-menu" style={{ width: 'max-content', minWidth: '240px' }}>
                     <li><Link className="dropdown-item" to="/profile"><i className="fa-regular fa-id-card me-2"></i> Thông tin cá nhân</Link></li>
                     <li><hr className="dropdown-divider" /></li>
                     <li><Link className="dropdown-item" to="/orders"><i className="fa-solid fa-receipt me-2"></i> Đơn hàng (đặt tour)</Link></li>

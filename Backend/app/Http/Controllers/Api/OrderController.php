@@ -20,6 +20,7 @@ class OrderController extends Controller
             'data' => $this->orderService->list($request->user(), $request->only([
                 'status',
                 'TrangThai',
+                'st',
                 'page',
                 'per_page',
             ])),

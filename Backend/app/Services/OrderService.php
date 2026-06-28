@@ -22,7 +22,14 @@ class OrderService
     private const STATUS_CANCELLED = 'Đã huỷ';
     private const STATUS_REFUNDED = 'Đã hoàn tiền';
 
-    private const STATUSES = [
+    private const LEGACY_FILTER_STATUSES = [
+        self::STATUS_PENDING,
+        self::STATUS_PAID,
+        self::STATUS_RUNNING,
+        self::STATUS_DONE,
+    ];
+
+    private const API_STATUSES = [
         self::STATUS_PENDING,
         self::STATUS_PAID,
         self::STATUS_RUNNING,
@@ -44,15 +51,31 @@ class OrderService
                 'tour.anhChinh',
                 'thanhToans' => fn ($q) => $q->orderByDesc('MaTT'),
                 'hoanTiens' => fn ($q) => $q->orderByDesc('MaHT'),
+            ])
+            ->addSelect([
+                'MaDG' => DB::table('danhgia as dg')
+                    ->select('dg.MaDG')
+                    ->whereColumn('dg.MaKH', 'dondattour.MaKH')
+                    ->whereColumn('dg.MaTour', 'dondattour.MaTour')
+                    ->limit(1),
             ]);
 
-        $status = $this->validStatus($filters['status'] ?? $filters['TrangThai'] ?? null);
+        $status = $this->validStatus(
+            $filters['status'] ?? $filters['TrangThai'] ?? $filters['st'] ?? null
+        );
+
         if ($status !== null) {
             $query->where('TrangThai', $status);
         }
 
-        $paginator = $query->orderByDesc('MaDon')
-            ->paginate($this->normalizePerPage((int) ($filters['per_page'] ?? 10)));
+        $paginator = $query
+            ->orderByDesc('MaDon')
+            ->paginate(
+                $this->normalizePerPage((int) ($filters['per_page'] ?? 8)),
+                ['*'],
+                'page',
+                max(1, (int) ($filters['page'] ?? 1))
+            );
 
         return [
             'items' => OrderResource::collection($paginator->getCollection())->resolve(),
@@ -76,6 +99,13 @@ class OrderService
                 'thanhToans' => fn ($q) => $q->orderByDesc('MaTT'),
                 'hoanTiens' => fn ($q) => $q->orderByDesc('MaHT'),
                 'chuongTrinhKhuyenMai',
+            ])
+            ->addSelect([
+                'MaDG' => DB::table('danhgia as dg')
+                    ->select('dg.MaDG')
+                    ->whereColumn('dg.MaKH', 'dondattour.MaKH')
+                    ->whereColumn('dg.MaTour', 'dondattour.MaTour')
+                    ->limit(1),
             ])
             ->first();
 
@@ -138,13 +168,17 @@ class OrderService
     {
         $status = trim((string) $status);
 
-        return in_array($status, self::STATUSES, true) ? $status : null;
+        if ($status === '') {
+            return null;
+        }
+
+        return in_array($status, self::API_STATUSES, true) ? $status : null;
     }
 
     private function normalizePerPage(int $perPage): int
     {
         if ($perPage <= 0) {
-            return 10;
+            return 8;
         }
 
         return min($perPage, 50);
@@ -157,6 +191,7 @@ class OrderService
             'per_page' => $paginator->perPage(),
             'total' => $paginator->total(),
             'last_page' => $paginator->lastPage(),
+            'legacy_statuses' => self::LEGACY_FILTER_STATUSES,
         ];
     }
 }

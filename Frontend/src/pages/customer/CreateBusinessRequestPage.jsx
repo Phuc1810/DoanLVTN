@@ -82,7 +82,11 @@ export default function CreateBusinessRequestPage() {
       const id = payload?.MaYC || payload?.id
       setSuccess(`Gửi yêu cầu thành công${id ? `! Mã yêu cầu: #${id}` : '!'}`)
       if (id) {
-        navigate(`/business-requests/${id}`)
+        navigate(`/business-requests/${id}`, {
+          state: {
+            successToast: 'Gửi yêu cầu tour thành công.',
+          },
+        })
       }
     } catch (err) {
       setError({ message: err.message, errors: err.errors || {} })

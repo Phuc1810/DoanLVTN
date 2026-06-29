@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import { businessRequestApi } from '../../api/businessRequestApi'
 import Loading from '../../components/common/Loading'
 import StatusBadge from '../../components/common/StatusBadge'
@@ -7,7 +7,9 @@ import { formatDate } from '../../utils/formatDate'
 
 export default function BusinessRequestDetailPage() {
   const { id } = useParams()
+  const location = useLocation()
   const [state, setState] = useState({ loading: true, error: '', request: null })
+  const [toastMessage, setToastMessage] = useState(location.state?.successToast || '')
 
   useEffect(() => {
     businessRequestApi.getBusinessRequest(id)
@@ -15,10 +17,27 @@ export default function BusinessRequestDetailPage() {
       .catch(() => setState({ loading: false, error: 'Backend chưa hỗ trợ chi tiết yêu cầu doanh nghiệp của khách hàng.', request: null }))
   }, [id])
 
+  useEffect(() => {
+    if (!toastMessage) return undefined
+
+    const timer = window.setTimeout(() => {
+      setToastMessage('')
+    }, 5000)
+
+    return () => window.clearTimeout(timer)
+  }, [toastMessage])
+
   if (state.loading) return <Loading />
 
   return (
     <div className="container wrap">
+      {toastMessage && (
+        <div className="customer-toast customer-toast-success" role="status" aria-live="polite">
+          <i className="fa-solid fa-circle-check me-2"></i>
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       <div className="cardx p-4 p-lg-5">
         <div className="d-flex justify-content-between align-items-start">
           <div><div className="title"><i className="fa-solid fa-briefcase me-2"></i>Chi tiết yêu cầu #{id}</div></div>

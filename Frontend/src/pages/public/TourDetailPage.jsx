@@ -8,7 +8,7 @@ import { formatDate } from '../../utils/formatDate'
 import { buildImageUrl, tourImagePath } from '../../utils/imageUrl'
 import { useAuth } from '../../auth/useAuth'
 
-export default function TourDetailPage() {
+export default function TourDetailPage({ bookingMode = 'personal' }) {
   const { id } = useParams()
   const { user } = useAuth()
   const [showLoginModal, setShowLoginModal] = useState(false)
@@ -42,6 +42,14 @@ export default function TourDetailPage() {
   const images = Array.isArray(tour.hinh_anhs) ? tour.hinh_anhs : Array.isArray(tour.hinhAnhs) ? tour.hinhAnhs : []
   const discount = Number(tour.discount_percent || tour.PhanTramGiam || 0)
   const stats = tour.review_stats || {}
+  const isBusinessMode = bookingMode === 'business' || tour.LoaiTour === 'Doanh nghiệp'
+  const bookingPath = isBusinessMode
+    ? `/business-requests/create?tour=${tour.MaTour}`
+    : `/bookings/create/${tour.MaTour}`
+  const bookingLabel = isBusinessMode ? 'GỬI YÊU CẦU DOANH NGHIỆP' : 'ĐẶT TOUR'
+  const loginMessage = isBusinessMode
+    ? 'Bạn cần đăng nhập hoặc đăng ký để gửi yêu cầu tour doanh nghiệp.'
+    : 'Bạn cần đăng nhập hoặc đăng ký để tiến hành đặt tour.'
 
   return (
     <div className="container tour-detail-wrapper">
@@ -80,17 +88,17 @@ export default function TourDetailPage() {
               <span>Giá chỉ còn:</span>
               <span className="ms-2">{formatCurrency(tour.GiaGiam)}</span>
             </p>
-            <Link 
-              to={`/bookings/create/${tour.MaTour}`} 
+            <Link
+              to={bookingPath}
               className="btn btn-book-detail w-100"
               onClick={(e) => {
                 if (!user) {
-                  e.preventDefault();
-                  setShowLoginModal(true);
+                  e.preventDefault()
+                  setShowLoginModal(true)
                 }
               }}
             >
-              ĐẶT TOUR
+              {bookingLabel}
             </Link>
           </div>
         </div>
@@ -137,7 +145,11 @@ export default function TourDetailPage() {
                   <div className="fw-bold">{review.khach_hang?.HoTen || review.HoTen || 'Khách'}</div>
                   <div className="text-muted small">{formatDate(review.NgayDG)}</div>
                 </div>
-                <div className="mt-1">{Array.from({ length: 5 }, (_, i) => <i key={i} className={`${i < Number(review.SoSao) ? 'fa-solid' : 'fa-regular'} fa-star text-warning`}></i>)}</div>
+                <div className="mt-1">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <i key={i} className={`${i < Number(review.SoSao) ? 'fa-solid' : 'fa-regular'} fa-star text-warning`}></i>
+                  ))}
+                </div>
                 {review.NoiDung && <div className="mt-2">{review.NoiDung}</div>}
               </div>
             ))}
@@ -145,7 +157,6 @@ export default function TourDetailPage() {
         )}
       </div>
 
-      {/* MODAL YÊU CẦU ĐĂNG NHẬP */}
       {showLoginModal && (
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-dialog-centered">
@@ -160,10 +171,10 @@ export default function TourDetailPage() {
                   </div>
                 </div>
                 <h4 className="fw-bold mb-2">Yêu cầu đăng nhập</h4>
-                <p className="text-muted mb-4 px-3">Bạn cần đăng nhập hoặc đăng ký để tiến hành đặt tour.</p>
+                <p className="text-muted mb-4 px-3">{loginMessage}</p>
                 <div className="d-flex justify-content-center gap-2 px-3">
                   <button type="button" className="btn btn-light px-4 fw-bold rounded-pill" onClick={() => setShowLoginModal(false)}>Hủy</button>
-                  <Link to={`/auth/login?redirect=${encodeURIComponent(`/bookings/create/${tour.MaTour}`)}`} className="btn btn-primary px-4 fw-bold rounded-pill" style={{ background: '#1a5cb0', border: 'none' }}>Đăng nhập / Đăng ký</Link>
+                  <Link to={`/auth/login?redirect=${encodeURIComponent(bookingPath)}`} className="btn btn-primary px-4 fw-bold rounded-pill" style={{ background: '#1a5cb0', border: 'none' }}>Đăng nhập / Đăng ký</Link>
                 </div>
               </div>
             </div>

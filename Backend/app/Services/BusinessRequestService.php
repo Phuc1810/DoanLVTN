@@ -77,6 +77,50 @@ class BusinessRequestService
         });
     }
 
+    public function listForCustomer(TaiKhoan $user, array $filters): array
+    {
+        $customer = $this->customerForUser($user, [
+            'NguoiLienHe' => $user->HoTen ?? '',
+            'SDT' => $user->SoDienThoai ?? '',
+        ]);
+
+        $query = YeuCauDoanhNghiep::query()
+            ->where('MaKH', $customer->MaKH)
+            ->with(['tour.anhChinh', 'khachHang', 'nhanVien']);
+
+        $status = trim((string) ($filters['status'] ?? $filters['TrangThai'] ?? ''));
+        if ($status !== '') {
+            $query->where('TrangThai', $status);
+        }
+
+        $paginator = $query->orderByDesc('MaYC')
+            ->paginate($this->normalizePerPage((int) ($filters['per_page'] ?? 10)));
+
+        return [
+            'items' => BusinessRequestResource::collection($paginator->getCollection())->resolve(),
+            'pagination' => $this->paginationPayload($paginator),
+        ];
+    }
+
+    public function detailForCustomer(TaiKhoan $user, int $id): array
+    {
+        $customer = $this->customerForUser($user, [
+            'NguoiLienHe' => $user->HoTen ?? '',
+            'SDT' => $user->SoDienThoai ?? '',
+        ]);
+
+        $request = YeuCauDoanhNghiep::with(['tour.anhChinh', 'khachHang', 'nhanVien'])
+            ->where('MaYC', $id)
+            ->where('MaKH', $customer->MaKH)
+            ->first();
+
+        if (! $request) {
+            $this->throwNotFound('id', 'Yêu cầu không tồn tại hoặc không thuộc tài khoản hiện tại.');
+        }
+
+        return $this->resource($request);
+    }
+
     public function listForStaff(array $filters): array
     {
         $query = YeuCauDoanhNghiep::query()
@@ -204,9 +248,9 @@ class BusinessRequestService
         $email = filter_var($user->TenDangNhap, FILTER_VALIDATE_EMAIL) ? $user->TenDangNhap : '';
 
         return KhachHang::create([
-            'HoTen' => $payload['NguoiLienHe'],
+            'HoTen' => trim((string) ($payload['NguoiLienHe'] ?? $user->HoTen ?? '')),
             'Email' => $email,
-            'SoDienThoai' => $payload['SDT'],
+            'SoDienThoai' => trim((string) ($payload['SDT'] ?? $user->SoDienThoai ?? '')),
             'DiaChi' => '',
             'MaTK' => $user->MaTK,
         ]);

@@ -75,6 +75,11 @@ Route::post('/bookings', [BookingController::class, 'store'])
 
 Route::post('/business-requests', [BusinessRequestController::class, 'store'])
     ->middleware(['auth:sanctum', 'role:KH']);
+Route::get('/business-requests', [BusinessRequestController::class, 'index'])
+    ->middleware(['auth:sanctum', 'role:KH']);
+Route::get('/business-requests/{id}', [BusinessRequestController::class, 'show'])
+    ->whereNumber('id')
+    ->middleware(['auth:sanctum', 'role:KH']);
 
 Route::get('/payments/{orderId}', [PaymentController::class, 'show'])
     ->whereNumber('orderId')

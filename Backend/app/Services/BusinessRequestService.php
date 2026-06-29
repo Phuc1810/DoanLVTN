@@ -21,6 +21,12 @@ class BusinessRequestService
     private const STATUS_COMPLETED = 'Hoàn thành';
     private const TOUR_FULL = 'Hết chỗ';
     private const BUSINESS_TOUR = 'Doanh nghiệp';
+    private const CUSTOMER_STATUSES = [
+        self::STATUS_PENDING,
+        self::STATUS_CONTACTED,
+        self::STATUS_CANCELLED,
+        self::STATUS_COMPLETED,
+    ];
 
     public function store(TaiKhoan $user, array $payload): array
     {
@@ -88,13 +94,17 @@ class BusinessRequestService
             ->where('MaKH', $customer->MaKH)
             ->with(['tour.anhChinh', 'khachHang', 'nhanVien']);
 
-        $status = trim((string) ($filters['status'] ?? $filters['TrangThai'] ?? ''));
+        $status = trim((string) ($filters['st'] ?? $filters['status'] ?? $filters['TrangThai'] ?? ''));
+        if (! in_array($status, self::CUSTOMER_STATUSES, true)) {
+            $status = '';
+        }
+
         if ($status !== '') {
             $query->where('TrangThai', $status);
         }
 
         $paginator = $query->orderByDesc('MaYC')
-            ->paginate($this->normalizePerPage((int) ($filters['per_page'] ?? 10)));
+            ->paginate($this->normalizePerPage((int) ($filters['per_page'] ?? 8)));
 
         return [
             'items' => BusinessRequestResource::collection($paginator->getCollection())->resolve(),

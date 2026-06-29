@@ -8,7 +8,9 @@ const statusClass = {
   'Đã hủy': 'text-bg-dark',
   'Đã hoàn tiền': 'text-bg-info',
   'Chờ xử lý': 'text-bg-warning',
+  'Đã liên hệ': 'text-bg-info text-white',
   'Hoàn thành': 'text-bg-success',
+  'Hủy tour': 'text-bg-danger',
 }
 
 export default function StatusBadge({ status }) {

@@ -30,6 +30,7 @@ class BusinessRequestController extends Controller
             'data' => $this->businessRequestService->listForCustomer($request->user(), $request->only([
                 'page',
                 'per_page',
+                'st',
                 'status',
                 'TrangThai',
             ])),

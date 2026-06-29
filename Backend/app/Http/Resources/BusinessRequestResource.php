@@ -23,6 +23,11 @@ class BusinessRequestResource extends JsonResource
             'MaKH' => $this->MaKH,
             'MaNV' => $this->MaNV,
             'MaTour' => $this->MaTour,
+            'TenTour' => $this->tour?->TenTour,
+            'DiaDiem' => $this->tour?->DiaDiem,
+            'ThoiLuong' => $this->tour?->ThoiLuong,
+            'AnhChinh' => $this->tour?->anhChinh?->DuongDan,
+            'image_url' => $this->imageUrl($this->tour?->anhChinh?->DuongDan),
             'tour' => $this->whenLoaded('tour', fn () => $this->tour ? [
                 'MaTour' => $this->tour->MaTour,
                 'TenTour' => $this->tour->TenTour,

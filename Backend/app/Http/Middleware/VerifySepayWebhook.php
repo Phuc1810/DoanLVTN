@@ -23,6 +23,9 @@ class VerifySepayWebhook
         $apiKey = trim((string) ($request->header('X-Api-Key') ?: $request->header('X-API-Key')));
 
         $valid = $authorization === 'Bearer '.$expected
+            || $authorization === 'Apikey '.$expected
+            || $authorization === 'APIKEY '.$expected
+            || $authorization === 'ApiKey '.$expected
             || $authorization === $expected
             || $apiKey === $expected;
 

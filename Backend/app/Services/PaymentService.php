@@ -49,6 +49,7 @@ class PaymentService
         return [
             'order' => $this->orderPayload($order),
             'tour' => $this->tourPayload($order->tour),
+            'customer' => $this->customerPayload($order),
             'discount' => [
                 'type' => $discount['type'],
                 'name' => $discount['name'],
@@ -57,6 +58,7 @@ class PaymentService
             ],
             'payment' => $this->vietQrPayload($order),
             'payment_status' => $this->statusCode($order->TrangThai),
+            'raw_status' => $order->TrangThai,
         ];
     }
 
@@ -272,6 +274,19 @@ class PaymentService
             'bank_id' => $bankId,
             'account_no' => $accountNo,
             'account_name' => $accountName,
+        ];
+    }
+
+    private function customerPayload(DonDatTour $order): ?array
+    {
+        if (! $order->khachHang) {
+            return null;
+        }
+
+        return [
+            'HoTen' => $order->khachHang->HoTen,
+            'Email' => $order->khachHang->Email,
+            'SoDienThoai' => $order->khachHang->SoDienThoai,
         ];
     }
 

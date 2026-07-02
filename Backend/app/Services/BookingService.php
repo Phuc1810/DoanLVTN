@@ -68,15 +68,7 @@ class BookingService
             $maCtkm
         ) {
             $khachHang = $this->ensureCustomer($taiKhoan);
-
-            $khachHang->update([
-                'HoTen' => $data['HoTen'],
-                'Email' => $data['Email'],
-                'SoDienThoai' => $data['SoDienThoai'],
-                'DiaChi' => $data['DiaChi'],
-                'NgaySinh' => $data['NgaySinh'],
-                'GioiTinh' => $data['GioiTinh'],
-            ]);
+            $this->syncCustomerProfileForBooking($khachHang, $data);
 
             $donDatTour = DonDatTour::create([
                 'NgayDat' => now()->toDateString(),
@@ -120,5 +112,31 @@ class BookingService
             'DiaChi' => '',
             'MaTK' => $taiKhoan->MaTK,
         ]);
+    }
+
+    private function syncCustomerProfileForBooking(KhachHang $khachHang, array $data): void
+    {
+        $payload = [
+            'HoTen' => $data['HoTen'],
+            'Email' => $data['Email'],
+            'SoDienThoai' => $data['SoDienThoai'],
+            'DiaChi' => $data['DiaChi'],
+            'NgaySinh' => $data['NgaySinh'],
+            'GioiTinh' => $data['GioiTinh'],
+        ];
+
+        $phone = trim((string) ($data['SoDienThoai'] ?? ''));
+        if ($phone !== '') {
+            $phoneExists = KhachHang::query()
+                ->where('SoDienThoai', $phone)
+                ->where('MaKH', '!=', $khachHang->MaKH)
+                ->exists();
+
+            if ($phoneExists) {
+                unset($payload['SoDienThoai']);
+            }
+        }
+
+        $khachHang->update($payload);
     }
 }

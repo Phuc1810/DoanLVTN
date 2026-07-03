@@ -310,10 +310,19 @@ class PaymentService
 
         $authorization = trim((string) $request->header('Authorization', ''));
         $apiKey = trim((string) ($request->header('X-Api-Key') ?: $request->header('X-API-Key')));
+        $webhookToken = trim((string) $request->header('X-Webhook-Token', ''));
+        $queryToken = trim((string) $request->query('token', ''));
 
-        return $authorization === 'Bearer '.$expected
-            || $authorization === $expected
-            || $apiKey === $expected;
+        return in_array($authorization, [
+            'Bearer '.$expected,
+            'Apikey '.$expected,
+            'APIKEY '.$expected,
+            'ApiKey '.$expected,
+            $expected,
+        ], true)
+            || $apiKey === $expected
+            || $webhookToken === $expected
+            || $queryToken === $expected;
     }
 
     private function pickValue(array $payload, array $keys): mixed

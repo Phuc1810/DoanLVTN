@@ -38,9 +38,9 @@ export default function BookingSuccessPage() {
           <div className="col-md-6"><strong>Tổng tiền:</strong> <span className="money">{formatCurrency(order.TongTienPhaiTra)}</span></div>
           <div className="col-md-6"><strong>Trạng thái:</strong> <StatusBadge status={order.TrangThai} /></div>
         </div>
-        <div className="d-flex justify-content-center gap-2 mt-4">
-          <Link className="btn btn-primary btn-pill px-4" to={`/orders/${orderId}`}>Xem đơn hàng</Link>
-          <Link className="btn btn-outline-secondary btn-pill px-4" to="/">Về trang chủ</Link>
+        <div className="d-flex justify-content-center align-items-center gap-3 mt-4">
+          <Link className="btn btn-outline-secondary btn-pill px-4" style={{ width: '200px', whiteSpace: 'nowrap' }} to={`/orders/${orderId}`}>Xem đơn hàng</Link>
+          <Link className="btn btn-outline-secondary btn-pill px-4" style={{ width: '200px', whiteSpace: 'nowrap' }} to="/">Về trang chủ</Link>
         </div>
       </div>
     </div>

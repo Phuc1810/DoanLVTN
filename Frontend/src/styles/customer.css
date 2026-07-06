@@ -710,3 +710,102 @@
     height: 70px;
   }
 }
+
+/* ========== Chi tiết đơn hàng (Order Detail) ========== */
+.topGrad,
+.chip,
+.box,
+.boxHead,
+.boxBody,
+.moneyLabel,
+.moneyValue,
+.moneyVnd,
+.small2,
+.tourTitle {
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.topGrad {
+  padding: 18px 18px 16px;
+  background: linear-gradient(135deg, rgba(99,102,241,.12), rgba(14,165,233,.08), rgba(255,255,255,1));
+  border-bottom: 1px solid rgba(15,23,42,.06);
+}
+
+.tourThumb {
+  width: 108px;
+  height: 82px;
+  object-fit: cover;
+  border-radius: 16px;
+  background: #eee;
+  box-shadow: 0 10px 24px rgba(16,24,40,.12);
+}
+
+.tourTitle {
+  font-size: 22px;
+  font-weight: 800; /* Fixed from 1100 */
+  line-height: 1.15;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15,23,42,.08);
+  background: #fff;
+  font-weight: 700; /* Fixed from 800 for better system font compatibility */
+  color: #0f172a;
+  box-shadow: 0 8px 22px rgba(16,24,40,.06);
+  font-size: 13px;
+}
+
+.box {
+  border: 1px solid rgba(15,23,42,.08);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 26px rgba(16,24,40,.06);
+}
+
+.boxHead {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(15,23,42,.08);
+  font-weight: 800; /* Fixed from 1000 */
+}
+
+.boxBody {
+  padding: 14px 16px;
+}
+
+.moneyLabel {
+  color: #475569;
+  font-weight: 700; /* Fixed from 800 */
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+}
+
+.moneyValue {
+  font-size: 40px;
+  font-weight: 900; /* Fixed from 1300 */
+  line-height: 1;
+  margin-top: 6px;
+}
+
+.moneyVnd {
+  font-size: 12px;
+  font-weight: 800; /* Fixed from 900 */
+  color: #334155;
+  margin-top: 6px;
+}
+
+.small2 {
+  font-size: 13px;
+  color: #475569;
+  font-weight: 600; /* Fixed from 650 */
+}
+
+.tbl td,
+.tbl th {
+  vertical-align: middle;
+}

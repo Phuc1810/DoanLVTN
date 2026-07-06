@@ -48,6 +48,8 @@ class OrderResource extends JsonResource
             'ThoiLuong' => $this->tour->ThoiLuong,
             'NgayKhoiHanh' => $this->tour->NgayKhoiHanh,
             'NgayKetThuc' => $this->tour->NgayKetThuc,
+            'SoCho' => $this->tour->SoCho,
+            'SoChoDaDat' => $this->tour->SoChoDaDat,
             'AnhChinh' => $image,
             'image_url' => $this->imageUrl($image),
         ];

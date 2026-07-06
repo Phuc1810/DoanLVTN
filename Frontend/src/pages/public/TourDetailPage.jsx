@@ -132,7 +132,7 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
             <h4 className="fw-bold mb-1">ĐÁNH GIÁ KHÁCH HÀNG</h4>
             <div className="text-muted">{stats.average_rating || 0}/5 • {stats.total_reviews || state.reviews.length} đánh giá</div>
           </div>
-          <span className="badge bg-secondary p-2">Đăng nhập để đánh giá</span>
+          {!user && <span className="badge bg-secondary p-2">Đăng nhập để đánh giá</span>}
         </div>
         <hr />
         {!state.reviews.length ? (

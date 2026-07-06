@@ -133,36 +133,44 @@ export default function CreateBusinessRequestPage() {
           </div>
         )}
 
-        <div className="mt-3">
-          <FormError message={error.message} errors={error.errors} />
-        </div>
+        {error.message && Object.keys(error.errors || {}).length === 0 && (
+          <div className="alert alert-danger mt-3 mb-0">{error.message}</div>
+        )}
 
         <form onSubmit={submit} className="mt-3" noValidate>
           <div className="row g-3">
             <div className="col-md-6">
               <label className="form-label fw-semibold">Tên công ty</label>
               <input className={`form-control ${error.errors?.TenCongTy ? 'is-invalid' : ''}`} name="TenCongTy" value={form.TenCongTy} onChange={update} />
+              {error.errors?.TenCongTy && <div className="invalid-feedback">{error.errors.TenCongTy[0] || error.errors.TenCongTy}</div>}
             </div>
 
             <div className="col-md-6">
               <label className="form-label fw-semibold">Người liên hệ</label>
               <input className={`form-control ${error.errors?.NguoiLienHe ? 'is-invalid' : ''}`} name="NguoiLienHe" value={form.NguoiLienHe} onChange={update} />
+              {error.errors?.NguoiLienHe && <div className="invalid-feedback">{error.errors.NguoiLienHe[0] || error.errors.NguoiLienHe}</div>}
             </div>
 
             <div className="col-md-6">
               <label className="form-label fw-semibold">Số điện thoại (10 số)</label>
               <input className={`form-control ${error.errors?.SDT ? 'is-invalid' : ''}`} name="SDT" value={form.SDT} onChange={update} inputMode="numeric" maxLength={10} />
-              <div className="form-text">Ví dụ: 0xxxxxxxxx</div>
+              {error.errors?.SDT ? (
+                <div className="invalid-feedback">{error.errors.SDT[0] || error.errors.SDT}</div>
+              ) : (
+                <div className="form-text">Ví dụ: 0xxxxxxxxx</div>
+              )}
             </div>
 
             <div className="col-md-6">
               <label className="form-label fw-semibold">Số người (tối thiểu 20)</label>
               <input className={`form-control ${error.errors?.SoNguoi ? 'is-invalid' : ''}`} type="number" min="20" name="SoNguoi" value={form.SoNguoi} onChange={update} />
+              {error.errors?.SoNguoi && <div className="invalid-feedback">{error.errors.SoNguoi[0] || error.errors.SoNguoi}</div>}
             </div>
 
             <div className="col-md-6">
               <label className="form-label fw-semibold">Thời gian khởi hành</label>
               <input className={`form-control ${error.errors?.ThoiGianKhoiHanh ? 'is-invalid' : ''}`} type="date" min={TODAY} name="ThoiGianKhoiHanh" value={form.ThoiGianKhoiHanh} onChange={update} />
+              {error.errors?.ThoiGianKhoiHanh && <div className="invalid-feedback">{error.errors.ThoiGianKhoiHanh[0] || error.errors.ThoiGianKhoiHanh}</div>}
             </div>
 
             <div className="col-md-6 d-flex align-items-end justify-content-end">

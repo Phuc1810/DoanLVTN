@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/useAuth'
 import FormError from '../../components/common/FormError'
-
 export default function StaffLoginPage() {
   const { staffLogin } = useAuth()
   const navigate = useNavigate()
@@ -10,11 +9,9 @@ export default function StaffLoginPage() {
   const [form, setForm] = useState({ login_key: '', password: '' })
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
-
   function updateField(event) {
     setForm((current) => ({ ...current, [event.target.name]: event.target.value }))
   }
-
   async function handleSubmit(event) {
     event.preventDefault()
     setSubmitting(true)
@@ -33,7 +30,6 @@ export default function StaffLoginPage() {
       setSubmitting(false)
     }
   }
-
   return (
     <div className="staff-login-page">
       <div className="staff-login-card">
@@ -65,5 +61,5 @@ export default function StaffLoginPage() {
         </section>
       </div>
     </div>
-  )
+  );
 }

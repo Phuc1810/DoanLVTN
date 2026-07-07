@@ -1,20 +1,32 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/useAuth'
+import {
+  LayoutDashboard,
+  ShoppingCart,
+  ClipboardCheck,
+  Compass,
+  Newspaper,
+  Tag,
+  KeyRound,
+  LogOut,
+} from 'lucide-react'
 
-const MENU = [
-  { to: '/staff', icon: '▦', label: 'Dashboard', end: true },
-  { to: '/staff/orders', icon: '▣', label: 'Đơn đặt tour' },
-  { to: '/staff/business-requests', icon: '☏', label: 'Yêu cầu doanh nghiệp' },
-  { to: '/staff/tours', icon: '⌖', label: 'Quản lý Tour' },
-  { to: '/staff/news', icon: '☰', label: 'Quản lý tin tức' },
-  { to: '/staff/promotions', icon: '%', label: 'Quản lý khuyến mãi' },
-  { to: '/staff/change-password', icon: '⚿', label: 'Đổi mật khẩu' },
+const MAIN_MENU = [
+  { to: '/staff', icon: <LayoutDashboard size={18} />, label: 'Tổng quan', end: true },
+  { to: '/staff/orders', icon: <ShoppingCart size={18} />, label: 'Đơn đặt tour' },
+  { to: '/staff/business-requests', icon: <ClipboardCheck size={18} />, label: 'Xử lý yêu cầu' },
+  { to: '/staff/tours', icon: <Compass size={18} />, label: 'Quản lý tour' },
+  { to: '/staff/news', icon: <Newspaper size={18} />, label: 'Quản lý tin tức' },
+  { to: '/staff/promotions', icon: <Tag size={18} />, label: 'Quản lý khuyến mãi' },
+]
+
+const SETTINGS_MENU = [
+  { to: '/staff/change-password', icon: <KeyRound size={18} />, label: 'Đổi mật khẩu' },
 ]
 
 export default function StaffSidebar() {
-  const { user, logout } = useAuth()
+  const { logout } = useAuth()
   const navigate = useNavigate()
-  const name = user?.HoTen || user?.TenDangNhap || 'Nhân viên'
 
   async function handleLogout() {
     await logout()
@@ -22,35 +34,43 @@ export default function StaffSidebar() {
   }
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar new-sidebar">
       <div className="brand-section">
         <NavLink className="brand-logo" to="/staff">
-          <span>✈</span>
-          <span>Tour Staff</span>
+          <div className="brand-text">
+            <span className="brand-title">Hệ thống Tour</span>
+            <span className="brand-subtitle">Quản lý vận hành</span>
+          </div>
         </NavLink>
       </div>
+      
       <nav className="nav-section">
-        <div className="nav-label">Quản trị nhân viên</div>
-        {MENU.map((item) => (
-          <NavLink key={item.to} to={item.to} end={item.end} className="nav-link">
-            <i>{item.icon}</i>
-            <span>{item.label}</span>
-          </NavLink>
-        ))}
-        <button type="button" className="nav-link w-100 text-start border-0 bg-transparent" onClick={handleLogout}>
-          <i>↪</i>
-          <span>Đăng xuất</span>
-        </button>
-      </nav>
-      <div className="user-section">
-        <div className="user-card">
-          <div className="user-avatar">{name.charAt(0).toUpperCase()}</div>
-          <div className="user-info">
-            <span className="user-name">{name}</span>
-            <span className="user-role">{user?.VaiTro || 'NV'}</span>
-          </div>
+        <div className="nav-menu-group">
+          {MAIN_MENU.map((item) => (
+            <NavLink key={item.to} to={item.to} end={item.end} className="nav-link">
+              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-label-text">{item.label}</span>
+            </NavLink>
+          ))}
         </div>
-      </div>
+
+        <div className="nav-divider" />
+        <div className="nav-label-group">CÀI ĐẶT</div>
+
+        <div className="nav-menu-group">
+          {SETTINGS_MENU.map((item) => (
+            <NavLink key={item.to} to={item.to} className="nav-link">
+              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-label-text">{item.label}</span>
+            </NavLink>
+          ))}
+          <button type="button" className="nav-link w-100 text-start border-0 bg-transparent" onClick={handleLogout}>
+            <span className="nav-icon"><LogOut size={18} /></span>
+            <span className="nav-label-text">Đăng xuất</span>
+          </button>
+        </div>
+      </nav>
     </aside>
   )
 }
+

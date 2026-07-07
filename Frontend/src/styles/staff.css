@@ -158,87 +158,268 @@
   color: var(--text-dark);
 }
 
-.staff-login-page {
+/* ================= STAFF LOGIN UI (TỪ ẢNH) ================= */
+.staff-login-wrapper {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #fff7ed 0%, #f8fafc 100%);
-  padding: 24px;
+  background-color: #f1f5f9; /* Light background behind card */
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-.staff-login-card {
-  width: min(920px, 100%);
-  min-height: 520px;
+.staff-login-container {
+  display: flex;
+  width: 100%;
+  max-width: 960px;
+  min-height: 600px;
   background: #fff;
-  border-radius: 24px;
+  border-radius: 12px;
   overflow: hidden;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  box-shadow: 0 24px 70px rgba(17, 24, 39, 0.12);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
-.staff-login-left {
-  background: linear-gradient(145deg, #ff7a00, #ff9f43);
-  color: #fff;
-  padding: 44px;
+/* --- CỘT TRÁI (DARK BLUE) --- */
+.staff-login-sidebar {
+  flex: 5;
+  background-color: #0b162c; /* Màu xanh đen rất đậm */
+  color: #ffffff;
+  padding: 40px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-.staff-login-logo {
-  font-size: 28px;
-  font-weight: 900;
+.sidebar-top {
+  display: flex;
+  flex-direction: column;
 }
 
-.staff-login-left h1 {
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 60px;
+}
+
+.brand-icon {
+  background-color: #ffffff;
+  color: #0b162c;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-name {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: #ffffff; /* Explicitly set to white */
+}
+
+.brand-intro h1 {
   font-size: 32px;
-  margin: 0 0 12px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
 }
 
-.staff-login-left p {
+.brand-intro p {
   font-size: 15px;
-  line-height: 1.7;
-  opacity: 0.92;
+  line-height: 1.6;
+  color: #94a3b8; /* Xám xanh nhạt */
 }
 
-.staff-login-right {
-  padding: 54px 44px;
+.back-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.back-link:hover {
+  opacity: 0.8;
+}
+
+/* --- CỘT PHẢI (TRẮNG) --- */
+.staff-login-main {
+  flex: 7;
+  background-color: #ffffff;
+  padding: 50px 60px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.staff-login-title {
-  font-size: 26px;
-  font-weight: 800;
+.login-header {
+  margin-bottom: 36px;
+}
+
+.login-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
   margin-bottom: 8px;
+  letter-spacing: -0.5px;
 }
 
-.staff-login-subtitle {
-  color: var(--text-gray);
-  margin-bottom: 28px;
+.login-header p {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0;
 }
 
-.staff-api-note {
-  color: #b45309;
-  background: #fffbeb;
-  border: 1px solid #fcd34d;
-  padding: 10px 12px;
-  border-radius: 10px;
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
   font-size: 13px;
-  margin-bottom: 16px;
+  font-weight: 600;
+  color: #0f172a;
 }
 
-@media (max-width: 768px) {
-  .staff-login-card,
-  .staff-form-grid,
-  .staff-detail-grid {
-    grid-template-columns: 1fr;
-  }
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-  .staff-login-left {
-    min-height: 260px;
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 12px 14px 12px 42px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #334155;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: #f8fafc;
+}
+
+.input-wrapper input:focus {
+  border-color: #0056b3;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.1);
+}
+
+.input-wrapper input::placeholder {
+  color: #94a3b8;
+}
+
+.password-toggle {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+.password-toggle:hover {
+  color: #475569;
+}
+
+.input-actions-right {
+  position: absolute;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.error-icon-container {
+  display: flex;
+  align-items: center;
+}
+
+.has-error input {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1) !important;
+}
+
+.field-error-text {
+  color: #dc3545;
+  font-size: 13px;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.btn-submit {
+  margin-top: 10px;
+  background-color: #0056b3; /* Xanh dương đậm */
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-submit:hover {
+  background-color: #004494;
+}
+.btn-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.login-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #f1f5f9;
+  text-align: center;
+}
+
+.login-footer p {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 2px 0;
+}
+
+/* RESPONSIVE */
+@media (max-width: 800px) {
+  .staff-login-container {
+    flex-direction: column;
+  }
+  .staff-login-sidebar {
+    padding: 30px;
+  }
+  .staff-login-main {
+    padding: 30px;
+  }
+  .brand-logo {
+    margin-bottom: 30px;
   }
 }

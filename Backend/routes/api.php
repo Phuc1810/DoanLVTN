@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\Staff\BusinessRequestManagementController;
+use App\Http\Controllers\Api\Staff\DashboardController;
 use App\Http\Controllers\Api\Staff\NewsManagementController;
 use App\Http\Controllers\Api\Staff\OrderManagementController;
 use App\Http\Controllers\Api\Staff\PromotionManagementController;
@@ -108,6 +109,11 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'role:AD'])->group(function 
 });
 
 Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(function () {
+    // Dashboard thống kê
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('/dashboard/revenue-weekly', [DashboardController::class, 'revenueWeekly']);
+    Route::get('/dashboard/tour-status', [DashboardController::class, 'tourStatus']);
+
     Route::get('/orders', [OrderManagementController::class, 'index']);
     Route::get('/orders/{id}', [OrderManagementController::class, 'show'])->whereNumber('id');
 

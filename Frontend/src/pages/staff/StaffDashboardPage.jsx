@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { staffBusinessRequestApi } from '../../api/staffBusinessRequestApi'
+import { staffDashboardApi } from '../../api/staffDashboardApi'
 import { staffOrderApi } from '../../api/staffOrderApi'
-import { staffPromotionApi } from '../../api/staffPromotionApi'
-import { staffTourApi } from '../../api/staffTourApi'
 import ErrorState from '../../components/common/ErrorState'
 import Loading from '../../components/common/Loading'
 import StaffStatCard from '../../components/staff/StaffStatCard'
@@ -20,24 +19,6 @@ import {
   Plus,
   FileDown,
 } from 'lucide-react'
-
-/* ===== DỮ LIỆU GIẢ (Backend chưa hỗ trợ) ===== */
-const FAKE_WEEKLY_REVENUE = [
-  { day: 'T2', value: 65 },
-  { day: 'T3', value: 80 },
-  { day: 'T4', value: 45 },
-  { day: 'T5', value: 90 },
-  { day: 'T6', value: 55 },
-  { day: 'T7', value: 70 },
-  { day: 'CN', value: 40 },
-]
-
-const FAKE_TOUR_STATUS = [
-  { label: 'Sắp khởi hành', percent: 40, color: '#3b82f6' },
-  { label: 'Đang diễn ra', percent: 30, color: '#f97316' },
-  { label: 'Đã hoàn thành', percent: 30, color: '#22c55e' },
-]
-/* ================================================ */
 
 function getVietnameseWeekday() {
   const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy']
@@ -66,6 +47,9 @@ function DonutChart({ data }) {
           const offset = circumference * (1 - cumulativePercent / 100)
           const dashArray = (circumference * item.percent) / 100
           cumulativePercent += item.percent
+          
+          if (item.percent === 0) return null
+
           return (
             <circle
               key={i}
@@ -93,20 +77,23 @@ function DonutChart({ data }) {
 
 /* ===== BAR CHART (CSS) ===== */
 function BarChart({ data }) {
-  const maxVal = Math.max(...data.map((d) => d.value))
+  const maxVal = Math.max(1, ...data.map((d) => d.value ?? d.revenue ?? 0))
   return (
     <div className="bar-chart">
-      {data.map((item, i) => (
-        <div key={i} className="bar-column">
-          <div className="bar-track">
-            <div
-              className="bar-fill"
-              style={{ height: `${(item.value / maxVal) * 100}%` }}
-            />
+      {data.map((item, i) => {
+        const val = item.value ?? item.revenue ?? 0
+        return (
+          <div key={i} className="bar-column">
+            <div className="bar-track">
+              <div
+                className="bar-fill"
+                style={{ height: `${(val / maxVal) * 100}%` }}
+              />
+            </div>
+            <span className="bar-label">{item.day}</span>
           </div>
-          <span className="bar-label">{item.day}</span>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
@@ -117,39 +104,46 @@ export default function StaffDashboardPage() {
     loading: true,
     warning: '',
     orders: [],
-    tours: [],
-    promotions: [],
     requests: [],
+    stats: {
+      total_orders: 0,
+      orders_this_month: 0,
+      orders_growth_percent: 0,
+      total_revenue: 0,
+      revenue_growth_percent: 0,
+      active_tours: 0,
+      pending_requests: 0,
+      requests_growth_percent: 0,
+    },
+    revenueWeekly: [],
+    tourStatus: null,
   })
 
   useEffect(() => {
     Promise.allSettled([
+      staffDashboardApi.getStats(),
+      staffDashboardApi.getRevenueWeekly(),
+      staffDashboardApi.getTourStatus(),
       staffOrderApi.list({ per_page: 5 }),
-      staffTourApi.list({ per_page: 5 }),
-      staffPromotionApi.list({ per_page: 5 }),
       staffBusinessRequestApi.list({ per_page: 5 }),
     ]).then((results) => {
-      const [orders, tours, promotions, requests] = results
+      const [statsRes, revenueRes, statusRes, ordersRes, requestsRes] = results
+
+      const getInnerData = (res) => (res.status === 'fulfilled' ? res.value : null)
+
       setState({
         loading: false,
         warning: results.some((item) => item.status === 'rejected') ? API_TODO_MESSAGE : '',
-        orders: orders.status === 'fulfilled' ? extractList(orders.value).slice(0, 5) : [],
-        tours: tours.status === 'fulfilled' ? extractList(tours.value).slice(0, 5) : [],
-        promotions: promotions.status === 'fulfilled' ? extractList(promotions.value) : [],
-        requests: requests.status === 'fulfilled' ? extractList(requests.value).slice(0, 5) : [],
+        stats: getInnerData(statsRes) || state.stats,
+        revenueWeekly: getInnerData(revenueRes) || [],
+        tourStatus: getInnerData(statusRes) || null,
+        orders: ordersRes.status === 'fulfilled' ? extractList(ordersRes.value).slice(0, 5) : [],
+        requests: requestsRes.status === 'fulfilled' ? extractList(requestsRes.value).slice(0, 5) : [],
       })
     })
   }, [])
 
   if (state.loading) return <Loading />
-
-  const revenue = state.orders
-    .filter(
-      (order) =>
-        order.TrangThaiTT === 'Đã thanh toán' ||
-        order.thanh_toan?.TrangThaiTT === 'Đã thanh toán'
-    )
-    .reduce((sum, order) => sum + Number(order.TongTienPhaiTra || order.TongTien || 0), 0)
 
   return (
     <>
@@ -181,10 +175,12 @@ export default function StaffDashboardPage() {
           <StaffStatCard
             icon={<ClipboardList size={22} />}
             label="ĐƠN ĐẶT TOUR"
-            value={state.orders.length}
+            value={state.stats.total_orders}
             tone="blue"
             subtitle={
-              <span className="trend-up">+5% <span className="trend-text">so với tháng trước</span></span>
+              <span className={state.stats.orders_growth_percent >= 0 ? "trend-up" : "trend-down"}>
+                {state.stats.orders_growth_percent > 0 ? '+' : ''}{state.stats.orders_growth_percent}% <span className="trend-text">so với tháng trước</span>
+              </span>
             }
           />
         </div>
@@ -192,10 +188,12 @@ export default function StaffDashboardPage() {
           <StaffStatCard
             icon={<DollarSign size={22} />}
             label="DOANH THU ƯỚC TÍNH"
-            value={formatCurrency(revenue)}
+            value={formatCurrency(state.stats.total_revenue)}
             tone="green"
             subtitle={
-              <span className="trend-up">+12.5% <span className="trend-text">so với tháng trước</span></span>
+              <span className={state.stats.revenue_growth_percent >= 0 ? "trend-up" : "trend-down"}>
+                {state.stats.revenue_growth_percent > 0 ? '+' : ''}{state.stats.revenue_growth_percent}% <span className="trend-text">so với tháng trước</span>
+              </span>
             }
           />
         </div>
@@ -203,7 +201,7 @@ export default function StaffDashboardPage() {
           <StaffStatCard
             icon={<Map size={22} />}
             label="TOUR ĐANG HOẠT ĐỘNG"
-            value={state.tours.length}
+            value={state.stats.active_tours}
             tone="orange"
             subtitle={<span className="trend-text">Đang trong hành trình</span>}
           />
@@ -212,10 +210,12 @@ export default function StaffDashboardPage() {
           <StaffStatCard
             icon={<MessageSquare size={22} />}
             label="YÊU CẦU CẦN XỬ LÝ"
-            value={state.requests.length}
+            value={state.stats.pending_requests}
             tone="purple"
             subtitle={
-              <span className="trend-down">-2% <span className="trend-text">so với tháng trước</span></span>
+              <span className={state.stats.requests_growth_percent >= 0 ? "trend-up" : "trend-down"}>
+                {state.stats.requests_growth_percent > 0 ? '+' : ''}{state.stats.requests_growth_percent}% <span className="trend-text">so với tháng trước</span>
+              </span>
             }
           />
         </div>
@@ -231,7 +231,11 @@ export default function StaffDashboardPage() {
               <button className="chart-menu-btn"><MoreVertical size={18} /></button>
             </div>
             <div className="chart-card-body">
-              <BarChart data={FAKE_WEEKLY_REVENUE} />
+              {state.revenueWeekly.length > 0 ? (
+                <BarChart data={state.revenueWeekly} />
+              ) : (
+                <div className="text-muted p-3 text-center">Chưa có dữ liệu tuần này</div>
+              )}
             </div>
           </div>
         </div>
@@ -244,16 +248,22 @@ export default function StaffDashboardPage() {
               <button className="chart-menu-btn"><MoreVertical size={18} /></button>
             </div>
             <div className="chart-card-body chart-donut-body">
-              <DonutChart data={FAKE_TOUR_STATUS} />
-              <div className="donut-legend">
-                {FAKE_TOUR_STATUS.map((item, i) => (
-                  <div key={i} className="legend-item">
-                    <span className="legend-dot" style={{ background: item.color }} />
-                    <span className="legend-label">{item.label}</span>
-                    <span className="legend-value">{item.percent}%</span>
+              {state.tourStatus?.data?.length > 0 ? (
+                <>
+                  <DonutChart data={state.tourStatus.data} />
+                  <div className="donut-legend">
+                    {state.tourStatus.data.map((item, i) => (
+                      <div key={i} className="legend-item">
+                        <span className="legend-dot" style={{ background: item.color }} />
+                        <span className="legend-label">{item.label}</span>
+                        <span className="legend-value">{item.percent}%</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </>
+              ) : (
+                <div className="text-muted p-3 text-center">Chưa có dữ liệu trạng thái tour</div>
+              )}
             </div>
           </div>
         </div>

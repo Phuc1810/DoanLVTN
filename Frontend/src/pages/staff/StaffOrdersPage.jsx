@@ -1,3 +1,4 @@
+import { MapPin } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { staffOrderApi } from '../../api/staffOrderApi'
@@ -27,7 +28,18 @@ export default function StaffOrdersPage() {
       <div className="toolbar-card">
         <div className="search-form">
           <div className="search-group"><input className="search-input" value={filters.q} onChange={(e) => setFilters((c) => ({ ...c, q: e.target.value, page: 1 }))} placeholder="Tìm mã đơn, khách hàng, tour..." /></div>
-          <div className="search-group"><select className="search-select" value={filters.TrangThai} onChange={(e) => setFilters((c) => ({ ...c, TrangThai: e.target.value, page: 1 }))}><option value="">Trạng thái</option><option>Chờ xử lý</option><option>Đã thanh toán</option><option>Đã hủy</option></select></div>
+          <div className="search-group">
+            <select className="search-select" value={filters.TrangThai} onChange={(e) => setFilters((c) => ({ ...c, TrangThai: e.target.value, page: 1 }))}>
+              <option value="">Tất cả trạng thái</option>
+              <option value="Chờ thanh toán">Chờ thanh toán</option>
+              <option value="Đã thanh toán">Đã thanh toán</option>
+              <option value="Đang diễn ra">Đang diễn ra</option>
+              <option value="Đã hoàn tất">Đã hoàn tất</option>
+              <option value="Hết chỗ">Hết chỗ</option>
+              <option value="Đã huỷ">Đã huỷ</option>
+              <option value="Đã hoàn tiền">Đã hoàn tiền</option>
+            </select>
+          </div>
         </div>
       </div>
       {state.loading && <Loading />}
@@ -42,12 +54,22 @@ export default function StaffOrdersPage() {
                   <tr key={order.MaDon}>
                     <td className="col-id">#{order.MaDon}</td>
                     <td>{order.khach_hang?.HoTen || order.KhachHang?.HoTen || order.HoTen}</td>
-                    <td><span className="cell-truncate">{order.tour?.TenTour || order.Tour?.TenTour || order.TenTour}</span></td>
+                    <td>
+                      <div className="fw-medium cell-truncate" title={order.tour?.TenTour || order.Tour?.TenTour || order.TenTour}>
+                        {order.tour?.TenTour || order.Tour?.TenTour || order.TenTour}
+                      </div>
+                      <div className="text-muted d-flex align-items-center mt-1" style={{ fontSize: '0.85rem' }}>
+                        <MapPin size={14} className="me-1" />
+                        <span className="cell-truncate" title={order.tour?.DiaDiem || order.DiaDiem || ''}>
+                          {order.tour?.DiaDiem || order.DiaDiem || '—'}
+                        </span>
+                      </div>
+                    </td>
                     <td>{formatDate(order.NgayDat)}</td>
                     <td>{countPeople(order)}</td>
                     <td>{formatCurrency(order.TongTienPhaiTra || order.TongTienGoc)}</td>
                     <td><StaffStatusBadge status={order.TrangThai} /></td>
-                    <td><StaffStatusBadge status={order.thanh_toan?.TrangThaiTT || order.TrangThaiTT} /></td>
+                    <td><StaffStatusBadge status={order.payment?.TrangThaiTT || order.TrangThaiTT} /></td>
                     <td><Link className="view-all" to={`/staff/orders/${order.MaDon}`}>Chi tiết</Link></td>
                   </tr>
                 ))}

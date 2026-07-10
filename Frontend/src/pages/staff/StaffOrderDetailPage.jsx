@@ -7,6 +7,7 @@ import StaffStatusBadge from '../../components/staff/StaffStatusBadge'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { formatDate } from '../../utils/formatDate'
 import { extractItem, normalizeError } from './staffPageUtils'
+import { buildImageUrl, tourImagePath } from '../../utils/imageUrl'
 import { ArrowLeft, Briefcase, UserCircle, Receipt } from 'lucide-react'
 
 export default function StaffOrderDetailPage() {
@@ -50,8 +51,8 @@ export default function StaffOrderDetailPage() {
               <Briefcase size={20} className="text-primary" /> Thông tin Tour
             </div>
 
-            {tour.image_url && (
-              <img src={tour.image_url} alt="Ảnh tour" style={{ width: '100%', height: '240px', objectFit: 'cover', borderRadius: '12px', marginBottom: '16px', border: '1px solid #eee' }} />
+            {tourImagePath(tour) && (
+              <img src={buildImageUrl(tourImagePath(tour))} alt="Ảnh tour" style={{ width: '100%', height: '240px', objectFit: 'cover', borderRadius: '12px', marginBottom: '16px', border: '1px solid #eee' }} />
             )}
 
             <h5 className="fw-bold mb-3">{tour.TenTour || order.TenTour || '—'}</h5>

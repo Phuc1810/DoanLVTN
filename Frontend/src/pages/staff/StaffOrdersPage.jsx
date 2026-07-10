@@ -1,4 +1,4 @@
-import { MapPin } from 'lucide-react'
+import { Banknote, CheckCircle2, ClipboardList, MapPin, RefreshCw, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { staffOrderApi } from '../../api/staffOrderApi'
@@ -8,6 +8,7 @@ import Loading from '../../components/common/Loading'
 import Pagination from '../../components/common/Pagination'
 import StaffStatusBadge from '../../components/staff/StaffStatusBadge'
 import StaffTable from '../../components/staff/StaffTable'
+import StaffStatCard from '../../components/staff/StaffStatCard'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { formatDate } from '../../utils/formatDate'
 import { countPeople, extractList, extractPagination, normalizeError } from './staffPageUtils'
@@ -15,16 +16,80 @@ import { countPeople, extractList, extractPagination, normalizeError } from './s
 export default function StaffOrdersPage() {
   const [filters, setFilters] = useState({ q: '', TrangThai: '', page: 1 })
   const [state, setState] = useState({ loading: true, error: '', rows: [], pagination: null })
+  const [stats, setStats] = useState(null)
 
-  useEffect(() => {
+  const fetchOrders = () => {
+    setState((prev) => ({ ...prev, loading: true }))
     staffOrderApi.list(filters)
       .then((payload) => setState({ loading: false, error: '', rows: extractList(payload), pagination: extractPagination(payload) }))
       .catch((error) => setState({ loading: false, error: normalizeError(error).message, rows: [], pagination: null }))
+  }
+
+  const fetchStats = () => {
+    staffOrderApi.stats()
+      .then((payload) => setStats(payload.data))
+      .catch(console.error)
+  }
+
+  useEffect(() => {
+    fetchOrders()
   }, [filters])
+
+  useEffect(() => {
+    fetchStats()
+  }, [])
+
+  const handleRefresh = () => {
+    fetchOrders()
+    fetchStats()
+  }
 
   return (
     <>
-      <div className="page-header"><h1 className="page-title">Đơn đặt tour</h1></div>
+      <div className="page-header align-items-start">
+        <div>
+          <h1 className="page-title">Quản lý Đơn đặt tour</h1>
+          <p className="text-muted mt-1 mb-0">Theo dõi và xử lý các đơn hàng từ khách hàng</p>
+        </div>
+        <button className="btn btn-primary d-flex align-items-center" onClick={handleRefresh}>
+          <RefreshCw size={16} className="me-2" /> Làm mới
+        </button>
+      </div>
+
+      <div className="row g-4 mb-4">
+        <div className="col-md-6 col-xl-3">
+          <StaffStatCard
+            icon={<ClipboardList size={22} />}
+            label="Chờ xử lý"
+            value={stats ? stats.pending_orders : 0}
+            tone="orange"
+          />
+        </div>
+        <div className="col-md-6 col-xl-3">
+          <StaffStatCard
+            icon={<CheckCircle2 size={22} />}
+            label="Đã thanh toán"
+            value={stats ? stats.paid_orders : 0}
+            tone="green"
+          />
+        </div>
+        <div className="col-md-6 col-xl-3">
+          <StaffStatCard
+            icon={<XCircle size={22} />}
+            label="Đã hủy"
+            value={stats ? stats.cancelled_orders : 0}
+            tone="red"
+          />
+        </div>
+        <div className="col-md-6 col-xl-3">
+          <StaffStatCard
+            icon={<Banknote size={22} />}
+            label="Doanh thu ngày"
+            value={stats ? formatCurrency(stats.daily_revenue) : '0 đ'}
+            tone="blue"
+          />
+        </div>
+      </div>
       <div className="toolbar-card">
         <div className="search-form">
           <div className="search-group"><input className="search-input" value={filters.q} onChange={(e) => setFilters((c) => ({ ...c, q: e.target.value, page: 1 }))} placeholder="Tìm mã đơn, khách hàng, tour..." /></div>

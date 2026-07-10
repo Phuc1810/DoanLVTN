@@ -12,6 +12,15 @@ class OrderManagementController extends Controller
     {
     }
 
+    public function stats()
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy thống kê đơn hàng thành công',
+            'data' => $this->staffOrderService->stats(),
+        ]);
+    }
+
     public function index(Request $request)
     {
         return response()->json([

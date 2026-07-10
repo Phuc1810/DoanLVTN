@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Http\Resources\StaffOrderDetailResource;
 use App\Http\Resources\StaffOrderResource;
 use App\Models\DonDatTour;
+use App\Models\ThanhToan;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -49,6 +50,25 @@ class StaffOrderService
             ->whereNotNull('t.NgayKetThuc')
             ->whereDate('t.NgayKetThuc', '<', $today)
             ->update(['d.TrangThai' => self::STATUS_DONE]);
+    }
+
+    /**
+     * Thống kê tổng quan cho trang Quản lý Đơn đặt tour (4 Stat Cards).
+     */
+    public function stats(): array
+    {
+        $this->syncOrderStatusesByDate();
+
+        $today = now()->toDateString();
+
+        return [
+            'pending_orders'   => DonDatTour::where('TrangThai', self::STATUS_PENDING)->count(),
+            'paid_orders'      => DonDatTour::where('TrangThai', self::STATUS_PAID)->count(),
+            'cancelled_orders' => DonDatTour::where('TrangThai', self::STATUS_CANCELLED)->count(),
+            'daily_revenue'    => (float) ThanhToan::where('TrangThaiTT', 'Thành công')
+                ->whereDate('NgayTT', $today)
+                ->sum('SoTien'),
+        ];
     }
 
     public function list(array $filters): array

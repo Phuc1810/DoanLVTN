@@ -4,6 +4,7 @@ export default function StaffStatCard({ icon, label, value, tone = 'blue', subti
     green: { bg: '#f0fdf4', color: '#22c55e', border: '#22c55e' },
     orange: { bg: '#fff7ed', color: '#f97316', border: '#f97316' },
     purple: { bg: '#f3e8ff', color: '#a855f7', border: '#a855f7' },
+    red: { bg: '#fef2f2', color: '#ef4444', border: '#ef4444' },
   }
   const c = toneColors[tone] || toneColors.blue
 

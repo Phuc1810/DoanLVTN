@@ -115,6 +115,7 @@ Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(functi
     Route::get('/dashboard/tour-status', [DashboardController::class, 'tourStatus']);
 
     Route::get('/orders', [OrderManagementController::class, 'index']);
+    Route::get('/orders/stats', [OrderManagementController::class, 'stats']);
     Route::get('/orders/{id}', [OrderManagementController::class, 'show'])->whereNumber('id');
 
     Route::get('/tours', [TourManagementController::class, 'index']);

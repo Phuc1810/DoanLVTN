@@ -27,7 +27,7 @@ export default function StaffOrdersPage() {
 
   const fetchStats = () => {
     staffOrderApi.stats()
-      .then((payload) => setStats(payload.data))
+      .then((payload) => setStats(payload))
       .catch(console.error)
   }
 
@@ -60,7 +60,7 @@ export default function StaffOrdersPage() {
         <div className="col-md-6 col-xl-3">
           <StaffStatCard
             icon={<ClipboardList size={22} />}
-            label="Chờ xử lý"
+            label="Chờ thanh toán"
             value={stats ? stats.pending_orders : 0}
             tone="orange"
           />
@@ -143,7 +143,9 @@ export default function StaffOrdersPage() {
           )}
         </StaffTable>
       )}
-      <Pagination pagination={state.pagination} onPageChange={(page) => setFilters((current) => ({ ...current, page }))} />
+      <div style={{ marginTop: '-150px' }}>
+        <Pagination pagination={state.pagination} onPageChange={(page) => setFilters((current) => ({ ...current, page }))} />
+      </div>
     </>
   )
 }

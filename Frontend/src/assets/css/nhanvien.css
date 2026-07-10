@@ -111,6 +111,8 @@ body {
 .badge-soft-success { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
 .badge-soft-danger { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
 .badge-soft-secondary { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+.badge-soft-purple { background: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; }
+.badge-soft-pink { background: #fdf2f8; color: #be185d; border: 1px solid #fbcfe8; }
 
 /* --- PAGINATION --- */
 .pagination { margin-bottom: 0; gap: 5px; }

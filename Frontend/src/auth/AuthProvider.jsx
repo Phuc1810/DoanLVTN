@@ -11,15 +11,23 @@ import { AuthContext } from './AuthContext'
 
 function extractAuthPayload(response) {
   const data = response?.data || response || {}
+  let user = data.user || data.tai_khoan || data.account || data
+  if (data.tai_khoan && data.nhan_vien) {
+    user = { ...user, nhan_vien: data.nhan_vien }
+  }
   return {
     token: data.token || data.access_token || data.plainTextToken,
-    user: data.user || data.tai_khoan || data.account || data,
+    user: user,
   }
 }
 
 function extractCurrentUser(response) {
   const data = response?.data || response || {}
-  return data.tai_khoan || data.user || data.account || data
+  let currentUser = data.tai_khoan || data.user || data.account || data
+  if (data.tai_khoan && data.nhan_vien) {
+    currentUser = { ...currentUser, nhan_vien: data.nhan_vien }
+  }
+  return currentUser
 }
 
 export function AuthProvider({ children }) {
@@ -115,6 +123,8 @@ export function AuthProvider({ children }) {
     token,
     loading,
     isAuthenticated: Boolean(token && user),
+    isCustomer: Boolean(token && user && user.VaiTro === 'KH'),
+    isStaff: Boolean(token && user && ['NV', 'AD'].includes(user.VaiTro)),
     login,
     staffLogin,
     googleLogin,

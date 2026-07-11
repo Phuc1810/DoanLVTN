@@ -3,7 +3,7 @@ import { useAuth } from '../../auth/useAuth'
 
 export default function Header() {
   const navigate = useNavigate()
-  const { user, isAuthenticated, logout } = useAuth()
+  const { user, isCustomer, logout } = useAuth()
 
   function submitQuickSearch(event) {
     event.preventDefault()
@@ -58,7 +58,7 @@ export default function Header() {
             </ul>
 
             <ul className="navbar-nav align-items-center">
-              {!isAuthenticated ? (
+              {!isCustomer ? (
                 <li className="nav-item login-item">
                   <Link className="nav-link login-link" to="/auth/login"><i className="fa-regular fa-user"></i> ĐĂNG NHẬP</Link>
                 </li>

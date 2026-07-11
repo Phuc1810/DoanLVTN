@@ -14,7 +14,7 @@ import { formatDate } from '../../utils/formatDate'
 import { countPeople, extractList, extractPagination, normalizeError } from './staffPageUtils'
 
 export default function StaffOrdersPage() {
-  const [filters, setFilters] = useState({ q: '', TrangThai: '', page: 1 })
+  const [filters, setFilters] = useState({ q: '', TrangThai: '', page: 1, per_page: 5 })
   const [state, setState] = useState({ loading: true, error: '', rows: [], pagination: null })
   const [stats, setStats] = useState(null)
 
@@ -143,8 +143,12 @@ export default function StaffOrdersPage() {
           )}
         </StaffTable>
       )}
-      <div style={{ marginTop: '-150px' }}>
-        <Pagination pagination={state.pagination} onPageChange={(page) => setFilters((current) => ({ ...current, page }))} />
+      <div style={{ marginTop: '-200px' }}>
+        <Pagination 
+          pagination={state.pagination} 
+          onPageChange={(page) => setFilters((current) => ({ ...current, page }))} 
+          itemName="đơn hàng" 
+        />
       </div>
     </>
   )

@@ -135,7 +135,9 @@ export default function StaffOrdersPage() {
                     <td>{formatCurrency(order.TongTienPhaiTra || order.TongTienGoc)}</td>
                     <td><StaffStatusBadge status={order.TrangThai} /></td>
                     <td><StaffStatusBadge status={order.payment?.TrangThaiTT || order.TrangThaiTT} /></td>
-                    <td><Link className="view-all" to={`/staff/orders/${order.MaDon}`}>Chi tiết</Link></td>
+                    <td className="text-center">
+                      <Link className="btn btn-outline-primary btn-sm rounded-pill px-3" to={`/staff/orders/${order.MaDon}`}>Chi tiết</Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -119,6 +119,7 @@ Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(functi
     Route::get('/orders/{id}', [OrderManagementController::class, 'show'])->whereNumber('id');
 
     Route::get('/tours', [TourManagementController::class, 'index']);
+    Route::get('/tours/metadata', [TourManagementController::class, 'metadata']);
     Route::post('/tours', [TourManagementController::class, 'store']);
     Route::patch('/tours/{id}/toggle', [TourManagementController::class, 'toggle'])->whereNumber('id');
     Route::get('/tours/{id}', [TourManagementController::class, 'show'])->whereNumber('id');

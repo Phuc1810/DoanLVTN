@@ -31,6 +31,15 @@ class TourManagementController extends Controller
         ]);
     }
 
+    public function metadata()
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy dữ liệu lọc thành công',
+            'data' => $this->staffTourService->metadata(),
+        ]);
+    }
+
     public function store(StoreTourRequest $request)
     {
         return response()->json([

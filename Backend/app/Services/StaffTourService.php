@@ -63,6 +63,21 @@ class StaffTourService
         ];
     }
 
+    public function metadata(): array
+    {
+        $loaiList = Tour::whereNotNull('LoaiTour')
+            ->where('LoaiTour', '!=', '')
+            ->distinct()
+            ->orderBy('LoaiTour')
+            ->pluck('LoaiTour')
+            ->toArray();
+
+        return [
+            'loaiList' => $loaiList,
+            'ttList' => [self::STATUS_ACTIVE, 'Hết chỗ', self::STATUS_INACTIVE],
+        ];
+    }
+
     public function detail(int $id): array
     {
         return $this->resource($this->findTour($id)->load([

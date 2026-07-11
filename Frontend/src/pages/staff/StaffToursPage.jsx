@@ -14,6 +14,17 @@ import { extractList, extractPagination, firstImageOfTour, imageSrc, normalizeEr
 export default function StaffToursPage() {
   const [filters, setFilters] = useState({ q: '', LoaiTour: '', TrangThai: '', page: 1 })
   const [state, setState] = useState({ loading: true, error: '', rows: [], pagination: null })
+  const [metadata, setMetadata] = useState({ loaiList: [], ttList: [] })
+
+  useEffect(() => {
+    staffTourApi.metadata().then(res => {
+      const data = res?.data || res
+      setMetadata({
+        loaiList: data.loaiList || [],
+        ttList: data.ttList || []
+      })
+    }).catch(console.error)
+  }, [])
 
   useEffect(() => {
     staffTourApi.list(filters)
@@ -40,8 +51,18 @@ export default function StaffToursPage() {
       <div className="toolbar-card">
         <div className="search-form">
           <div className="search-group"><input className="search-input" name="q" value={filters.q} onChange={updateFilter} placeholder="Tìm tên tour, địa điểm..." /></div>
-          <div className="search-group"><select className="search-select" name="LoaiTour" value={filters.LoaiTour} onChange={updateFilter}><option value="">Loại tour</option><option>Trong nước</option><option>Nước ngoài</option><option>Doanh nghiệp</option></select></div>
-          <div className="search-group"><select className="search-select" name="TrangThai" value={filters.TrangThai} onChange={updateFilter}><option value="">Trạng thái</option><option>Hoạt động</option><option>Tạm ngưng</option></select></div>
+          <div className="search-group">
+            <select className="search-select" name="LoaiTour" value={filters.LoaiTour} onChange={updateFilter}>
+              <option value="">-- Tất cả loại --</option>
+              {metadata.loaiList.map(x => <option key={x} value={x}>{x}</option>)}
+            </select>
+          </div>
+          <div className="search-group">
+            <select className="search-select" name="TrangThai" value={filters.TrangThai} onChange={updateFilter}>
+              <option value="">-- Tất cả trạng thái --</option>
+              {metadata.ttList.map(x => <option key={x} value={x}>{x}</option>)}
+            </select>
+          </div>
         </div>
       </div>
       {state.loading && <Loading />}

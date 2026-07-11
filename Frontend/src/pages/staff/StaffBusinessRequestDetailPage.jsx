@@ -28,6 +28,7 @@ export default function StaffBusinessRequestDetailPage() {
   const [form, setForm] = useState({ TrangThai: '', GiaTriHopDong: '', NgayThanhToan: '' })
   const [formError, setFormError] = useState(null)
   const [successMsg, setSuccessMsg] = useState('')
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -47,13 +48,21 @@ export default function StaffBusinessRequestDetailPage() {
       .catch((error) => setState({ loading: false, error: normalizeError(error).message, request: null }))
   }
 
+  function showToastMessage(msg) {
+    setSuccessMsg(msg)
+    setTimeout(() => {
+      setSuccessMsg('')
+    }, 5000)
+  }
+
   // Nhận xử lý đơn
   async function handleClaim() {
+    setShowConfirmModal(false)
     setFormError(null)
     setSuccessMsg('')
     try {
       await staffBusinessRequestApi.update(id, { action: 'claim' })
-      setSuccessMsg('Bạn đã nhận xử lý đơn hàng này thành công!')
+      showToastMessage('Bạn đã nhận xử lý đơn hàng này thành công!')
       loadData()
     } catch (error) {
       setFormError(normalizeError(error))
@@ -74,7 +83,7 @@ export default function StaffBusinessRequestDetailPage() {
       if (form.NgayThanhToan !== '') payload.NgayThanhToan = form.NgayThanhToan
 
       await staffBusinessRequestApi.update(id, payload)
-      setSuccessMsg('Cập nhật thành công!')
+      showToastMessage('Cập nhật thành công!')
       loadData()
     } catch (error) {
       setFormError(normalizeError(error))
@@ -122,10 +131,18 @@ export default function StaffBusinessRequestDetailPage() {
         </div>
       </header>
 
-      {/* Thông báo thành công */}
+      {/* Thông báo toast góc phải */}
       {successMsg && (
-        <div className="alert alert-success fw-bold d-flex align-items-center gap-2 mb-4">
-          <i className="fa-solid fa-check-circle"></i> {successMsg}
+        <div className="position-fixed top-0 end-0 p-3" style={{ zIndex: 1055, marginTop: '60px' }}>
+          <div className="toast show align-items-center text-white bg-success border-0 shadow" role="alert">
+            <div className="d-flex">
+              <div className="toast-body fw-medium">
+                <i className="fa-solid fa-check-circle me-2"></i>
+                {successMsg}
+              </div>
+              <button type="button" className="btn-close btn-close-white me-2 m-auto" onClick={() => setSuccessMsg('')}></button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -136,7 +153,7 @@ export default function StaffBusinessRequestDetailPage() {
         {/* ========= CỘT TRÁI (8/12) ========= */}
         <div className="col-lg-8">
 
-          {/* Card 1: Tour / Dịch vụ quan tâm */}
+          {/* Card 1:   Dịch vụ quan tâm */}
           <div className="staff-detail-card" style={{ marginBottom: '24px' }}>
             <div style={sectionTitleStyle}>
               <Briefcase size={20} className="text-primary" /> Tour / Dịch vụ quan tâm
@@ -273,7 +290,7 @@ export default function StaffBusinessRequestDetailPage() {
                 <div className="alert alert-warning small border-0">
                   <Bell size={14} className="me-1" /> Đơn này chưa có người xử lý. Bạn có muốn nhận không?
                 </div>
-                <button type="button" className="btn btn-primary w-100 fw-bold py-2" onClick={handleClaim}>
+                <button type="button" className="btn btn-primary w-100 fw-bold py-2" onClick={() => setShowConfirmModal(true)}>
                   <HandHeart size={16} className="me-1" /> Nhận xử lý đơn này
                 </button>
               </>
@@ -321,6 +338,31 @@ export default function StaffBusinessRequestDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal Xác nhận */}
+      {showConfirmModal && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '16px' }}>
+              <div className="modal-body text-center p-5">
+                <div className="mb-4 text-warning">
+                  <Bell size={48} />
+                </div>
+                <h5 className="mb-4 fw-bold">Bạn có muốn nhận đơn này không?</h5>
+                <p className="text-muted mb-4 small">Khi bạn nhận xử lý, đơn này sẽ được gán cho bạn và chuyển sang trạng thái "Đã liên hệ".</p>
+                <div className="d-flex justify-content-center gap-3">
+                  <button type="button" className="btn btn-light fw-medium px-4 py-2" style={{ borderRadius: '8px' }} onClick={() => setShowConfirmModal(false)}>
+                    Không
+                  </button>
+                  <button type="button" className="btn btn-primary fw-medium px-4 py-2" style={{ borderRadius: '8px' }} onClick={handleClaim}>
+                    Đồng ý
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

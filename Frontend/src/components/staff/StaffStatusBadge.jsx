@@ -20,6 +20,8 @@ const STATUS_CLASS = {
   'Chờ liên hệ': 'badge-soft-warning',
   'Chưa thanh toán': 'badge-soft-warning',
   'Hủy': 'badge-soft-danger',
+  'Hủy tour': 'badge-soft-danger',
+  'Hoàn thành': 'badge-soft-success',
 }
 
 export default function StaffStatusBadge({ status }) {

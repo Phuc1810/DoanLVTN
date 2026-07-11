@@ -9,21 +9,39 @@ import StaffStatusBadge from '../../components/staff/StaffStatusBadge'
 import StaffTable from '../../components/staff/StaffTable'
 import { formatDate } from '../../utils/formatDate'
 import { extractList, extractPagination, getId, normalizeError } from './staffPageUtils'
+import { RefreshCw } from 'lucide-react'
 
 export default function StaffBusinessRequestsPage() {
-  const [filters, setFilters] = useState({ q: '', TrangThai: '', page: 1 })
+  const [filters, setFilters] = useState({ q: '', TrangThai: '', page: 1, per_page: 5 })
   const [state, setState] = useState({ loading: true, error: '', rows: [], pagination: null })
 
-  useEffect(() => {
+  const fetchRequests = () => {
+    setState((prev) => ({ ...prev, loading: true }))
     staffBusinessRequestApi.list(filters)
       .then((payload) => setState({ loading: false, error: '', rows: extractList(payload), pagination: extractPagination(payload) }))
       .catch((error) => setState({ loading: false, error: normalizeError(error).message, rows: [], pagination: null }))
+  }
+
+  useEffect(() => {
+    fetchRequests()
   }, [filters])
+
+  const handleRefresh = () => {
+    fetchRequests()
+  }
 
   return (
     <>
-      <div className="page-header"><h1 className="page-title">Yêu cầu doanh nghiệp</h1></div>
-      <div className="toolbar-card"><div className="search-form"><div className="search-group"><input className="search-input" value={filters.q} onChange={(e) => setFilters((c) => ({ ...c, q: e.target.value, page: 1 }))} placeholder="Tìm công ty, người liên hệ..." /></div><div className="search-group"><select className="search-select" value={filters.TrangThai} onChange={(e) => setFilters((c) => ({ ...c, TrangThai: e.target.value, page: 1 }))}><option value="">Trạng thái</option><option>Chờ liên hệ</option><option>Đã liên hệ</option><option>Đã ký hợp đồng</option><option>Đã thanh toán</option><option>Hủy</option></select></div></div></div>
+      <div className="page-header align-items-start">
+        <div>
+          <h1 className="page-title">Yêu cầu doanh nghiệp</h1>
+          <p className="text-muted mt-1 mb-0">Quản lý và theo dõi các yêu cầu hợp tác từ doanh nghiệp</p>
+        </div>
+        <button className="btn btn-primary d-flex align-items-center" onClick={handleRefresh}>
+          <RefreshCw size={16} className="me-2" /> Làm mới
+        </button>
+      </div>
+      <div className="toolbar-card"><div className="search-form"><div className="search-group"><input className="search-input" value={filters.q} onChange={(e) => setFilters((c) => ({ ...c, q: e.target.value, page: 1 }))} placeholder="Tìm công ty, người liên hệ..." /></div><div className="search-group"><select className="search-select" value={filters.TrangThai} onChange={(e) => setFilters((c) => ({ ...c, TrangThai: e.target.value, page: 1 }))}><option value="">Tất cả trạng thái</option><option>Chờ xử lý</option><option>Đã liên hệ</option><option>Hủy tour</option><option>Hoàn thành</option></select></div></div></div>
       {state.loading && <Loading />}
       {state.error && <ErrorState message={state.error} />}
       {!state.loading && !state.error && (
@@ -52,7 +70,13 @@ export default function StaffBusinessRequestsPage() {
           )}
         </StaffTable>
       )}
-      <Pagination pagination={state.pagination} onPageChange={(page) => setFilters((current) => ({ ...current, page }))} />
+      <div style={{ marginTop: '-200px' }}>
+        <Pagination 
+          pagination={state.pagination} 
+          onPageChange={(page) => setFilters((current) => ({ ...current, page }))} 
+          itemName="yêu cầu"
+        />
+      </div>
     </>
   )
 }

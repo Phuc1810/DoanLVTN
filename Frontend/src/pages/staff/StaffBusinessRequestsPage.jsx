@@ -45,7 +45,9 @@ export default function StaffBusinessRequestsPage() {
       {state.loading && <Loading />}
       {state.error && <ErrorState message={state.error} />}
       {!state.loading && !state.error && (
-        <StaffTable>
+        <StaffTable
+          footer={<Pagination pagination={state.pagination} onPageChange={(page) => setFilters((current) => ({ ...current, page }))} itemName="yêu cầu" />}
+        >
           {state.rows.length === 0 ? <EmptyState /> : (
             <table className="table table-hover align-middle mb-0">
               <thead>
@@ -113,13 +115,6 @@ export default function StaffBusinessRequestsPage() {
           )}
         </StaffTable>
       )}
-      <div style={{ marginTop: '-150px' }}>
-        <Pagination 
-          pagination={state.pagination} 
-          onPageChange={(page) => setFilters((current) => ({ ...current, page }))} 
-          itemName="yêu cầu"
-        />
-      </div>
     </>
   )
 }

@@ -12,7 +12,7 @@ import { formatDate } from '../../utils/formatDate'
 import { extractList, extractPagination, firstImageOfTour, imageSrc, normalizeError } from './staffPageUtils'
 
 export default function StaffToursPage() {
-  const [filters, setFilters] = useState({ q: '', LoaiTour: '', TrangThai: '', page: 1 })
+  const [filters, setFilters] = useState({ q: '', loai: '', tt: '', page: 1, per_page: 5 })
   const [state, setState] = useState({ loading: true, error: '', rows: [], pagination: null })
   const [metadata, setMetadata] = useState({ loaiList: [], ttList: [] })
 
@@ -45,20 +45,23 @@ export default function StaffToursPage() {
   return (
     <>
       <div className="page-header">
-        <h1 className="page-title">Quản lý Tour</h1>
-        <Link className="staff-link-btn primary" to="/staff/tours/create">+ Thêm tour</Link>
+        <div>
+          <h1 className="page-title">Quản lý Tour</h1>
+          <p className="text-muted mt-1 mb-0" style={{ fontSize: '14px' }}>Quản lý danh sách, trạng thái và thông tin các tour</p>
+        </div>
+        <Link className="staff-link-btn btn-indigo" to="/staff/tours/create">Thêm Tour mới</Link>
       </div>
       <div className="toolbar-card">
         <div className="search-form">
           <div className="search-group"><input className="search-input" name="q" value={filters.q} onChange={updateFilter} placeholder="Tìm tên tour, địa điểm..." /></div>
           <div className="search-group">
-            <select className="search-select" name="LoaiTour" value={filters.LoaiTour} onChange={updateFilter}>
+            <select className="search-select" name="loai" value={filters.loai} onChange={updateFilter}>
               <option value="">-- Tất cả loại --</option>
               {metadata.loaiList.map(x => <option key={x} value={x}>{x}</option>)}
             </select>
           </div>
           <div className="search-group">
-            <select className="search-select" name="TrangThai" value={filters.TrangThai} onChange={updateFilter}>
+            <select className="search-select" name="tt" value={filters.tt} onChange={updateFilter}>
               <option value="">-- Tất cả trạng thái --</option>
               {metadata.ttList.map(x => <option key={x} value={x}>{x}</option>)}
             </select>
@@ -68,30 +71,85 @@ export default function StaffToursPage() {
       {state.loading && <Loading />}
       {state.error && <ErrorState message={state.error} />}
       {!state.loading && !state.error && (
-        <StaffTable>
+        <StaffTable
+          footer={<Pagination pagination={state.pagination} onPageChange={(page) => setFilters((current) => ({ ...current, page }))} itemName="tour" />}
+        >
           {state.rows.length === 0 ? <EmptyState /> : (
-            <table className="table">
-              <thead><tr><th>Mã</th><th>Ảnh</th><th>Tour</th><th>Giá</th><th>Ngày đi</th><th>Chỗ</th><th>Loại</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+            <table className="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th style={{ width: '60px', textAlign: 'center', fontWeight: 600, color: '#6b7280', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>MÃ</th>
+                  <th style={{ width: '100px', fontWeight: 600, color: '#6b7280', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>ẢNH</th>
+                  <th style={{ fontWeight: 600, color: '#6b7280', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>THÔNG TIN TOUR</th>
+                  <th style={{ fontWeight: 600, color: '#6b7280', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>GIÁ BÁN</th>
+                  <th style={{ fontWeight: 600, color: '#6b7280', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>CHỖ</th>
+                  <th style={{ fontWeight: 600, color: '#6b7280', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>LOẠI HÌNH</th>
+                  <th style={{ fontWeight: 600, color: '#6b7280', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>TRẠNG THÁI</th>
+                  <th className="text-end" style={{ fontWeight: 600, color: '#6b7280', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>THAO TÁC</th>
+                </tr>
+              </thead>
               <tbody>
-                {state.rows.map((tour) => (
-                  <tr key={tour.MaTour}>
-                    <td className="col-id">#{tour.MaTour}</td>
-                    <td><img className="thumb" src={imageSrc(firstImageOfTour(tour))} alt={tour.TenTour} /></td>
-                    <td><div className="tour-name">{tour.TenTour}</div><small className="text-muted">{tour.DiaDiem}</small></td>
-                    <td>{formatCurrency(tour.GiaGiam || tour.GiaGoc)}</td>
-                    <td>{formatDate(tour.NgayKhoiHanh)}</td>
-                    <td>{tour.SoChoDaDat || 0}/{tour.SoCho || 0}</td>
-                    <td>{tour.LoaiTour || tour.Mien}</td>
-                    <td><StaffStatusBadge status={tour.TrangThai} /></td>
-                    <td><div className="staff-mini-actions"><Link to={`/staff/tours/${tour.MaTour}`}>Xem</Link><Link to={`/staff/tours/${tour.MaTour}/edit`}>Sửa</Link><button type="button" onClick={() => toggleTour(tour.MaTour)}>Ẩn/hiện</button></div></td>
-                  </tr>
-                ))}
+                {state.rows.map((tour) => {
+                  const isActive = tour.TrangThai !== 'Ngừng hoạt động'
+                  const g0 = Number(tour.GiaGoc || 0)
+                  const gg = Number(tour.GiaGiam || 0)
+                  const price = (gg > 0 && gg < g0) ? gg : g0
+                  const soChoDaDat = Number(tour.SoChoDaDat || 0)
+                  const soCho = Number(tour.SoCho || 0)
+                  const percent = soCho > 0 ? Math.min(100, (soChoDaDat / soCho) * 100) : 0
+
+                  return (
+                    <tr key={tour.MaTour}>
+                      <td style={{ width: '60px', textAlign: 'center', fontWeight: 700, color: '#111827', padding: '16px 20px' }}>
+                        #{tour.MaTour}
+                      </td>
+                      <td style={{ padding: '16px 20px' }}>
+                        <img src={imageSrc(firstImageOfTour(tour))} alt={tour.TenTour} style={{ width: '80px', height: '55px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #eee' }} />
+                      </td>
+                      <td style={{ padding: '16px 20px' }}>
+                        <div className="fw-bold text-dark" style={{ maxWidth: '280px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '15px' }} title={tour.TenTour}>
+                          {tour.TenTour}
+                        </div>
+                        <div className="small text-muted mt-1">
+                          <i className="fa-solid fa-location-dot me-1 text-danger"></i>{tour.DiaDiem || '-'}
+                          <span className="mx-1 text-secondary">•</span>
+                          <i className="fa-regular fa-clock me-1 text-primary"></i>{tour.ThoiLuong || '-'}
+                        </div>
+                      </td>
+                      <td style={{ padding: '16px 20px' }}>
+                        <div className="fw-bold text-dark">{formatCurrency(price)}</div>
+                        {gg > 0 && gg < g0 && (
+                          <div className="text-muted small text-decoration-line-through">{formatCurrency(g0)}</div>
+                        )}
+                      </td>
+                      <td style={{ padding: '16px 20px' }}>
+                        <span className="fw-bold">{soChoDaDat}</span> <span className="text-muted">/ {soCho}</span>
+                        <div className="progress mt-1" style={{ height: '4px', width: '60px' }}>
+                          <div className="progress-bar bg-primary" role="progressbar" style={{ width: `${percent}%` }}></div>
+                        </div>
+                      </td>
+                      <td style={{ padding: '16px 20px' }}>
+                        <span className="small text-muted">{tour.LoaiTour || tour.Mien || ''}</span>
+                      </td>
+                      <td style={{ padding: '16px 20px' }}>
+                        <StaffStatusBadge status={tour.TrangThai} />
+                      </td>
+                      <td className="text-end" style={{ padding: '16px 20px' }}>
+                        <Link className="btn btn-sm btn-outline-primary rounded-pill me-1" to={`/staff/tours/${tour.MaTour}/edit`} title="Sửa">
+                          <i className="fa-solid fa-pen"></i>
+                        </Link>
+                        <button type="button" onClick={() => toggleTour(tour.MaTour)} className={`btn btn-sm rounded-pill ${isActive ? 'btn-outline-secondary' : 'btn-outline-success'}`} title={isActive ? 'Ngừng hoạt động' : 'Kích hoạt'}>
+                          {isActive ? <i className="fa-regular fa-eye-slash"></i> : <i className="fa-regular fa-eye"></i>}
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           )}
         </StaffTable>
       )}
-      <Pagination pagination={state.pagination} onPageChange={(page) => setFilters((current) => ({ ...current, page }))} />
     </>
   )
 }

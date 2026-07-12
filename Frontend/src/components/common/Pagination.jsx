@@ -25,13 +25,14 @@ export default function Pagination({ pagination, onPageChange, itemName = 'mục
   }
 
   return (
-    <div className="d-flex justify-content-between align-items-center mt-4">
-      <div className="text-muted ms-3" style={{ fontSize: '14px' }}>
+    <div className={`d-flex justify-content-between align-items-center w-100 px-3`}>
+      <div className="text-muted" style={{ fontSize: '14px' }}>
         Hiển thị {from}-{to} trên {total} {itemName}
       </div>
       <div className="d-flex gap-2">
         <button
-          className="btn btn-outline-secondary btn-sm px-3"
+          className="btn btn-outline-secondary btn-sm"
+          style={{ width: '32px', height: '32px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           disabled={current_page === 1}
           onClick={() => onPageChange(current_page - 1)}
         >
@@ -39,13 +40,19 @@ export default function Pagination({ pagination, onPageChange, itemName = 'mục
         </button>
         {getPageNumbers().map((page, index) => (
           page === '...' ? (
-            <button key={`ellipsis-${index}`} className="btn btn-outline-secondary btn-sm px-3" disabled>
+            <button
+              key={`ellipsis-${index}`}
+              className="btn btn-outline-secondary btn-sm"
+              style={{ width: '32px', height: '32px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              disabled
+            >
               ...
             </button>
           ) : (
             <button
               key={page}
-              className={`btn btn-sm px-3 ${page === current_page ? 'btn-primary' : 'btn-outline-secondary'}`}
+              className={`btn btn-sm ${page === current_page ? 'btn-primary rounded-circle' : 'btn-outline-secondary'}`}
+              style={{ width: '32px', height: '32px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: page === current_page ? '600' : '400' }}
               onClick={() => onPageChange(page)}
             >
               {page}
@@ -53,7 +60,8 @@ export default function Pagination({ pagination, onPageChange, itemName = 'mục
           )
         ))}
         <button
-          className="btn btn-outline-secondary btn-sm px-3"
+          className="btn btn-outline-secondary btn-sm"
+          style={{ width: '32px', height: '32px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           disabled={current_page === last_page}
           onClick={() => onPageChange(current_page + 1)}
         >

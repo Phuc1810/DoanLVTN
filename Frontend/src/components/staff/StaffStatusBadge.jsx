@@ -2,6 +2,7 @@ const STATUS_CLASS = {
   // Tour states
   'Hoạt động': 'badge-soft-success',
   'Đang hoạt động': 'badge-soft-success',
+  'Ngừng hoạt động': 'badge-soft-secondary',
   'Tạm ngưng': 'badge-soft-secondary',
 
   // Order states

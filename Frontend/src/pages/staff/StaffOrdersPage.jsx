@@ -110,7 +110,9 @@ export default function StaffOrdersPage() {
       {state.loading && <Loading />}
       {state.error && <ErrorState message={state.error} />}
       {!state.loading && !state.error && (
-        <StaffTable>
+        <StaffTable
+          footer={<Pagination pagination={state.pagination} onPageChange={(page) => setFilters((current) => ({ ...current, page }))} itemName="đơn hàng" />}
+        >
           {state.rows.length === 0 ? <EmptyState /> : (
             <table className="table">
               <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Tour</th><th>Ngày đặt</th><th>Số người</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thanh toán</th><th></th></tr></thead>
@@ -145,13 +147,6 @@ export default function StaffOrdersPage() {
           )}
         </StaffTable>
       )}
-      <div style={{ marginTop: '-200px' }}>
-        <Pagination 
-          pagination={state.pagination} 
-          onPageChange={(page) => setFilters((current) => ({ ...current, page }))} 
-          itemName="đơn hàng" 
-        />
-      </div>
     </>
   )
 }

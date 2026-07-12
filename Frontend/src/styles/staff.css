@@ -18,6 +18,20 @@
   justify-content: center;
   gap: 8px;
   cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-indigo {
+  background-color: #5a5af3;
+  color: #fff !important;
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+.btn-indigo:hover {
+  background-color: #4a4ae2;
+  box-shadow: 0 4px 10px rgba(90, 90, 243, 0.3);
+  transform: translateY(-1px);
 }
 
 .staff-action-btn.primary,

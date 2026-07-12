@@ -14,6 +14,7 @@ export function buildImageUrl(pathOrUrl, fallback = '/assets/img/no-image.jpg') 
   }
   if (path.startsWith('/storage')) return ASSET_BASE_URL + path
   if (path.startsWith('storage/')) return `${ASSET_BASE_URL}/${path}`
+  if (path.startsWith('tours/') || path.startsWith('news/') || path.startsWith('promotions/')) return `${ASSET_BASE_URL}/storage/${path}`
   if (path.startsWith('/assets/')) return path
   if (path.startsWith('assets/')) return `/${path}`
   if (path.startsWith('img/')) return `/assets/${path}`

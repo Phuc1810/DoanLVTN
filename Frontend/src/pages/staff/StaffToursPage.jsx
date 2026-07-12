@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { staffTourApi } from '../../api/staffTourApi'
 import EmptyState from '../../components/common/EmptyState'
 import ErrorState from '../../components/common/ErrorState'
@@ -12,6 +12,18 @@ import { formatDate } from '../../utils/formatDate'
 import { extractList, extractPagination, firstImageOfTour, imageSrc, normalizeError } from './staffPageUtils'
 
 export default function StaffToursPage() {
+  const location = useLocation()
+  const [toastMessage, setToastMessage] = useState('')
+
+  useEffect(() => {
+    if (location.state?.toastMessage) {
+      setToastMessage(location.state.toastMessage)
+      window.history.replaceState({}, document.title)
+      const timer = setTimeout(() => setToastMessage(''), 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [location.state])
+
   const [filters, setFilters] = useState({ q: '', loai: '', tt: '', page: 1, per_page: 5 })
   const [state, setState] = useState({ loading: true, error: '', rows: [], pagination: null })
   const [metadata, setMetadata] = useState({ loaiList: [], ttList: [] })
@@ -179,6 +191,24 @@ export default function StaffToursPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {toastMessage && (
+        <div 
+          className="toast align-items-center text-white bg-success border-0 show fade" 
+          role="alert" 
+          aria-live="assertive" 
+          aria-atomic="true"
+          style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 9999, minWidth: '250px' }}
+        >
+          <div className="d-flex">
+            <div className="toast-body fw-semibold">
+              <i className="fa-solid fa-circle-check me-2"></i>
+              {toastMessage}
+            </div>
+            <button type="button" className="btn-close btn-close-white me-2 m-auto" onClick={() => setToastMessage('')} aria-label="Close"></button>
           </div>
         </div>
       )}

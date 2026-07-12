@@ -36,11 +36,17 @@ export default function StaffToursPage() {
     setFilters((current) => ({ ...current, [event.target.name]: event.target.value, page: 1 }))
   }
 
-  async function toggleTour(id) {
-    if (!window.confirm('Bạn muốn đổi trạng thái tour này?')) return
-    await staffTourApi.toggle(id)
+  const [toggleModal, setToggleModal] = useState({ isOpen: false, tourId: null, isActive: false })
+
+  async function confirmToggle() {
+    if (!toggleModal.tourId) return
+    await staffTourApi.toggle(toggleModal.tourId)
     setFilters((current) => ({ ...current }))
+    setToggleModal({ isOpen: false, tourId: null, isActive: false })
   }
+
+  // Replaced toggleTour with confirmToggle and state
+
 
   return (
     <>
@@ -138,7 +144,7 @@ export default function StaffToursPage() {
                         <Link className="btn btn-sm btn-outline-primary rounded-pill me-1" to={`/staff/tours/${tour.MaTour}/edit`} title="Sửa">
                           <i className="fa-solid fa-pen"></i>
                         </Link>
-                        <button type="button" onClick={() => toggleTour(tour.MaTour)} className={`btn btn-sm rounded-pill ${isActive ? 'btn-outline-secondary' : 'btn-outline-success'}`} title={isActive ? 'Ngừng hoạt động' : 'Kích hoạt'}>
+                        <button type="button" onClick={() => setToggleModal({ isOpen: true, tourId: tour.MaTour, isActive })} className={`btn btn-sm rounded-pill ${isActive ? 'btn-outline-secondary' : 'btn-outline-success'}`} title={isActive ? 'Ngừng hoạt động' : 'Kích hoạt'}>
                           {isActive ? <i className="fa-regular fa-eye-slash"></i> : <i className="fa-regular fa-eye"></i>}
                         </button>
                       </td>
@@ -149,6 +155,32 @@ export default function StaffToursPage() {
             </table>
           )}
         </StaffTable>
+      )}
+
+      {toggleModal.isOpen && (
+        <div className="modal-backdrop fade show" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1040 }}></div>
+      )}
+      {toggleModal.isOpen && (
+        <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content" style={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+              <div className="modal-body text-center p-4">
+                <div className="mb-3">
+                  <i className="fa-solid fa-circle-question text-primary" style={{ fontSize: '50px', opacity: 0.8 }}></i>
+                </div>
+                <h5 className="mb-4 text-dark fw-bold" style={{ lineHeight: '1.5' }}>
+                  {toggleModal.isActive 
+                    ? 'Bạn có muốn ngừng hoạt động tour này không?' 
+                    : 'Bạn có muốn kích hoạt tour này không?'}
+                </h5>
+                <div className="d-flex justify-content-center gap-3">
+                  <button type="button" className="btn btn-outline-secondary px-4 rounded-pill" onClick={() => setToggleModal({ isOpen: false, tourId: null, isActive: false })}>Hủy</button>
+                  <button type="button" className="btn btn-primary px-4 rounded-pill" onClick={confirmToggle}>Đồng ý</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </>
   )

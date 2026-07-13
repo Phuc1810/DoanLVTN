@@ -69,20 +69,43 @@ export default function StaffToursPage() {
         </div>
         <Link className="staff-link-btn btn-indigo" to="/staff/tours/create">Thêm Tour mới</Link>
       </div>
-      <div className="toolbar-card">
-        <div className="search-form">
-          <div className="search-group"><input className="search-input" name="q" value={filters.q} onChange={updateFilter} placeholder="Tìm tên tour, địa điểm..." /></div>
-          <div className="search-group">
-            <select className="search-select" name="loai" value={filters.loai} onChange={updateFilter}>
-              <option value="">-- Tất cả loại --</option>
-              {metadata.loaiList.map(x => <option key={x} value={x}>{x}</option>)}
-            </select>
+      {/* Filters Toolbar */}
+      <div className="card border-0 shadow-sm rounded-4 mb-4 p-2" style={{ backgroundColor: '#fff' }}>
+        <div className="row g-2">
+          {/* Search */}
+          <div className="col-md-6">
+            <div className="input-group" style={{ backgroundColor: '#f9fafb', borderRadius: '10px', overflow: 'hidden', border: '1px solid #f3f4f6' }}>
+              <span className="input-group-text bg-transparent border-0" style={{ color: '#6b7280', paddingRight: '4px', paddingLeft: '16px' }}>
+                <i className="fa-solid fa-magnifying-glass"></i>
+              </span>
+              <input type="text" className="form-control bg-transparent border-0 shadow-none text-dark fw-medium" name="q" value={filters.q} onChange={updateFilter} placeholder="Tìm tên tour, địa điểm..." style={{ fontSize: '14.5px', padding: '10px 12px' }} />
+            </div>
           </div>
-          <div className="search-group">
-            <select className="search-select" name="tt" value={filters.tt} onChange={updateFilter}>
-              <option value="">-- Tất cả trạng thái --</option>
-              {metadata.ttList.map(x => <option key={x} value={x}>{x}</option>)}
-            </select>
+          
+          {/* Loại */}
+          <div className="col-md-3">
+            <div className="input-group" style={{ backgroundColor: '#f9fafb', borderRadius: '10px', overflow: 'hidden', border: '1px solid #f3f4f6' }}>
+              <span className="input-group-text bg-transparent border-0" style={{ color: '#6b7280', paddingRight: '4px', paddingLeft: '16px' }}>
+                <i className="fa-solid fa-filter"></i>
+              </span>
+              <select className="form-select bg-transparent border-0 shadow-none text-dark fw-medium" name="loai" value={filters.loai} onChange={updateFilter} style={{ fontSize: '14.5px', padding: '10px 12px', cursor: 'pointer' }}>
+                <option value="">-- Tất cả loại --</option>
+                {metadata.loaiList.map(x => <option key={x} value={x}>{x}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Trạng thái */}
+          <div className="col-md-3">
+            <div className="input-group" style={{ backgroundColor: '#f9fafb', borderRadius: '10px', overflow: 'hidden', border: '1px solid #f3f4f6' }}>
+              <span className="input-group-text bg-transparent border-0" style={{ color: '#6b7280', paddingRight: '4px', paddingLeft: '16px' }}>
+                <i className="fa-solid fa-toggle-on"></i>
+              </span>
+              <select className="form-select bg-transparent border-0 shadow-none text-dark fw-medium" name="tt" value={filters.tt} onChange={updateFilter} style={{ fontSize: '14.5px', padding: '10px 12px', cursor: 'pointer' }}>
+                <option value="">-- Tất cả trạng thái --</option>
+                {metadata.ttList.map(x => <option key={x} value={x}>{x}</option>)}
+              </select>
+            </div>
           </div>
         </div>
       </div>

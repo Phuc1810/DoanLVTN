@@ -10,7 +10,7 @@ const STATUS_CLASS = {
   'Đã thanh toán': 'badge-soft-info', // Blue
   'Đang diễn ra': 'badge-soft-purple', // Purple
   'Đã hoàn tất': 'badge-soft-success', // Green
-  'Hết chỗ': 'badge-soft-secondary', // Gray
+  'Hết chỗ': 'badge-soft-danger', // Red
   'Đã huỷ': 'badge-soft-danger', // Red
   'Đã hoàn tiền': 'badge-soft-pink', // Pink
 

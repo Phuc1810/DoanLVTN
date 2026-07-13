@@ -138,6 +138,7 @@ Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(functi
     Route::get('/news', [NewsManagementController::class, 'index']);
     Route::get('/news/stats', [NewsManagementController::class, 'stats']);
     Route::post('/news', [NewsManagementController::class, 'store']);
+    Route::post('/news/upload-editor-image', [NewsManagementController::class, 'uploadEditorImage']);
     Route::patch('/news/{id}/toggle', [NewsManagementController::class, 'toggle'])->whereNumber('id');
     Route::get('/news/{id}', [NewsManagementController::class, 'show'])->whereNumber('id');
     Route::put('/news/{id}', [NewsManagementController::class, 'update'])->whereNumber('id');

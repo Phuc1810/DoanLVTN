@@ -39,6 +39,24 @@ class UploadService
         return $this->uploadPromotionImage($file, $promotionId);
     }
 
+    /**
+     * Upload ảnh từ trình soạn thảo (CKEditor / TinyMCE).
+     * Ảnh được lưu vào thư mục riêng "editor" trên disk public.
+     */
+    public function uploadEditorImage(UploadedFile $file): string
+    {
+        $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+        $fileName = 'editor_' . date('Ymd_His') . '_' . Str::random(8) . '.' . $extension;
+
+        $stored = Storage::disk('public')->putFileAs('editor', $file, $fileName);
+
+        if (! $stored) {
+            throw new RuntimeException('Không lưu được ảnh editor upload.');
+        }
+
+        return $stored;
+    }
+
     public function publicUrl(?string $path): ?string
     {
         if (! $path) {
@@ -55,7 +73,7 @@ class UploadService
             return url($path);
         }
 
-        if (str_starts_with($path, 'tours/') || str_starts_with($path, 'news/') || str_starts_with($path, 'promotions/')) {
+        if (str_starts_with($path, 'tours/') || str_starts_with($path, 'news/') || str_starts_with($path, 'promotions/') || str_starts_with($path, 'editor/')) {
             return url(Storage::url($path));
         }
 

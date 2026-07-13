@@ -90,20 +90,36 @@ export default function StaffOrdersPage() {
           />
         </div>
       </div>
-      <div className="toolbar-card">
-        <div className="search-form">
-          <div className="search-group"><input className="search-input" value={filters.q} onChange={(e) => setFilters((c) => ({ ...c, q: e.target.value, page: 1 }))} placeholder="Tìm mã đơn, khách hàng, tour..." /></div>
-          <div className="search-group">
-            <select className="search-select" value={filters.TrangThai} onChange={(e) => setFilters((c) => ({ ...c, TrangThai: e.target.value, page: 1 }))}>
-              <option value="">Tất cả trạng thái</option>
-              <option value="Chờ thanh toán">Chờ thanh toán</option>
-              <option value="Đã thanh toán">Đã thanh toán</option>
-              <option value="Đang diễn ra">Đang diễn ra</option>
-              <option value="Đã hoàn tất">Đã hoàn tất</option>
-              <option value="Hết chỗ">Hết chỗ</option>
-              <option value="Đã huỷ">Đã huỷ</option>
-              <option value="Đã hoàn tiền">Đã hoàn tiền</option>
-            </select>
+      {/* Filters Toolbar */}
+      <div className="card border-0 shadow-sm rounded-4 mb-4 p-2" style={{ backgroundColor: '#fff' }}>
+        <div className="row g-2">
+          {/* Search */}
+          <div className="col-md-9">
+            <div className="input-group" style={{ backgroundColor: '#f9fafb', borderRadius: '10px', overflow: 'hidden', border: '1px solid #f3f4f6' }}>
+              <span className="input-group-text bg-transparent border-0" style={{ color: '#6b7280', paddingRight: '4px', paddingLeft: '16px' }}>
+                <i className="fa-solid fa-magnifying-glass"></i>
+              </span>
+              <input type="text" className="form-control bg-transparent border-0 shadow-none text-dark fw-medium" value={filters.q} onChange={(e) => setFilters((c) => ({ ...c, q: e.target.value, page: 1 }))} placeholder="Nhập mã đơn, tên tour..." style={{ fontSize: '14.5px', padding: '10px 12px' }} />
+            </div>
+          </div>
+
+          {/* Trạng thái */}
+          <div className="col-md-3">
+            <div className="input-group" style={{ backgroundColor: '#f9fafb', borderRadius: '10px', overflow: 'hidden', border: '1px solid #f3f4f6' }}>
+              <span className="input-group-text bg-transparent border-0" style={{ color: '#6b7280', paddingRight: '4px', paddingLeft: '16px' }}>
+                <i className="fa-solid fa-filter"></i>
+              </span>
+              <select className="form-select bg-transparent border-0 shadow-none text-dark fw-medium" value={filters.TrangThai} onChange={(e) => setFilters((c) => ({ ...c, TrangThai: e.target.value, page: 1 }))} style={{ fontSize: '14.5px', padding: '10px 12px', cursor: 'pointer' }}>
+                <option value="">Tất cả trạng thái</option>
+                <option value="Chờ thanh toán">Chờ thanh toán</option>
+                <option value="Đã thanh toán">Đã thanh toán</option>
+                <option value="Đang diễn ra">Đang diễn ra</option>
+                <option value="Đã hoàn tất">Đã hoàn tất</option>
+                <option value="Hết chỗ">Hết chỗ</option>
+                <option value="Đã huỷ">Đã huỷ</option>
+                <option value="Đã hoàn tiền">Đã hoàn tiền</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>

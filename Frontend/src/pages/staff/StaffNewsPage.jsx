@@ -40,8 +40,8 @@ export default function StaffNewsPage() {
           <h1 className="page-title mb-1" style={{ fontSize: '28px', fontWeight: 'bold', color: '#111827' }}>Quản lý tin tức</h1>
           <div className="text-muted" style={{ fontSize: '14px' }}>Xem, chỉnh sửa và quản lý các bài đăng tin tức hệ thống</div>
         </div>
-        <Link className="btn btn-primary shadow-sm" to="/staff/news/create" style={{ borderRadius: '8px', padding: '8px 16px', fontWeight: '600', backgroundColor: '#2563eb', border: 'none', fontSize: '14.5px' }}>
-          <i className="fa-solid fa-plus me-2"></i> Thêm tin mới
+        <Link className="btn shadow-sm" to="/staff/news/create" style={{ borderRadius: '10px', padding: '10px 24px', fontWeight: '700', backgroundColor: '#6366f1', color: '#fff', border: 'none', fontSize: '15px', letterSpacing: '0.3px' }}>
+          Thêm tin mới
         </Link>
       </div>
 

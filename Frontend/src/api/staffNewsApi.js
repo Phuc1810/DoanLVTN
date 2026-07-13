@@ -6,4 +6,5 @@ export const staffNewsApi = {
   create: (payload) => axiosClient.post('/staff/news', payload),
   update: (id, payload) => axiosClient.post(`/staff/news/${id}`, payload),
   toggle: (id) => axiosClient.patch(`/staff/news/${id}/toggle`),
+  stats: () => axiosClient.get('/staff/news/stats'),
 }

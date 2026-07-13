@@ -23,6 +23,10 @@ const STATUS_CLASS = {
   'Hủy': 'badge-soft-danger',
   'Hủy tour': 'badge-soft-danger',
   'Hoàn thành': 'badge-soft-success',
+  
+  // News states
+  'Hiển thị': 'badge-soft-success', // Green
+  'Ẩn': 'badge-soft-danger', // Red
 }
 
 export default function StaffStatusBadge({ status }) {

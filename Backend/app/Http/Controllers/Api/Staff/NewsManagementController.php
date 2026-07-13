@@ -23,6 +23,15 @@ class NewsManagementController extends Controller
         ]);
     }
 
+    public function stats()
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy thống kê tin tức thành công',
+            'data' => $this->staffNewsService->stats(),
+        ]);
+    }
+
     public function store(StoreNewsRequest $request)
     {
         return response()->json([
@@ -38,6 +47,15 @@ class NewsManagementController extends Controller
             'success' => true,
             'message' => 'Cập nhật tin tức thành công',
             'data' => $this->staffNewsService->update($id, $request->validated(), $request->file('AnhDaiDien'), $request->user()),
+        ]);
+    }
+
+    public function show(int $id)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy chi tiết tin tức thành công',
+            'data' => $this->staffNewsService->detail($id),
         ]);
     }
 

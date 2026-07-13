@@ -21,10 +21,16 @@ class TinTuc extends Model
         'NgayDang',
         'TrangThai',
         'MaNV',
+        'LuotXem',
     ];
 
     public function nhanVien()
     {
         return $this->belongsTo(NhanVien::class, 'MaNV', 'MaNV');
+    }
+
+    public function binhLuans()
+    {
+        return $this->hasMany(BinhLuan::class, 'MaTin', 'MaTin');
     }
 }

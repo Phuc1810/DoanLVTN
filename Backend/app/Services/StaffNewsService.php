@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Http\Resources\NewsDetailResource;
 use App\Http\Resources\NewsResource;
+use App\Models\BinhLuan;
 use App\Models\TaiKhoan;
 use App\Models\TinTuc;
+use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -119,6 +121,42 @@ class StaffNewsService
     public function detail(int $id): array
     {
         return (new NewsDetailResource($this->findNews($id)->load('nhanVien')))->resolve();
+    }
+
+    public function stats(): array
+    {
+        $totalPosts = TinTuc::count();
+        $visiblePosts = TinTuc::where('TrangThai', self::STATUS_VISIBLE)->count();
+
+        // Lượt xem tháng hiện tại
+        $startOfMonth = Carbon::now()->startOfMonth()->toDateString();
+        $endOfMonth = Carbon::now()->endOfMonth()->toDateString();
+
+        $monthlyViews = (int) TinTuc::whereBetween('NgayDang', [$startOfMonth, $endOfMonth])
+            ->sum('LuotXem');
+
+        // Nếu không có bài nào đăng trong tháng, lấy tổng lượt xem toàn bộ
+        $totalViews = (int) TinTuc::sum('LuotXem');
+        if ($monthlyViews === 0) {
+            $monthlyViews = $totalViews;
+        }
+
+        // Tổng bình luận
+        $totalComments = BinhLuan::count();
+
+        // Tỉ lệ tương tác = (Tổng bình luận / Tổng lượt xem) * 100
+        $engagementRate = $totalViews > 0
+            ? round(($totalComments / $totalViews) * 100, 1)
+            : 0;
+
+        return [
+            'totalPosts' => $totalPosts,
+            'visiblePosts' => $visiblePosts,
+            'monthlyViews' => $monthlyViews,
+            'totalViews' => $totalViews,
+            'totalComments' => $totalComments,
+            'engagementRate' => $engagementRate,
+        ];
     }
 
     private function findNews(int $id): TinTuc

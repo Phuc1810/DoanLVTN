@@ -46,6 +46,9 @@ class TinTucController extends Controller
             ], 404);
         }
 
+        // Tự động tăng lượt xem khi xem chi tiết
+        $tinTuc->increment('LuotXem');
+
         return response()->json([
             'success' => true,
             'data' => $tinTuc,

@@ -41,7 +41,36 @@ export default function StaffBusinessRequestsPage() {
           <RefreshCw size={16} className="me-2" /> Làm mới
         </button>
       </div>
-      <div className="toolbar-card"><div className="search-form"><div className="search-group"><input className="search-input" value={filters.q} onChange={(e) => setFilters((c) => ({ ...c, q: e.target.value, page: 1 }))} placeholder="Tìm công ty, người liên hệ..." /></div><div className="search-group"><select className="search-select" value={filters.TrangThai} onChange={(e) => setFilters((c) => ({ ...c, TrangThai: e.target.value, page: 1 }))}><option value="">Tất cả trạng thái</option><option>Chờ xử lý</option><option>Đã liên hệ</option><option>Hủy tour</option><option>Hoàn thành</option></select></div></div></div>
+      {/* Filters Toolbar */}
+      <div className="card border-0 shadow-sm rounded-4 mb-4 p-2" style={{ backgroundColor: '#fff' }}>
+        <div className="row g-2">
+          {/* Search */}
+          <div className="col-md-9">
+            <div className="input-group" style={{ backgroundColor: '#f9fafb', borderRadius: '10px', overflow: 'hidden', border: '1px solid #f3f4f6' }}>
+              <span className="input-group-text bg-transparent border-0" style={{ color: '#6b7280', paddingRight: '4px', paddingLeft: '16px' }}>
+                <i className="fa-solid fa-magnifying-glass"></i>
+              </span>
+              <input type="text" className="form-control bg-transparent border-0 shadow-none text-dark fw-medium" value={filters.q} onChange={(e) => setFilters((c) => ({ ...c, q: e.target.value, page: 1 }))} placeholder="Tìm tên công ty, người liên hệ, SĐT..." style={{ fontSize: '14.5px', padding: '10px 12px' }} />
+            </div>
+          </div>
+
+          {/* Trạng thái */}
+          <div className="col-md-3">
+            <div className="input-group" style={{ backgroundColor: '#f9fafb', borderRadius: '10px', overflow: 'hidden', border: '1px solid #f3f4f6' }}>
+              <span className="input-group-text bg-transparent border-0" style={{ color: '#6b7280', paddingRight: '4px', paddingLeft: '16px' }}>
+                <i className="fa-solid fa-filter"></i>
+              </span>
+              <select className="form-select bg-transparent border-0 shadow-none text-dark fw-medium" value={filters.TrangThai} onChange={(e) => setFilters((c) => ({ ...c, TrangThai: e.target.value, page: 1 }))} style={{ fontSize: '14.5px', padding: '10px 12px', cursor: 'pointer' }}>
+                <option value="">Tất cả trạng thái</option>
+                <option value="Chờ xử lý">Chờ xử lý</option>
+                <option value="Đã liên hệ">Đã liên hệ</option>
+                <option value="Hủy tour">Hủy tour</option>
+                <option value="Hoàn thành">Hoàn thành</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
       {state.loading && <Loading />}
       {state.error && <ErrorState message={state.error} />}
       {!state.loading && !state.error && (

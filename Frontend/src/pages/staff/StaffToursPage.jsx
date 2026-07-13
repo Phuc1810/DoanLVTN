@@ -193,29 +193,64 @@ export default function StaffToursPage() {
       )}
 
       {toggleModal.isOpen && (
-        <div className="modal-backdrop fade show" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1040 }}></div>
-      )}
-      {toggleModal.isOpen && (
-        <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1050 }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content" style={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
-              <div className="modal-body text-center p-4">
-                <div className="mb-3">
-                  <i className="fa-solid fa-circle-question text-primary" style={{ fontSize: '50px', opacity: 0.8 }}></i>
-                </div>
-                <h5 className="mb-4 text-dark fw-bold" style={{ lineHeight: '1.5' }}>
-                  {toggleModal.isActive 
-                    ? 'Bạn có muốn ngừng hoạt động tour này không?' 
-                    : 'Bạn có muốn kích hoạt tour này không?'}
-                </h5>
-                <div className="d-flex justify-content-center gap-3">
-                  <button type="button" className="btn btn-outline-secondary px-4 rounded-pill" onClick={() => setToggleModal({ isOpen: false, tourId: null, isActive: false })}>Hủy</button>
-                  <button type="button" className="btn btn-primary px-4 rounded-pill" onClick={confirmToggle}>Đồng ý</button>
+        <>
+          <style>
+            {`
+              .modal-btn-cancel {
+                border-radius: 24px; padding: 8px 32px; border: 1px solid #d1d5db; color: #6b7280; background-color: #ffffff; font-size: 16px; transition: all 0.2s ease;
+              }
+              .modal-btn-cancel:hover {
+                background-color: #f3f4f6 !important; color: #374151 !important; border-color: #9ca3af;
+              }
+              .modal-btn-confirm {
+                border-radius: 24px; padding: 8px 32px; background-color: #0265d2; border: none; color: #ffffff; font-size: 16px; transition: all 0.2s ease;
+              }
+              .modal-btn-confirm:hover {
+                background-color: #004a99 !important; color: #ffffff !important; transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+              }
+            `}
+          </style>
+          <div className="modal-backdrop fade show" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1040 }}></div>
+          <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1050 }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content" style={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+                <div className="modal-body text-center p-4">
+                  <div className="mb-4 d-flex justify-content-center">
+                    <div style={{
+                      width: '64px', height: '64px', backgroundColor: '#3b82f6',
+                      borderRadius: '50%', display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', color: 'white', fontSize: '36px',
+                      fontWeight: 'bold', fontFamily: 'Arial, sans-serif'
+                    }}>
+                      ?
+                    </div>
+                  </div>
+                  <h5 className="mb-4 fw-bold" style={{ color: '#1f2937', fontSize: '20px', lineHeight: '1.5' }}>
+                    {toggleModal.isActive 
+                      ? 'Bạn có muốn ngừng hoạt động tour này không?' 
+                      : 'Bạn có muốn kích hoạt tour này không?'}
+                  </h5>
+                  <div className="d-flex justify-content-center gap-3 mt-2">
+                    <button 
+                      type="button" 
+                      className="btn fw-medium modal-btn-cancel" 
+                      onClick={() => setToggleModal({ isOpen: false, tourId: null, isActive: false })}
+                    >
+                      Hủy
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn fw-medium modal-btn-confirm" 
+                      onClick={confirmToggle}
+                    >
+                      Đồng ý
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {toastMessage && (

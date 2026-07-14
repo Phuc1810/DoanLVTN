@@ -24,6 +24,25 @@ class PromotionManagementController extends Controller
         ]);
     }
 
+    public function stats()
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy thống kê khuyến mãi thành công',
+            'data' => $this->staffPromotionService->stats(),
+        ]);
+    }
+
+    public function chartData(Request $request)
+    {
+        $year = (int) $request->query('year', now()->year);
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy dữ liệu biểu đồ thành công',
+            'data' => $this->staffPromotionService->chartData($year),
+        ]);
+    }
+
     public function store(StorePromotionRequest $request)
     {
         return response()->json([

@@ -126,6 +126,8 @@ Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(functi
     Route::put('/tours/{id}', [TourManagementController::class, 'update'])->whereNumber('id');
 
     Route::get('/promotions', [PromotionManagementController::class, 'index']);
+    Route::get('/promotions/stats', [PromotionManagementController::class, 'stats']);
+    Route::get('/promotions/chart-data', [PromotionManagementController::class, 'chartData']);
     Route::post('/promotions', [PromotionManagementController::class, 'store']);
     Route::patch('/promotions/{id}/toggle', [PromotionManagementController::class, 'toggle'])->whereNumber('id');
     Route::post('/promotions/{id}/tours', [PromotionManagementController::class, 'attachTours'])->whereNumber('id');

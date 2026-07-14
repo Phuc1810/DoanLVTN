@@ -51,6 +51,52 @@ class StaffPromotionService
         ];
     }
 
+    public function stats(): array
+    {
+        $this->promotionService->syncPromotionStatuses();
+
+        $total = ChuongTrinhKhuyenMai::count();
+        $active = ChuongTrinhKhuyenMai::where('TrangThai', 'Hoạt động')->count();
+        $upcoming = ChuongTrinhKhuyenMai::where('TrangThai', 'Sắp diễn ra')->count();
+
+        $today = now()->toDateString();
+        $nextWeek = now()->addDays(7)->toDateString();
+        
+        $ending_soon = ChuongTrinhKhuyenMai::where('TrangThai', 'Hoạt động')
+            ->whereBetween('NgayKetThuc', [$today, $nextWeek])
+            ->count();
+
+        return [
+            'total' => $total,
+            'active' => $active,
+            'upcoming' => $upcoming,
+            'ending_soon' => $ending_soon,
+        ];
+    }
+
+    public function chartData(int $year): array
+    {
+        $data = ChuongTrinhKhuyenMai::select(
+            DB::raw('MONTH(NgayBatDau) as month'),
+            DB::raw('COUNT(*) as count')
+        )
+            ->whereYear('NgayBatDau', $year)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('count', 'month')
+            ->toArray();
+            
+        $result = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $result[] = [
+                'month' => 'T' . $i,
+                'count' => $data[$i] ?? 0
+            ];
+        }
+        
+        return $result;
+    }
+
     public function detail(int $id): array
     {
         $this->promotionService->syncPromotionStatuses();
@@ -113,12 +159,12 @@ class StaffPromotionService
     {
         $promotion = $this->findPromotion($id);
 
-        if ($promotion->TrangThai === 'Hoạt động') {
+        if (in_array($promotion->TrangThai, ['Hoạt động', 'Sắp diễn ra'])) {
             $newStatus = 'Ngừng hoạt động';
         } elseif ((string) $promotion->NgayKetThuc < now()->toDateString()) {
             $this->throwValidation('NgayKetThuc', 'Khuyến mãi đã hết hạn, cần cập nhật ngày kết thúc trước khi bật lại.');
         } else {
-            $newStatus = 'Hoạt động';
+            $newStatus = $this->promotionService->statusForDates($promotion->NgayBatDau, $promotion->NgayKetThuc);
         }
 
         $promotion->update(['TrangThai' => $newStatus]);

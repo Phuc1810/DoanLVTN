@@ -86,8 +86,16 @@ export function validateImage(file) {
 }
 
 export function normalizeError(error) {
+  let message = error?.message || API_TODO_MESSAGE
+  const errors = error?.errors || {}
+  
+  const errorKeys = Object.keys(errors)
+  if (errorKeys.length > 0 && Array.isArray(errors[errorKeys[0]]) && errors[errorKeys[0]].length > 0) {
+    message = errors[errorKeys[0]][0]
+  }
+
   return {
-    message: error?.message || API_TODO_MESSAGE,
-    errors: error?.errors || {},
+    message,
+    errors,
   }
 }

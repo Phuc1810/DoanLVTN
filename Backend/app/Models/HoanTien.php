@@ -14,6 +14,7 @@ class HoanTien extends Model
 
     protected $fillable = [
         'SoTienHoan',
+        'PhanTramHoan',
         'NgayHoan',
         'LyDo',
         'MaDon',

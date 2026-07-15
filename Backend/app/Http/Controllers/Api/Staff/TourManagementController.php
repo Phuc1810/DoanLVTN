@@ -40,6 +40,15 @@ class TourManagementController extends Controller
         ]);
     }
 
+    public function selection()
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy danh sách tour rút gọn thành công',
+            'data' => $this->staffTourService->selection(),
+        ]);
+    }
+
     public function store(StoreTourRequest $request)
     {
         return response()->json([

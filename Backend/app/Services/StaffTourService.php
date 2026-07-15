@@ -63,6 +63,14 @@ class StaffTourService
         ];
     }
 
+    public function selection(): array
+    {
+        return Tour::select(['MaTour', 'TenTour', 'DiaDiem', 'LoaiTour', 'TrangThai'])
+            ->orderByDesc('MaTour')
+            ->get()
+            ->toArray();
+    }
+
     public function metadata(): array
     {
         $loaiList = Tour::whereNotNull('LoaiTour')

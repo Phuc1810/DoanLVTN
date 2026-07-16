@@ -113,11 +113,11 @@ export default function StaffOrdersPage() {
                 <option value="">Tất cả trạng thái</option>
                 <option value="Chờ thanh toán">Chờ thanh toán</option>
                 <option value="Đã thanh toán">Đã thanh toán</option>
-                <option value="Đang diễn ra">Đang diễn ra</option>
-                <option value="Đã hoàn tất">Đã hoàn tất</option>
-                <option value="Hết chỗ">Hết chỗ</option>
+                <option value="Yêu cầu huỷ">Yêu cầu huỷ</option>
                 <option value="Đã huỷ">Đã huỷ</option>
                 <option value="Đã hoàn tiền">Đã hoàn tiền</option>
+                <option value="Đang diễn ra">Đang diễn ra</option>
+                <option value="Đã hoàn tất">Đã hoàn tất</option>
               </select>
             </div>
           </div>

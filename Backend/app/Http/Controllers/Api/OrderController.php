@@ -35,4 +35,17 @@ class OrderController extends Controller
             'data' => $this->orderService->detail($request->user(), $id),
         ]);
     }
+
+    public function cancel(Request $request, int $id)
+    {
+        $request->validate([
+            'ly_do' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Yêu cầu huỷ đơn hàng thành công',
+            'data' => $this->orderService->cancel($request->user(), $id, $request->input('ly_do', '')),
+        ]);
+    }
 }

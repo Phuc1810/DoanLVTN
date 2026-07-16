@@ -5,7 +5,7 @@ import { buildImageUrl, tourImagePath } from '../../utils/imageUrl'
 import OrderStatusBadge from './OrderStatusBadge'
 
 function canCancelOrder(order, tour) {
-  if (order.TrangThai !== 'Đã thanh toán' || !tour.NgayKhoiHanh) {
+  if (!['Đã thanh toán', 'Chờ thanh toán'].includes(order.TrangThai) || !tour.NgayKhoiHanh) {
     return false
   }
 

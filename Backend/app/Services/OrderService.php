@@ -20,6 +20,7 @@ class OrderService
     private const STATUS_DONE = 'Đã hoàn tất';
     private const STATUS_SOLD_OUT = 'Hết chỗ';
     private const STATUS_CANCELLED = 'Đã huỷ';
+    private const STATUS_CANCEL_REQUEST = 'Yêu cầu huỷ';
     private const STATUS_REFUNDED = 'Đã hoàn tiền';
 
     private const LEGACY_FILTER_STATUSES = [
@@ -36,6 +37,7 @@ class OrderService
         self::STATUS_DONE,
         self::STATUS_SOLD_OUT,
         self::STATUS_CANCELLED,
+        self::STATUS_CANCEL_REQUEST,
         self::STATUS_REFUNDED,
     ];
 
@@ -120,6 +122,57 @@ class OrderService
         }
 
         return (new OrderDetailResource($order))->resolve();
+    }
+
+    public function cancel(TaiKhoan $user, int $id, ?string $lyDo): array
+    {
+        return DB::transaction(function () use ($user, $id, $lyDo) {
+            $customer = $this->currentCustomer($user);
+
+            $order = DonDatTour::query()
+                ->where('MaDon', $id)
+                ->where('MaKH', $customer->MaKH)
+                ->first();
+
+            if (! $order) {
+                throw new HttpResponseException(response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy đơn hàng',
+                    'errors' => [
+                        'id' => ['Đơn hàng không tồn tại hoặc không thuộc quyền quản lý của bạn.'],
+                    ],
+                ], 404));
+            }
+
+            if (! in_array($order->TrangThai, [self::STATUS_PENDING, self::STATUS_PAID])) {
+                throw new HttpResponseException(response()->json([
+                    'success' => false,
+                    'message' => 'Không thể huỷ đơn hàng này',
+                    'errors' => [
+                        'status' => ['Chỉ có thể huỷ đơn hàng ở trạng thái Chờ thanh toán hoặc Đã thanh toán.'],
+                    ],
+                ], 400));
+            }
+
+            $newStatus = $order->TrangThai === self::STATUS_PENDING 
+                ? self::STATUS_CANCELLED 
+                : self::STATUS_CANCEL_REQUEST;
+
+            $order->update(['TrangThai' => $newStatus]);
+
+            // Save the reason into hoantien table if provided, but ONLY for paid orders (which transition to Yêu cầu huỷ)
+            if ($newStatus === self::STATUS_CANCEL_REQUEST && !empty($lyDo)) {
+                DB::table('hoantien')->insert([
+                    'MaDon' => $order->MaDon,
+                    'PhanTramHoan' => 0,
+                    'SoTienHoan' => 0,
+                    'NgayHoan' => now(),
+                    'LyDo' => 'Khách hàng huỷ: ' . $lyDo,
+                ]);
+            }
+
+            return $this->detail($user, $id);
+        });
     }
 
     public function syncCustomerOrderStatuses(int $maKh): void

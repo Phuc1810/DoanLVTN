@@ -96,6 +96,9 @@ Route::get('/orders', [OrderController::class, 'index'])
 Route::get('/orders/{id}', [OrderController::class, 'show'])
     ->whereNumber('id')
     ->middleware(['auth:sanctum', 'role:KH']);
+Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel'])
+    ->whereNumber('id')
+    ->middleware(['auth:sanctum', 'role:KH']);
 Route::post('/orders/{id}/review', [ReviewController::class, 'store'])
     ->whereNumber('id')
     ->middleware(['auth:sanctum', 'role:KH']);

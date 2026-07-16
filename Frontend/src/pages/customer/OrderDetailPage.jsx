@@ -226,7 +226,7 @@ export default function OrderDetailPage() {
                       </Link>
                     )}
 
-                    {order.TrangThai === 'Đã thanh toán' && (
+                    {(order.TrangThai === 'Đã thanh toán' || order.TrangThai === 'Chờ thanh toán') && (
                       <Link className="btn btn-outline-danger" to={`/orders/${id}/cancel`}>
                         <i className="fa-solid fa-ban me-1" /> Huỷ tour
                       </Link>

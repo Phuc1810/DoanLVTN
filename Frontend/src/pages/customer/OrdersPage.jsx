@@ -7,7 +7,7 @@ import Loading from '../../components/common/Loading'
 import OrderTable from '../../components/orders/OrderTable'
 import { listFrom, paginationFrom } from '../../utils/data'
 
-const statuses = ['', 'Chờ thanh toán', 'Đã thanh toán', 'Đang diễn ra', 'Đã hoàn tất']
+const statuses = ['', 'Chờ thanh toán', 'Đã thanh toán', 'Đang diễn ra', 'Đã hoàn tất', 'Yêu cầu huỷ', 'Đã huỷ', 'Đã hoàn tiền', 'Hết chỗ']
 
 export default function OrdersPage() {
   const [searchParams, setSearchParams] = useSearchParams()

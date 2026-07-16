@@ -18,6 +18,9 @@ class HoanTien extends Model
         'NgayHoan',
         'LyDo',
         'MaDon',
+        'NganHang',
+        'SoTaiKhoan',
+        'TenTaiKhoan',
     ];
 
     public function donDatTour()

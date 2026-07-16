@@ -62,6 +62,31 @@ class StaffOrderService
 
         $today = now()->toDateString();
 
+        $revenueTrend = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i)->toDateString();
+            $label = now()->subDays($i)->format('d/m');
+            $revenue = (float) ThanhToan::where('TrangThaiTT', 'Thành công')
+                ->whereDate('NgayTT', $date)
+                ->sum('SoTien');
+            $revenueTrend[] = [
+                'date' => $label,
+                'revenue' => $revenue,
+            ];
+        }
+
+        $statusRatioRaw = DonDatTour::select('TrangThai', \DB::raw('count(*) as count'))
+            ->groupBy('TrangThai')
+            ->get();
+            
+        $statusRatio = [];
+        foreach ($statusRatioRaw as $item) {
+            $statusRatio[] = [
+                'name' => $item->TrangThai,
+                'value' => $item->count,
+            ];
+        }
+
         return [
             'pending_orders'   => DonDatTour::where('TrangThai', self::STATUS_PENDING)->count(),
             'paid_orders'      => DonDatTour::where('TrangThai', self::STATUS_PAID)->count(),
@@ -69,6 +94,8 @@ class StaffOrderService
             'daily_revenue'    => (float) ThanhToan::where('TrangThaiTT', 'Thành công')
                 ->whereDate('NgayTT', $today)
                 ->sum('SoTien'),
+            'revenue_trend'    => $revenueTrend,
+            'status_ratio'     => $statusRatio,
         ];
     }
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { staffPromotionApi } from '../../api/staffPromotionApi'
 import EmptyState from '../../components/common/EmptyState'
 import ErrorState from '../../components/common/ErrorState'
@@ -134,17 +134,23 @@ export default function StaffPromotionsPage() {
         <div className="col-md-7">
           <div className="card border-0 p-4 h-100" style={{ borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)' }}>
             <div className="d-flex justify-content-between align-items-center mb-4">
-              <h5 className="fw-bold m-0" style={{ fontSize: '16px', color: '#111827' }}>Tần suất khuyến mãi năm {new Date().getFullYear()}</h5>
-              <Link to="#" className="text-primary text-decoration-none" style={{ fontSize: '13px', fontWeight: 500 }}>Chi tiết &rarr;</Link>
+              <h5 className="fw-bold m-0" style={{ fontSize: '18px', color: '#1e3a8a' }}>Tần suất khuyến mãi năm {new Date().getFullYear()}</h5>
+              <Link to="#" className="text-decoration-none" style={{ fontSize: '14px', fontWeight: 500, color: '#3b82f6' }}>Chi tiết &rarr;</Link>
             </div>
             <div style={{ height: '260px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} allowDecimals={false} />
-                  <Tooltip cursor={{ fill: '#f3f4f6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
-                  <Bar dataKey="count" name="Chiến dịch" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={30} />
-                </BarChart>
+                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#4f46e5" stopOpacity={0.05}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} allowDecimals={false} />
+                  <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
+                  <Area type="monotone" dataKey="count" name="Chiến dịch" stroke="#4f46e5" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" activeDot={{ r: 6, fill: '#fff', stroke: '#4f46e5', strokeWidth: 2 }} dot={{ r: 4, fill: '#fff', stroke: '#4f46e5', strokeWidth: 2 }} />
+                </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>

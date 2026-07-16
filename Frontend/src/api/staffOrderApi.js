@@ -4,4 +4,5 @@ export const staffOrderApi = {
   list: (params) => axiosClient.get('/staff/orders', { params }),
   show: (id) => axiosClient.get(`/staff/orders/${id}`),
   stats: () => axiosClient.get('/staff/orders/stats'),
+  approveCancel: (id) => axiosClient.post(`/staff/orders/${id}/approve-cancel`),
 }

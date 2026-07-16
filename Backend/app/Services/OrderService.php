@@ -124,9 +124,9 @@ class OrderService
         return (new OrderDetailResource($order))->resolve();
     }
 
-    public function cancel(TaiKhoan $user, int $id, ?string $lyDo): array
+    public function cancel(TaiKhoan $user, int $id, array $data): array
     {
-        return DB::transaction(function () use ($user, $id, $lyDo) {
+        return DB::transaction(function () use ($user, $id, $data) {
             $customer = $this->currentCustomer($user);
 
             $order = DonDatTour::query()
@@ -160,18 +160,23 @@ class OrderService
 
             $order->update(['TrangThai' => $newStatus]);
 
+            $lyDo = $data['ly_do'] ?? '';
+
             // Save the reason into hoantien table if provided, but ONLY for paid orders (which transition to Yêu cầu huỷ)
-            if ($newStatus === self::STATUS_CANCEL_REQUEST && !empty($lyDo)) {
+            if ($newStatus === self::STATUS_CANCEL_REQUEST) {
                 DB::table('hoantien')->insert([
                     'MaDon' => $order->MaDon,
                     'PhanTramHoan' => 0,
                     'SoTienHoan' => 0,
                     'NgayHoan' => now(),
-                    'LyDo' => 'Khách hàng huỷ: ' . $lyDo,
+                    'LyDo' => !empty($lyDo) ? ('Khách hàng huỷ: ' . $lyDo) : 'Khách hàng yêu cầu huỷ',
+                    'NganHang' => $data['NganHang'] ?? null,
+                    'SoTaiKhoan' => $data['SoTaiKhoan'] ?? null,
+                    'TenTaiKhoan' => $data['TenTaiKhoan'] ?? null,
                 ]);
             }
 
-            return $this->detail($user, $id);
+            return (new OrderDetailResource($order->fresh()))->resolve();
         });
     }
 

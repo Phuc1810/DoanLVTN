@@ -28,6 +28,7 @@ class StaffOrderService
         self::STATUS_DONE,
         self::STATUS_SOLD_OUT,
         self::STATUS_CANCELLED,
+        'Yêu cầu huỷ',
         self::STATUS_REFUNDED,
     ];
 
@@ -120,6 +121,82 @@ class StaffOrderService
         }
 
         return (new StaffOrderDetailResource($order))->resolve();
+    }
+
+    public function approveCancel(int $id): array
+    {
+        return DB::transaction(function () use ($id) {
+            $order = DonDatTour::query()
+                ->with(['tour', 'hoanTiens' => fn($q) => $q->orderByDesc('MaHT')])
+                ->where('MaDon', $id)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $order) {
+                throw new HttpResponseException(response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy đơn hàng',
+                    'errors' => ['id' => ['Đơn hàng không tồn tại.']],
+                ], 404));
+            }
+
+            if ($order->TrangThai !== 'Yêu cầu huỷ') {
+                throw new HttpResponseException(response()->json([
+                    'success' => false,
+                    'message' => 'Đơn hàng không ở trạng thái yêu cầu huỷ',
+                    'errors' => ['status' => ['Chỉ có thể duyệt hoàn tiền cho các đơn hàng có trạng thái Yêu cầu huỷ.']],
+                ], 400));
+            }
+
+            // Calculate refund percentage based on business rules
+            $start = $order->tour?->NgayKhoiHanh;
+            $rate = 0;
+            if ($start) {
+                $today = now()->startOfDay();
+                $startDate = \Carbon\Carbon::parse($start)->startOfDay();
+                $days = (int) $today->diffInDays($startDate, false);
+
+                if ($days >= 10) {
+                    $rate = 0.7;
+                } elseif ($days >= 5) {
+                    $rate = 0.5;
+                } elseif ($days >= 3) {
+                    $rate = 0.25;
+                } else {
+                    $rate = 0;
+                }
+            }
+
+            $refundAmount = (int) round($order->TongTienPhaiTra * $rate);
+
+            // Update hoanTien record
+            $hoanTien = $order->hoanTiens->first();
+            if ($hoanTien) {
+                $hoanTien->update([
+                    'PhanTramHoan' => round($rate * 100),
+                    'SoTienHoan' => $refundAmount,
+                    'NgayHoan' => now(),
+                ]);
+            }
+
+            // Update order status
+            $order->update(['TrangThai' => self::STATUS_REFUNDED]);
+
+            // Dispatch Email
+            try {
+                $orderInfo = array_merge($order->toArray(), [
+                    'HoTen' => $order->khachHang?->HoTen,
+                    'Email' => $order->khachHang?->Email,
+                    'SoDienThoai' => $order->khachHang?->SoDienThoai,
+                    'TenTour' => $order->tour?->TenTour,
+                ]);
+                app(\App\Services\NotificationService::class)->sendRefundSuccess($orderInfo, $refundAmount);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send refund email: ' . $e->getMessage());
+            }
+
+            return $this->detail($id);
+        });
     }
 
     private function applyFilters(Builder $query, array $filters): void

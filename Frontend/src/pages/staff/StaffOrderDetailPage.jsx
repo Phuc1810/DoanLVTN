@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { staffOrderApi } from '../../api/staffOrderApi'
 import ErrorState from '../../components/common/ErrorState'
@@ -8,17 +8,59 @@ import { formatCurrency } from '../../utils/formatCurrency'
 import { formatDate } from '../../utils/formatDate'
 import { extractItem, normalizeError } from './staffPageUtils'
 import { buildImageUrl, tourImagePath } from '../../utils/imageUrl'
-import { ArrowLeft, Briefcase, UserCircle, Receipt } from 'lucide-react'
+import { ArrowLeft, Briefcase, UserCircle, Receipt, Landmark } from 'lucide-react'
 
 export default function StaffOrderDetailPage() {
   const { id } = useParams()
   const [state, setState] = useState({ loading: true, error: '', order: null })
+  const [approving, setApproving] = useState(false)
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
+  const prevStatusRef = useRef()
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type })
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 5000)
+  }
+
+  const handleApproveCancel = async () => {
+    if (!window.confirm('Bạn xác nhận ĐÃ CHUYỂN TIỀN HOÀN cho khách và muốn đóng đơn này?')) return
+    setApproving(true)
+    try {
+      const payload = await staffOrderApi.approveCancel(id)
+      setState(prev => ({ ...prev, order: payload }))
+      showToast('Duyệt huỷ và hoàn tiền thành công!')
+    } catch (err) {
+      showToast('Lỗi: ' + (err.response?.data?.message || err.message), 'danger')
+    } finally {
+      setApproving(false)
+    }
+  }
 
   useEffect(() => {
-    staffOrderApi.show(id)
-      .then((payload) => setState({ loading: false, error: '', order: payload }))
-      .catch((error) => setState({ loading: false, error: normalizeError(error).message, order: null }))
-  }, [id])
+    const fetchOrder = () => {
+      staffOrderApi.show(id)
+        .then((payload) => setState(prev => ({ ...prev, loading: false, error: '', order: payload })))
+        .catch((error) => setState(prev => ({ ...prev, loading: false, error: normalizeError(error).message, order: null })))
+    }
+
+    fetchOrder()
+
+    let intervalId = null;
+    if (state.order?.TrangThai === 'Yêu cầu huỷ') {
+      intervalId = setInterval(fetchOrder, 3000)
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId)
+    }
+  }, [id, state.order?.TrangThai])
+
+  useEffect(() => {
+    if (prevStatusRef.current === 'Yêu cầu huỷ' && state.order?.TrangThai === 'Đã hoàn tiền') {
+      showToast('Tuyệt vời! Hệ thống đã tự động nhận diện giao dịch chuyển khoản và duyệt Hoàn Tiền thành công!')
+    }
+    prevStatusRef.current = state.order?.TrangThai
+  }, [state.order?.TrangThai])
 
   if (state.loading) return <Loading />
   if (state.error) return <ErrorState message={state.error} />
@@ -27,6 +69,43 @@ export default function StaffOrderDetailPage() {
   const customer = order.khach_hang || order.KhachHang || {}
   const tour = order.tour || order.Tour || {}
   const payment = order.payment || order.thanh_toan || {}
+  const refund = order.refund || order.hoan_tien || {}
+
+  let projectedRefund = refund.SoTienHoan || 0
+  if (order.TrangThai === 'Yêu cầu huỷ' && !projectedRefund && tour.NgayKhoiHanh) {
+    const start = new Date(tour.NgayKhoiHanh)
+    start.setHours(0, 0, 0, 0)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const diffTime = start.getTime() - today.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    
+    let rate = 0
+    if (diffDays >= 10) rate = 0.7
+    else if (diffDays >= 5) rate = 0.5
+    else if (diffDays >= 3) rate = 0.25
+    
+    projectedRefund = (order.TongTienPhaiTra || 0) * rate
+  }
+
+  let qrUrl = null
+  if (order.TrangThai === 'Yêu cầu huỷ' && refund.NganHang && refund.SoTaiKhoan) {
+    const bankName = refund.NganHang.toLowerCase()
+    let binOrName = refund.NganHang
+    if (bankName.includes('tpbank')) binOrName = 'tpbank'
+    else if (bankName.includes('vietcombank') || bankName === 'vcb') binOrName = 'vcb'
+    else if (bankName.includes('mbbank') || bankName === 'mb') binOrName = 'mbbank'
+    else if (bankName.includes('techcombank') || bankName === 'tcb') binOrName = 'tcb'
+    else if (bankName.includes('vietinbank')) binOrName = 'vietinbank'
+    else if (bankName.includes('bidv')) binOrName = 'bidv'
+    else if (bankName.includes('agribank')) binOrName = 'agribank'
+    else if (bankName.includes('sacombank')) binOrName = 'sacombank'
+    else if (bankName.includes('acb')) binOrName = 'acb'
+    else if (bankName.includes('vpbank')) binOrName = 'vpbank'
+    else if (bankName.includes('vib')) binOrName = 'vib'
+    
+    qrUrl = `https://img.vietqr.io/image/${binOrName}-${refund.SoTaiKhoan}-compact2.png?amount=${projectedRefund}&addInfo=Hoan tien don ${order.MaDon}&accountName=${refund.TenTaiKhoan || ''}`
+  }
 
   return (
     <>
@@ -129,8 +208,66 @@ export default function StaffOrderDetailPage() {
               <span className="fw-bold fs-5 text-primary">{formatCurrency(order.TongTienPhaiTra || order.TongTienGoc || 0)}</span>
             </div>
           </div>
+
+          {(order.TrangThai === 'Yêu cầu huỷ' && !approving) && (
+            <div className="staff-detail-card mt-4" style={{ border: '1px solid #ffc107', backgroundColor: '#fffdf6' }}>
+              <div className="section-title mb-3" style={{ fontSize: '16px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', color: '#b98d00' }}>
+                <Landmark size={20} /> Yêu cầu Hoàn tiền
+              </div>
+              <p className="text-muted" style={{ fontSize: '14px', marginBottom: '16px' }}>
+                Khách hàng đã yêu cầu huỷ tour. Số tiền cần hoàn là:
+              </p>
+              
+              <div className="p-3 mb-4" style={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #ffecb3' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px dashed #e5e7eb', marginBottom: '8px' }}>
+                  <span className="text-muted fw-medium" style={{ fontSize: '14px' }}>Ngân hàng:</span>
+                  <span className="fw-semibold text-end" style={{ fontSize: '14px' }}>{refund.NganHang || '—'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px dashed #e5e7eb', marginBottom: '8px' }}>
+                  <span className="text-muted fw-medium" style={{ fontSize: '14px' }}>Chủ tài khoản:</span>
+                  <span className="fw-semibold text-end" style={{ fontSize: '14px' }}>{refund.TenTaiKhoan || '—'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px dashed #e5e7eb', marginBottom: '12px' }}>
+                  <span className="text-muted fw-medium" style={{ fontSize: '14px' }}>Số tài khoản:</span>
+                  <span className="fw-bold text-primary text-end" style={{ fontSize: '15px' }}>{refund.SoTaiKhoan || '—'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span className="fw-bold text-dark">SỐ TIỀN HOÀN:</span>
+                  <span className="fw-bold text-end" style={{ fontSize: '16px', color: '#198754' }}>{formatCurrency(projectedRefund)}</span>
+                </div>
+              </div>
+
+              {qrUrl && (
+                <div className="text-center mb-4">
+                  <div className="text-muted mb-2" style={{ fontSize: '13px', fontWeight: 600 }}>Quét mã QR để chuyển khoản nhanh</div>
+                  <img src={qrUrl} alt="VietQR" style={{ width: '100%', maxWidth: '220px', borderRadius: '8px', border: '1px solid #ddd', padding: '4px', backgroundColor: '#fff' }} />
+                </div>
+              )}
+
+              <button 
+                className="btn btn-warning w-100 fw-bold" 
+                style={{ padding: '12px', fontSize: '14px' }}
+                onClick={handleApproveCancel}
+                disabled={approving}
+              >
+                Duyệt hoàn tiền (Thủ công)
+              </button>
+            </div>
+          )}
         </div>
       </div>
+
+      {toast.show && (
+        <div className={`toast align-items-center text-white bg-${toast.type} border-0 show fade`} style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 9999, minWidth: '300px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+          <div className="d-flex">
+            <div className="toast-body fw-semibold" style={{ fontSize: '14px', padding: '12px 16px' }}>
+              <i className={`fa-solid ${toast.type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'} me-2`}></i>
+              {toast.message}
+            </div>
+            <button type="button" className="btn-close btn-close-white me-2 m-auto" onClick={() => setToast({ ...toast, show: false })}></button>
+          </div>
+        </div>
+      )}
     </>
   )
 }

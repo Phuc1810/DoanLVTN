@@ -10,8 +10,8 @@ class StaffOrderResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $latestPayment = $this->whenLoaded('thanhToans', fn () => $this->thanhToans->first());
-        $latestRefund = $this->whenLoaded('hoanTiens', fn () => $this->hoanTiens->first());
+        $latestPayment = $this->relationLoaded('thanhToans') ? $this->thanhToans->first() : null;
+        $latestRefund = $this->relationLoaded('hoanTiens') ? $this->hoanTiens->first() : null;
 
         return [
             'MaDon' => $this->MaDon,
@@ -87,8 +87,12 @@ class StaffOrderResource extends JsonResource
         return [
             'MaHT' => $refund->MaHT,
             'SoTienHoan' => $refund->SoTienHoan,
+            'PhanTramHoan' => $refund->PhanTramHoan,
             'NgayHoan' => $refund->NgayHoan,
             'LyDo' => $refund->LyDo,
+            'NganHang' => $refund->NganHang,
+            'SoTaiKhoan' => $refund->SoTaiKhoan,
+            'TenTaiKhoan' => $refund->TenTaiKhoan,
             'MaDon' => $refund->MaDon,
         ];
     }

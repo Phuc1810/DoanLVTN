@@ -11,15 +11,17 @@ class VerifySepayWebhook
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $expected = trim((string) config('payment.sepay.webhook_token', ''));
+        $expectedIn = trim((string) config('payment.sepay.webhook_token', ''));
+        $expectedOut = trim((string) config('payment.sepay.webhook_token_out', ''));
 
-        if ($expected === '') {
+        if ($expectedIn === '' && $expectedOut === '') {
             Log::warning('SEPAY_WEBHOOK_TOKEN is empty; webhook token verification is bypassed.');
 
             return $next($request);
         }
 
-        $valid = $this->hasValidToken($request, $expected);
+        $valid = ($expectedIn !== '' && $this->hasValidToken($request, $expectedIn))
+              || ($expectedOut !== '' && $this->hasValidToken($request, $expectedOut));
 
         if (! $valid) {
             return response()->json([

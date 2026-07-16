@@ -36,4 +36,11 @@ class PaymentController extends Controller
 
         return response()->json($result);
     }
+
+    public function sepayRefundWebhook(Request $request)
+    {
+        $result = $this->paymentService->handleSepayRefundWebhook($request);
+
+        return response()->json($result);
+    }
 }

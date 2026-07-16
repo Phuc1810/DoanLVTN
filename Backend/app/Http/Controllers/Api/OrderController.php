@@ -40,12 +40,15 @@ class OrderController extends Controller
     {
         $request->validate([
             'ly_do' => ['nullable', 'string', 'max:500'],
+            'NganHang' => ['nullable', 'string', 'max:100'],
+            'SoTaiKhoan' => ['nullable', 'string', 'max:50'],
+            'TenTaiKhoan' => ['nullable', 'string', 'max:100'],
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Yêu cầu huỷ đơn hàng thành công',
-            'data' => $this->orderService->cancel($request->user(), $id, $request->input('ly_do', '')),
+            'data' => $this->orderService->cancel($request->user(), $id, $request->all()),
         ]);
     }
 }

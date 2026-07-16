@@ -81,6 +81,31 @@ class NotificationService
         return $this->sendPreferredChannel($orderInfo, $subject, $html, $sms);
     }
 
+    public function sendRefundSuccess(array $orderInfo, int $refundAmount): bool
+    {
+        $orderId = (int) ($orderInfo['MaDon'] ?? 0);
+        $money = number_format((float) $refundAmount, 0, ',', '.');
+        $subject = "Hoàn tiền thành công cho đơn tour #DH{$orderId}";
+        $html = "
+            <div style='font-family:Arial,sans-serif;line-height:1.6'>
+                <h2 style='margin:0 0 8px;color:#16a34a'>Hoàn tiền thành công</h2>
+                <p>Xin chào <b>".e((string) ($orderInfo['HoTen'] ?? ''))."</b>,</p>
+                <p>Yêu cầu huỷ tour của bạn cho đơn <b>#DH{$orderId}</b> đã được xử lý thành công.</p>
+                <ul>
+                    <li><b>Tour:</b> ".e((string) ($orderInfo['TenTour'] ?? ''))."</li>
+                    <li><b>Số tiền đã hoàn:</b> {$money} VND</li>
+                    <li><b>Trạng thái:</b> Đã hoàn tiền</li>
+                </ul>
+                <p>Tiền đã được chuyển vào tài khoản ngân hàng bạn cung cấp. Tuỳ thuộc vào ngân hàng, tiền có thể sẽ về trong vòng 24h.</p>
+                <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi. Hẹn gặp lại bạn ở những hành trình tiếp theo!</p>
+                <p style='color:#64748b;font-size:12px'>VietJourney Tour</p>
+            </div>
+        ";
+        $sms = "VietJourney: DH{$orderId} da duoc hoan tien thanh cong ({$money} VND). Vui long kiem tra tai khoan.";
+
+        return $this->sendPreferredChannel($orderInfo, $subject, $html, $sms);
+    }
+
     public function sendEmail(string $to, string $subject, string $html): bool
     {
         if (! filter_var($to, FILTER_VALIDATE_EMAIL)) {

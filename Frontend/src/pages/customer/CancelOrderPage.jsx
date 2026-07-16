@@ -1,5 +1,5 @@
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { orderApi } from '../../api/orderApi'
 import ErrorState from '../../components/common/ErrorState'
 import FormError from '../../components/common/FormError'
@@ -32,11 +32,18 @@ export default function CancelOrderPage() {
   const navigate = useNavigate()
   const [state, setState] = useState({ loading: true, error: '', order: null })
   const [lydo, setLydo] = useState('')
+  const [nganHang, setNganHang] = useState('')
+  const [soTaiKhoan, setSoTaiKhoan] = useState('')
+  const [tenTaiKhoan, setTenTaiKhoan] = useState('')
   const [agree, setAgree] = useState(false)
   const [submitError, setSubmitError] = useState({ message: '', errors: {} })
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
+  const [banks, setBanks] = useState([])
+  const [showBanks, setShowBanks] = useState(false)
+  const [activeBankIndex, setActiveBankIndex] = useState(-1)
+  const bankWrapperRef = useRef(null)
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type })
@@ -47,21 +54,111 @@ export default function CancelOrderPage() {
     orderApi.getOrder(id)
       .then((order) => setState({ loading: false, error: '', order }))
       .catch((error) => setState({ loading: false, error: error.message, order: null }))
+
+    // Fetch list of banks for datalist
+    fetch('https://api.vietqr.io/v2/banks')
+      .then(res => res.json())
+      .then(data => {
+        if (data.code === '00' && data.data) {
+          setBanks(data.data)
+        }
+      })
+      .catch(err => console.error('Failed to fetch banks', err))
   }, [id])
 
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (bankWrapperRef.current && !bankWrapperRef.current.contains(event.target)) {
+        setShowBanks(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const filteredBanks = useMemo(() => {
+    if (!nganHang) return banks
+    const lower = nganHang.toLowerCase()
+    return banks.filter(b => b.name.toLowerCase().includes(lower) || b.shortName.toLowerCase().includes(lower))
+  }, [banks, nganHang])
+
+  function handleBankKeyDown(event) {
+    if (!showBanks) return
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      setActiveBankIndex((current) => (current + 1) % filteredBanks.length)
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      setActiveBankIndex((current) => (current <= 0 ? filteredBanks.length - 1 : current - 1))
+    } else if (event.key === 'Enter' && activeBankIndex >= 0) {
+      event.preventDefault()
+      setNganHang(filteredBanks[activeBankIndex].shortName)
+      setShowBanks(false)
+    } else if (event.key === 'Escape') {
+      setShowBanks(false)
+    }
+  }
+
+  const order = state.order || {}
   const policy = useMemo(() => refundPolicy(state.order), [state.order])
   const refundAmount = Math.round(Number(state.order?.TongTienPhaiTra || 0) * policy.rate)
 
   async function submit(event) {
     event.preventDefault()
-    if (!agree) {
-      showToast('Bạn cần tích đồng ý để xác nhận huỷ tour.', 'danger')
-      return
+    setSubmitError({ message: '', errors: {} })
+    
+    if (order?.TrangThai === 'Đã thanh toán') {
+      const isLydoEmpty = !lydo.trim();
+      const isNganHangEmpty = !nganHang.trim();
+      const isSoTKEmpty = !soTaiKhoan.trim();
+      const isTenTKEmpty = !tenTaiKhoan.trim();
+
+      if (isLydoEmpty && isNganHangEmpty && isSoTKEmpty && isTenTKEmpty && !agree) {
+        showToast('Vui lòng nhập đầy đủ thông tin.', 'danger')
+        return
+      }
+
+      if (!agree) {
+        showToast('Vui lòng đồng ý với chính sách huỷ/hoàn tiền.', 'danger')
+        return
+      }
+      if (isLydoEmpty) {
+        showToast('Vui lòng nhập Lý do huỷ tour.', 'danger')
+        return
+      }
+      if (isNganHangEmpty) {
+        showToast('Vui lòng chọn hoặc nhập Ngân hàng để nhận hoàn tiền.', 'danger')
+        return
+      }
+      if (isSoTKEmpty) {
+        showToast('Vui lòng nhập Số tài khoản để nhận hoàn tiền.', 'danger')
+        return
+      }
+      if (isTenTKEmpty) {
+        showToast('Vui lòng nhập Tên chủ tài khoản để nhận hoàn tiền.', 'danger')
+        return
+      }
+    } else {
+      if (!agree) {
+        showToast('Vui lòng đồng ý với chính sách huỷ/hoàn tiền.', 'danger')
+        return
+      }
+      if (order?.TrangThai !== 'Chờ thanh toán' && !lydo.trim()) {
+        showToast('Vui lòng nhập Lý do huỷ tour.', 'danger')
+        return
+      }
     }
+
     setSubmitting(true)
     setSubmitError({ message: '', errors: {} })
     try {
-      await orderApi.cancelOrder(id, { ly_do: lydo })
+      await orderApi.cancelOrder(id, { 
+        ly_do: lydo,
+        NganHang: nganHang,
+        SoTaiKhoan: soTaiKhoan,
+        TenTaiKhoan: tenTaiKhoan
+      })
       showToast('Huỷ tour thành công. Đang quay lại trang chi tiết...', 'success')
       setTimeout(() => {
         navigate(`/orders/${id}`)
@@ -80,7 +177,6 @@ export default function CancelOrderPage() {
   if (state.loading) return <Loading />
   if (state.error) return <ErrorState message={state.error} />
 
-  const order = state.order || {}
   const qty = Number(order.SoLuongNguoiLon || 0) + Number(order.SoLuongTreEm || 0) + Number(order.SoLuongTreNho || 0)
 
   return (
@@ -117,10 +213,76 @@ export default function CancelOrderPage() {
         <hr className="my-4" />
         <form onSubmit={submit}>
           {order.TrangThai !== 'Chờ thanh toán' && (
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Lý do huỷ (không bắt buộc)</label>
-              <input className="form-control" value={lydo} onChange={(event) => setLydo(event.target.value)} placeholder="VD: Thay đổi kế hoạch..." />
-            </div>
+            <>
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Lý do huỷ <span className="text-danger">*</span></label>
+                <input className="form-control" value={lydo} onChange={(event) => setLydo(event.target.value)} placeholder="VD: Thay đổi kế hoạch..." />
+              </div>
+              <div className="card mb-4 border-warning">
+                <div className="card-header bg-warning bg-opacity-10 fw-bold text-dark">
+                  <i className="fa-solid fa-building-columns me-2"></i>Thông tin nhận hoàn tiền
+                </div>
+                <div className="card-body">
+                  <div className="row g-3">
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold">Ngân hàng <span className="text-danger">*</span></label>
+                      <div className="position-relative" ref={bankWrapperRef}>
+                        <input 
+                          className="form-control" 
+                          value={nganHang} 
+                          onChange={(event) => {
+                            setNganHang(event.target.value)
+                            setShowBanks(true)
+                            setActiveBankIndex(-1)
+                          }} 
+                          onFocus={() => setShowBanks(true)}
+                          onKeyDown={handleBankKeyDown}
+                          placeholder="VD: Vietcombank, MBBank..." 
+                          autoComplete="off"
+                        />
+                        {showBanks && (
+                          <div 
+                            className="bg-white border rounded shadow-sm position-absolute w-100" 
+                            style={{ top: '100%', left: 0, zIndex: 1000, maxHeight: '200px', overflowY: 'auto', marginTop: '4px' }}
+                          >
+                            {filteredBanks.length > 0 ? filteredBanks.map((bank, index) => (
+                              <div
+                                key={bank.bin}
+                                style={{
+                                  padding: '8px 12px',
+                                  cursor: 'pointer',
+                                  backgroundColor: index === activeBankIndex ? '#f8f9fa' : 'transparent',
+                                  borderBottom: '1px solid #f1f5f9'
+                                }}
+                                onMouseEnter={() => setActiveBankIndex(index)}
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => {
+                                  setNganHang(bank.shortName)
+                                  setShowBanks(false)
+                                }}
+                              >
+                                <div className="fw-semibold text-primary" style={{ fontSize: '14px' }}>{bank.shortName}</div>
+                                <div className="text-muted" style={{ fontSize: '12px' }}>{bank.name}</div>
+                              </div>
+                            )) : (
+                              <div style={{ padding: '8px 12px', color: '#6c757d', fontSize: '14px' }}>Không tìm thấy ngân hàng</div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold">Số tài khoản <span className="text-danger">*</span></label>
+                      <input className="form-control" value={soTaiKhoan} onChange={(event) => setSoTaiKhoan(event.target.value)} placeholder="Nhập số tài khoản..." />
+                    </div>
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold">Tên chủ tài khoản <span className="text-danger">*</span></label>
+                      <input className="form-control" value={tenTaiKhoan} onChange={(event) => setTenTaiKhoan(event.target.value.toUpperCase())} placeholder="VD: NGUYEN VAN A" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
           <div className="form-check mb-3">
             <input className="form-check-input" type="checkbox" id="agreeCancel" checked={agree} onChange={(event) => setAgree(event.target.checked)} />

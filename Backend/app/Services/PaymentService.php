@@ -196,6 +196,65 @@ class PaymentService
         return $result;
     }
 
+    public function handleSepayRefundWebhook(Request $request): array
+    {
+        if (! $this->validWebhookToken($request)) {
+            return [
+                'success' => false,
+                'message' => 'Unauthorized webhook',
+            ];
+        }
+
+        $payload = $request->all();
+
+        $transferType = strtolower((string) $this->pickValue($payload, ['transferType', 'type']));
+        if ($transferType !== '' && $transferType !== 'out') {
+            return $this->ignored('not_outgoing');
+        }
+
+        $content = trim((string) $this->pickValue($payload, ['content', 'description', 'transactionContent', 'transferContent']));
+        
+        // Regex to match "Hoan tien don 101" or similar
+        if ($content === '' || ! preg_match('/hoan\s*tien\s*don\s*([0-9]+)/i', $content, $matches)) {
+            return $this->ignored('no_refund_code');
+        }
+
+        $orderId = (int) $matches[1];
+        
+        $order = DonDatTour::where('MaDon', $orderId)->first();
+        if (! $order) {
+             return $this->ignored('order_not_found');
+        }
+        
+        if ($order->TrangThai === 'Đã hoàn tiền') {
+            return [
+                'success' => true,
+                'message' => 'Already refunded',
+            ];
+        }
+
+        if ($order->TrangThai !== 'Yêu cầu huỷ') {
+            return $this->ignored('invalid_status');
+        }
+
+        try {
+            $staffOrderService = app(\App\Services\StaffOrderService::class);
+            $staffOrderService->approveCancel($orderId);
+            return [
+                'success' => true,
+                'message' => 'Refund processed successfully',
+                'data' => [
+                    'MaDon' => $orderId
+                ]
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Failed to process refund: ' . $e->getMessage()
+            ];
+        }
+    }
+
     private function recalculateDiscount(DonDatTour $order): array
     {
         $discount = $this->promotionService->bestDiscountForTour($order->tour, (float) $order->TongTienGoc);
@@ -303,11 +362,19 @@ class PaymentService
 
     private function validWebhookToken(Request $request): bool
     {
-        $expected = trim((string) config('payment.sepay.webhook_token', ''));
-        if ($expected === '') {
+        $expectedIn = trim((string) config('payment.sepay.webhook_token', ''));
+        $expectedOut = trim((string) config('payment.sepay.webhook_token_out', ''));
+
+        if ($expectedIn === '' && $expectedOut === '') {
             return true;
         }
 
+        return ($expectedIn !== '' && $this->hasValidToken($request, $expectedIn))
+            || ($expectedOut !== '' && $this->hasValidToken($request, $expectedOut));
+    }
+
+    private function hasValidToken(Request $request, string $expected): bool
+    {
         $authorization = trim((string) $request->header('Authorization', ''));
         $apiKey = trim((string) ($request->header('X-Api-Key') ?: $request->header('X-API-Key')));
         $webhookToken = trim((string) $request->header('X-Webhook-Token', ''));

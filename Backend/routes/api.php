@@ -90,6 +90,8 @@ Route::get('/payments/{orderId}/check', [PaymentController::class, 'check'])
     ->middleware(['auth:sanctum', 'role:KH']);
 Route::post('/webhooks/sepay', [PaymentController::class, 'sepayWebhook'])
     ->middleware('sepay.webhook');
+Route::post('/webhooks/sepay-refund', [PaymentController::class, 'sepayRefundWebhook'])
+    ->middleware('sepay.webhook');
 
 Route::get('/orders', [OrderController::class, 'index'])
     ->middleware(['auth:sanctum', 'role:KH']);
@@ -120,6 +122,7 @@ Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(functi
     Route::get('/orders', [OrderManagementController::class, 'index']);
     Route::get('/orders/stats', [OrderManagementController::class, 'stats']);
     Route::get('/orders/{id}', [OrderManagementController::class, 'show'])->whereNumber('id');
+    Route::post('/orders/{id}/approve-cancel', [OrderManagementController::class, 'approveCancel'])->whereNumber('id');
 
     Route::get('/tours', [TourManagementController::class, 'index']);
     Route::get('/tours/metadata', [TourManagementController::class, 'metadata']);

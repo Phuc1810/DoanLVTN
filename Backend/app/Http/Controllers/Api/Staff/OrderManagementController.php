@@ -47,4 +47,13 @@ class OrderManagementController extends Controller
             'data' => $this->staffOrderService->detail($id),
         ]);
     }
+
+    public function approveCancel(int $id)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Duyệt huỷ và hoàn tiền thành công',
+            'data' => $this->staffOrderService->approveCancel($id),
+        ]);
+    }
 }

@@ -176,6 +176,37 @@ class BusinessRequestService
         return $this->resource($request);
     }
 
+    public function statsForStaff(): array
+    {
+        $requestTrend = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i)->toDateString();
+            $label = now()->subDays($i)->format('d/m');
+            $count = YeuCauDoanhNghiep::whereDate('NgayGui', $date)->count();
+            $requestTrend[] = [
+                'date' => $label,
+                'requests' => $count,
+            ];
+        }
+
+        $statusRatioRaw = YeuCauDoanhNghiep::select('TrangThai', DB::raw('count(*) as count'))
+            ->groupBy('TrangThai')
+            ->get();
+            
+        $statusRatio = [];
+        foreach ($statusRatioRaw as $item) {
+            $statusRatio[] = [
+                'name' => $item->TrangThai,
+                'value' => $item->count,
+            ];
+        }
+
+        return [
+            'request_trend' => $requestTrend,
+            'status_ratio'  => $statusRatio,
+        ];
+    }
+
     public function updateForStaff(TaiKhoan $user, int $id, array $payload): array
     {
         return DB::transaction(function () use ($user, $id, $payload) {

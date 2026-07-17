@@ -23,6 +23,7 @@ class YeuCauDoanhNghiep extends Model
         'GiaTriHopDong',
         'NgayThanhToan',
         'TrangThai',
+        'NgayGui',
         'MaKH',
         'MaNV',
         'MaTour',

@@ -45,4 +45,13 @@ class BusinessRequestManagementController extends Controller
             'data' => $this->businessRequestService->updateForStaff($request->user(), $id, $request->validated()),
         ]);
     }
+
+    public function stats()
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy thống kê yêu cầu doanh nghiệp thành công',
+            'data' => $this->businessRequestService->statsForStaff(),
+        ]);
+    }
 }

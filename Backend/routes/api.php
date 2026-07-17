@@ -153,6 +153,7 @@ Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(functi
     Route::put('/news/{id}', [NewsManagementController::class, 'update'])->whereNumber('id');
 
     Route::get('/business-requests', [BusinessRequestManagementController::class, 'index']);
+    Route::get('/business-requests/stats', [BusinessRequestManagementController::class, 'stats']);
     Route::get('/business-requests/{id}', [BusinessRequestManagementController::class, 'show'])->whereNumber('id');
     Route::patch('/business-requests/{id}', [BusinessRequestManagementController::class, 'update'])->whereNumber('id');
 });

@@ -181,6 +181,8 @@ Route::get('/don-dat-tour/{id}', [DonDatTourController::class, 'show']);
 
 Route::get('/tin-tuc', [TinTucController::class, 'index']);
 Route::get('/tin-tuc/{id}', [TinTucController::class, 'show']);
+Route::get('/tin-tuc/{id}/comments', [TinTucController::class, 'getComments']);
+Route::post('/tin-tuc/{id}/comments', [TinTucController::class, 'postComment'])->middleware(['auth:sanctum', 'role:KH']);
 
 Route::get('/khuyen-mai', [ChuongTrinhKhuyenMaiController::class, 'index']);
 Route::get('/khuyen-mai/{id}', [ChuongTrinhKhuyenMaiController::class, 'show']);

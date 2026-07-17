@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { Bar, CartesianGrid, Cell, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { staffNewsApi } from '../../api/staffNewsApi'
 import EmptyState from '../../components/common/EmptyState'
 import ErrorState from '../../components/common/ErrorState'
@@ -9,6 +10,11 @@ import StaffStatusBadge from '../../components/staff/StaffStatusBadge'
 import StaffTable from '../../components/staff/StaffTable'
 import { formatDate } from '../../utils/formatDate'
 import { extractList, extractPagination, imageSrc, normalizeError } from './staffPageUtils'
+
+const STATUS_COLORS = {
+  'Hiển thị': '#22c55e',
+  'Ẩn': '#ef4444'
+}
 
 export default function StaffNewsPage() {
   const location = useLocation()
@@ -153,57 +159,84 @@ export default function StaffNewsPage() {
         </Link>
       </div>
 
-      {/* Stats Cards */}
-      <div className="row g-4 mb-4">
-        {/* Card 1: Tổng bài đăng */}
-        <div className="col-md-4">
-          <div className="card shadow-sm h-100 p-4" style={{ borderRadius: '12px', border: 'none', borderLeft: '6px solid #f97316', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div className="text-muted fw-semibold mb-2" style={{ fontSize: '14px' }}>Tổng bài đăng</div>
-              <div className="fs-3 fw-bold text-dark lh-1">
-                {stats.loading ? '...' : (stats.data?.totalPosts || 0)}
+      {/* Charts */}
+      {stats.data && stats.data.trendChart && (
+        <div className="row g-4 mb-4">
+          <div className="col-lg-8">
+            <div className="card border-0 shadow-sm rounded-4 h-100 p-4">
+              <h5 className="fw-bold mb-4" style={{ color: '#1f2937' }}>Xu hướng tương tác</h5>
+              <div style={{ height: '300px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={stats.data.trendChart} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 13 }} dy={10} />
+                    <YAxis yAxisId="left" orientation="left" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 13 }} dx={-10} />
+                    <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 13 }} dx={10} />
+                    <Tooltip
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      cursor={{ fill: '#f9fafb' }}
+                    />
+                    <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                    <Bar yAxisId="left" dataKey="views" name="Lượt xem" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={30} />
+                    <Line yAxisId="right" type="monotone" dataKey="engagementRate" name="Tỉ lệ tương tác (%)" stroke="#ef4444" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                  </ComposedChart>
+                </ResponsiveContainer>
               </div>
             </div>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#fff7ed', color: '#f97316', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
-              <i className="fa-solid fa-file-invoice"></i>
-            </div>
           </div>
-        </div>
+          
+          <div className="col-lg-4">
+            <div className="card border-0 shadow-sm rounded-4 h-100 p-4">
+              <h5 className="fw-bold mb-4" style={{ color: '#1f2937' }}>Tỉ lệ trạng thái</h5>
+              <div style={{ height: '200px', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none', zIndex: 10 }}>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e293b' }}>100%</div>
+                  <div style={{ fontSize: '13px', color: '#64748b' }}>Tổng cộng</div>
+                </div>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={stats.data.statusChart}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={65}
+                      outerRadius={85}
+                      paddingAngle={3}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {stats.data.statusChart.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || '#94a3b8'} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
 
-        {/* Card 2: Lượt xem tháng này */}
-        <div className="col-md-4">
-          <div className="card shadow-sm h-100 p-4" style={{ borderRadius: '12px', border: 'none', borderLeft: '6px solid #22c55e', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div className="text-muted fw-semibold mb-2" style={{ fontSize: '14px' }}>Lượt xem tháng này</div>
-              <div className="fs-3 fw-bold text-dark lh-1">
-                {stats.loading ? '...' : (
-                  stats.data?.monthlyViews >= 1000 
-                    ? (stats.data.monthlyViews / 1000).toFixed(1) + 'k' 
-                    : (stats.data?.monthlyViews || 0)
-                )}
+              <div className="mt-2">
+                {stats.data.statusChart.map((entry, index) => {
+                  const totalStatusValue = stats.data.statusChart.reduce((sum, item) => sum + item.value, 0);
+                  const percent = totalStatusValue > 0 ? (entry.value / totalStatusValue * 100) : 0;
+                  return (
+                    <div key={index} className="d-flex justify-content-between align-items-center mb-2">
+                      <div className="d-flex align-items-center">
+                        <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: STATUS_COLORS[entry.name] || '#94a3b8', marginRight: '8px', display: 'inline-block' }}></span>
+                        <span style={{ fontSize: '14px', color: '#475569' }}>{entry.name}</span>
+                      </div>
+                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>
+                        {percent % 1 === 0 ? percent.toFixed(0) : percent.toFixed(1)}%
+                      </span>
+                    </div>
+                  )
+                })}
               </div>
-            </div>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#f0fdf4', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
-              <i className="fa-regular fa-eye"></i>
             </div>
           </div>
         </div>
-
-        {/* Card 3: Tỉ lệ tương tác */}
-        <div className="col-md-4">
-          <div className="card shadow-sm h-100 p-4" style={{ borderRadius: '12px', border: 'none', borderLeft: '6px solid #ef4444', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div className="text-muted fw-semibold mb-2" style={{ fontSize: '14px' }}>Tỉ lệ tương tác</div>
-              <div className="fs-3 fw-bold text-dark lh-1">
-                {stats.loading ? '...' : (stats.data?.engagementRate || 0)}%
-              </div>
-            </div>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#fef2f2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
-              <i className="fa-solid fa-arrow-trend-up"></i>
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Filters Toolbar */}
       <div className="card border-0 shadow-sm rounded-4 mb-4 p-2" style={{ backgroundColor: '#fff' }}>

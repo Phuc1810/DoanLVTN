@@ -128,34 +128,38 @@ class StaffNewsService
         $totalPosts = TinTuc::count();
         $visiblePosts = TinTuc::where('TrangThai', self::STATUS_VISIBLE)->count();
 
-        // Lượt xem tháng hiện tại
-        $startOfMonth = Carbon::now()->startOfMonth()->toDateString();
-        $endOfMonth = Carbon::now()->endOfMonth()->toDateString();
+        // Biểu đồ trạng thái
+        $statusChart = [
+            ['name' => self::STATUS_VISIBLE, 'value' => $visiblePosts],
+            ['name' => self::STATUS_HIDDEN, 'value' => $totalPosts - $visiblePosts],
+        ];
 
-        $monthlyViews = (int) TinTuc::whereBetween('NgayDang', [$startOfMonth, $endOfMonth])
-            ->sum('LuotXem');
+        // Biểu đồ xu hướng (6 tháng gần nhất)
+        $trendChart = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonthsNoOverflow($i);
+            $monthStart = $date->copy()->startOfMonth()->toDateString();
+            $monthEnd = $date->copy()->endOfMonth()->toDateString();
+            
+            $monthViews = (int) TinTuc::whereBetween('NgayDang', [$monthStart, $monthEnd])->sum('LuotXem');
+            
+            // Lấy tổng bình luận của các bài viết được đăng trong tháng này
+            $monthComments = BinhLuan::whereHas('tinTuc', function ($query) use ($monthStart, $monthEnd) {
+                $query->whereBetween('NgayDang', [$monthStart, $monthEnd]);
+            })->count();
+            
+            $engRate = $monthViews > 0 ? round(($monthComments / $monthViews) * 100, 1) : 0;
 
-        // Nếu không có bài nào đăng trong tháng, lấy tổng lượt xem toàn bộ
-        $totalViews = (int) TinTuc::sum('LuotXem');
-        if ($monthlyViews === 0) {
-            $monthlyViews = $totalViews;
+            $trendChart[] = [
+                'month' => 'Tháng ' . $date->month,
+                'views' => $monthViews,
+                'engagementRate' => $engRate,
+            ];
         }
 
-        // Tổng bình luận
-        $totalComments = BinhLuan::count();
-
-        // Tỉ lệ tương tác = (Tổng bình luận / Tổng lượt xem) * 100
-        $engagementRate = $totalViews > 0
-            ? round(($totalComments / $totalViews) * 100, 1)
-            : 0;
-
         return [
-            'totalPosts' => $totalPosts,
-            'visiblePosts' => $visiblePosts,
-            'monthlyViews' => $monthlyViews,
-            'totalViews' => $totalViews,
-            'totalComments' => $totalComments,
-            'engagementRate' => $engagementRate,
+            'statusChart' => $statusChart,
+            'trendChart' => $trendChart,
         ];
     }
 

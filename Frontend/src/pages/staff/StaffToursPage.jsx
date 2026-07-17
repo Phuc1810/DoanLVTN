@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { staffTourApi } from '../../api/staffTourApi'
 import EmptyState from '../../components/common/EmptyState'
 import ErrorState from '../../components/common/ErrorState'
@@ -10,6 +11,12 @@ import StaffTable from '../../components/staff/StaffTable'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { formatDate } from '../../utils/formatDate'
 import { extractList, extractPagination, firstImageOfTour, imageSrc, normalizeError } from './staffPageUtils'
+
+const STATUS_COLORS = {
+  'Hoạt động': '#15803d', // success
+  'Ngừng hoạt động': '#64748b', // secondary
+  'Hết chỗ': '#b91c1c', // danger
+}
 
 export default function StaffToursPage() {
   const location = useLocation()
@@ -27,6 +34,17 @@ export default function StaffToursPage() {
   const [filters, setFilters] = useState({ q: '', loai: '', tt: '', page: 1, per_page: 5 })
   const [state, setState] = useState({ loading: true, error: '', rows: [], pagination: null })
   const [metadata, setMetadata] = useState({ loaiList: [], ttList: [] })
+  const [stats, setStats] = useState(null)
+
+  const fetchStats = () => {
+    staffTourApi.stats()
+      .then((payload) => setStats(payload?.data || payload))
+      .catch(console.error)
+  }
+
+  useEffect(() => {
+    fetchStats()
+  }, [])
 
   useEffect(() => {
     staffTourApi.metadata().then(res => {
@@ -69,6 +87,85 @@ export default function StaffToursPage() {
         </div>
         <Link className="staff-link-btn btn-indigo" to="/staff/tours/create">Thêm Tour mới</Link>
       </div>
+
+      <div className="row g-4 mb-4">
+        {/* Trend Chart */}
+        <div className="col-md-8">
+          <div className="card border-0 shadow-sm rounded-4 p-4" style={{ backgroundColor: '#fff' }}>
+            <h5 className="fw-bold mb-1" style={{ fontSize: '18px', color: '#1e293b' }}>Xu hướng Khởi hành</h5>
+            <p className="text-muted mb-4" style={{ fontSize: '14px' }}>Thống kê số lượng tour khởi hành trong 7 ngày tới</p>
+            <div style={{ height: '240px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={stats?.departure_trend || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorTours" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} allowDecimals={false} />
+                  <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} formatter={(value) => [value, 'Tour khởi hành']} />
+                  <Area type="monotone" dataKey="tours" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorTours)" activeDot={{ r: 6, fill: '#fff', stroke: '#8b5cf6', strokeWidth: 2 }} dot={{ r: 4, fill: '#fff', stroke: '#8b5cf6', strokeWidth: 2 }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        {/* Status Ratio Chart */}
+        <div className="col-md-4">
+          <div className="card border-0 shadow-sm rounded-4 h-100 p-4" style={{ backgroundColor: '#fff' }}>
+            <h5 className="fw-bold mb-4" style={{ fontSize: '18px', color: '#1e293b' }}>Tỷ lệ Trạng thái</h5>
+            
+            <div style={{ height: '200px', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none', zIndex: 10 }}>
+                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e293b' }}>100%</div>
+                <div style={{ fontSize: '13px', color: '#64748b' }}>Tổng cộng</div>
+              </div>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={stats?.status_ratio || []}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={65}
+                    outerRadius={85}
+                    paddingAngle={3}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {(stats?.status_ratio || []).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || '#94a3b8'} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="mt-2">
+              {(stats?.status_ratio || []).map((entry, index) => {
+                const totalStatusValue = (stats?.status_ratio || []).reduce((sum, item) => sum + item.value, 0);
+                const percent = totalStatusValue > 0 ? (entry.value / totalStatusValue * 100) : 0;
+                return (
+                  <div key={index} className="d-flex justify-content-between align-items-center mb-2">
+                    <div className="d-flex align-items-center">
+                      <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: STATUS_COLORS[entry.name] || '#94a3b8', marginRight: '8px', display: 'inline-block' }}></span>
+                      <span style={{ fontSize: '14px', color: '#475569' }}>{entry.name}</span>
+                    </div>
+                    <span style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>
+                      {percent % 1 === 0 ? percent.toFixed(0) : percent.toFixed(1)}%
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+
+          </div>
+        </div>
+      </div>
+
       {/* Filters Toolbar */}
       <div className="card border-0 shadow-sm rounded-4 mb-4 p-2" style={{ backgroundColor: '#fff' }}>
         <div className="row g-2">

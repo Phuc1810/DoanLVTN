@@ -86,6 +86,37 @@ class StaffTourService
         ];
     }
 
+    public function statsForStaff(): array
+    {
+        $departureTrend = [];
+        for ($i = 0; $i <= 6; $i++) {
+            $date = now()->addDays($i)->toDateString();
+            $label = now()->addDays($i)->format('d/m');
+            $count = Tour::whereDate('NgayKhoiHanh', $date)->count();
+            $departureTrend[] = [
+                'date' => $label,
+                'tours' => $count,
+            ];
+        }
+
+        $statusRatioRaw = Tour::select('TrangThai', DB::raw('count(*) as count'))
+            ->groupBy('TrangThai')
+            ->get();
+
+        $statusRatio = [];
+        foreach ($statusRatioRaw as $item) {
+            $statusRatio[] = [
+                'name' => $item->TrangThai,
+                'value' => $item->count,
+            ];
+        }
+
+        return [
+            'departure_trend' => $departureTrend,
+            'status_ratio'    => $statusRatio,
+        ];
+    }
+
     public function detail(int $id): array
     {
         return $this->resource($this->findTour($id)->load([

@@ -49,6 +49,15 @@ class TourManagementController extends Controller
         ]);
     }
 
+    public function stats()
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy thống kê tour thành công',
+            'data' => $this->staffTourService->statsForStaff(),
+        ]);
+    }
+
     public function store(StoreTourRequest $request)
     {
         return response()->json([

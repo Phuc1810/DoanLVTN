@@ -192,7 +192,11 @@ class AuthService
 
     public function changePassword(TaiKhoan $taiKhoan, array $data): void
     {
-        $this->ensurePassword($taiKhoan, (string) $data['current_password']);
+        if (! Hash::check((string) $data['current_password'], $taiKhoan->MatKhau)) {
+            throw ValidationException::withMessages([
+                'password' => ['Mật khẩu hiện tại không đúng.'],
+            ]);
+        }
         $this->validateStrongPassword((string) $data['password']);
 
         $taiKhoan->update([
@@ -446,18 +450,9 @@ class AuthService
 
     private function validateStrongPassword(string $password): void
     {
-        $message = match (true) {
-            strlen($password) < 8 => 'Mật khẩu phải >= 8 ký tự.',
-            ! preg_match('/[a-z]/', $password) => 'Mật khẩu phải có chữ thường.',
-            ! preg_match('/[A-Z]/', $password) => 'Mật khẩu phải có chữ hoa.',
-            ! preg_match('/\d/', $password) => 'Mật khẩu phải có số.',
-            ! preg_match('/[^a-zA-Z0-9]/', $password) => 'Mật khẩu phải có ký tự đặc biệt.',
-            default => null,
-        };
-
-        if ($message) {
+        if (strlen($password) < 6) {
             throw ValidationException::withMessages([
-                'password' => [$message],
+                'password' => ['Mật khẩu mới phải có ít nhất 6 ký tự.'],
             ]);
         }
     }

@@ -33,6 +33,14 @@ class AccountController extends Controller
         ]);
     }
 
+    public function stats()
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $this->adminAccountService->stats(),
+        ]);
+    }
+
     public function storeStaff(CreateStaffAccountRequest $request)
     {
         return response()->json([

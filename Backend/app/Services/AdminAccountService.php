@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Http\Resources\AdminAccountResource;
+use App\Models\KhachHang;
 use App\Models\NhanVien;
 use App\Models\TaiKhoan;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -91,6 +92,9 @@ class AdminAccountService
             NhanVien::create([
                 'HoTen' => $payload['fullname'],
                 'MaTK' => $account->MaTK,
+                'Email' => $payload['email'] ?? null,
+                'SDT' => $payload['sdt'] ?? null,
+                'ChucVu' => $payload['chucvu'] ?? null,
             ]);
 
             $account->load('nhanVien');
@@ -109,7 +113,41 @@ class AdminAccountService
         $this->ensureNotSelf($id, $currentUser);
 
         $account = $this->findAccount($id);
-        $account->update(['VaiTro' => $role]);
+        $oldRole = $account->VaiTro;
+
+        DB::transaction(function () use ($account, $role, $oldRole) {
+            $account->update(['VaiTro' => $role]);
+
+            if (in_array($oldRole, [self::ROLE_STAFF, self::ROLE_ADMIN], true) && $role === self::ROLE_CUSTOMER) {
+                $nhanVien = NhanVien::where('MaTK', $account->MaTK)->first();
+                if ($nhanVien) {
+                    $khachHang = KhachHang::where('MaTK', $account->MaTK)->first();
+                    if (!$khachHang) {
+                        KhachHang::create([
+                            'MaTK' => $account->MaTK,
+                            'HoTen' => $nhanVien->HoTen,
+                            'Email' => $nhanVien->Email,
+                            'SoDienThoai' => $nhanVien->SDT,
+                        ]);
+                    }
+                }
+            }
+
+            if ($oldRole === self::ROLE_CUSTOMER && in_array($role, [self::ROLE_STAFF, self::ROLE_ADMIN], true)) {
+                $khachHang = KhachHang::where('MaTK', $account->MaTK)->first();
+                if ($khachHang) {
+                    $nhanVien = NhanVien::where('MaTK', $account->MaTK)->first();
+                    if (!$nhanVien) {
+                        NhanVien::create([
+                            'MaTK' => $account->MaTK,
+                            'HoTen' => $khachHang->HoTen,
+                            'Email' => $khachHang->Email,
+                            'SDT' => $khachHang->SoDienThoai,
+                        ]);
+                    }
+                }
+            }
+        });
 
         return [
             'MaTK' => $account->MaTK,
@@ -224,5 +262,32 @@ class AdminAccountService
                 $key => [$message],
             ],
         ], 422));
+    }
+
+    public function stats(): array
+    {
+        $roleCounts = TaiKhoan::query()
+            ->select('VaiTro', DB::raw('count(*) as total'))
+            ->groupBy('VaiTro')
+            ->pluck('total', 'VaiTro')
+            ->toArray();
+
+        $statusCounts = TaiKhoan::query()
+            ->select('TrangThai', DB::raw('count(*) as total'))
+            ->groupBy('TrangThai')
+            ->pluck('total', 'TrangThai')
+            ->toArray();
+
+        return [
+            'roles' => [
+                ['name' => 'Admin', 'key' => 'AD', 'count' => $roleCounts['AD'] ?? 0],
+                ['name' => 'Nhân viên', 'key' => 'NV', 'count' => $roleCounts['NV'] ?? 0],
+                ['name' => 'Khách hàng', 'key' => 'KH', 'count' => $roleCounts['KH'] ?? 0],
+            ],
+            'statuses' => [
+                ['name' => 'Hoạt động', 'count' => $statusCounts['Hoạt động'] ?? 0],
+                ['name' => 'Khóa', 'count' => $statusCounts['Khóa'] ?? 0],
+            ],
+        ];
     }
 }

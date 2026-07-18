@@ -99,3 +99,20 @@ export function normalizeError(error) {
     errors,
   }
 }
+
+export function profileText(account) {
+  const profile = account?.profile || account?.khach_hang || account?.nhan_vien || account?.admin || {}
+  return {
+    name: profile.HoTen || account?.HoTen || 'Chưa cập nhật',
+    email: profile.Email || account?.Email || '',
+    phone: profile.SoDienThoai || profile.SDT || account?.SoDienThoai || account?.SDT || '',
+  }
+}
+
+export function generatePassword(length = 10) {
+  const groups = ['abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123456789', '!@#']
+  const all = groups.join('')
+  const base = groups.map((group) => group[Math.floor(Math.random() * group.length)])
+  while (base.length < length) base.push(all[Math.floor(Math.random() * all.length)])
+  return base.sort(() => Math.random() - 0.5).join('')
+}

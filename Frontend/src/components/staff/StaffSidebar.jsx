@@ -9,6 +9,7 @@ import {
   Tag,
   KeyRound,
   LogOut,
+  Users,
 } from 'lucide-react'
 
 const MAIN_MENU = [
@@ -25,7 +26,7 @@ const SETTINGS_MENU = [
 ]
 
 export default function StaffSidebar() {
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
 
   async function handleLogout() {
@@ -52,6 +53,12 @@ export default function StaffSidebar() {
               <span className="nav-label-text">{item.label}</span>
             </NavLink>
           ))}
+          {user?.VaiTro === 'AD' && (
+            <NavLink to="/staff/accounts" className="nav-link">
+              <span className="nav-icon"><Users size={18} /></span>
+              <span className="nav-label-text">Quản lý Tài khoản</span>
+            </NavLink>
+          )}
         </div>
 
         <div className="nav-divider" />

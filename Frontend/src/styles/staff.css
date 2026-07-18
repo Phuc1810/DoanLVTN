@@ -992,6 +992,110 @@
   margin: 2px 0;
 }
 
+/* --- Custom Account Actions --- */
+.account-action-divider {
+  width: 2px;
+  height: 24px;
+  background-color: #e2e8f0;
+  margin: 0 12px;
+}
+
+.account-action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.account-action-btn svg {
+  width: 18px;
+  height: 18px;
+  transition: all 0.2s;
+}
+
+/* Custom Tooltip */
+.account-action-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  background: #111827;
+  color: white;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+.account-action-btn::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-2px);
+  border-width: 6px 6px 0 6px;
+  border-style: solid;
+  border-color: #111827 transparent transparent transparent;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.account-action-btn:hover::after,
+.account-action-btn:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+.account-action-btn:hover::after {
+  transform: translateX(-50%) translateY(-4px);
+}
+.account-action-btn:hover::before {
+  transform: translateX(-50%) translateY(2px);
+}
+
+.account-action-key {
+  background-color: #fffbeb;
+  color: #f59e0b;
+}
+.account-action-key:hover {
+  background-color: #f59e0b;
+  color: #ffffff;
+}
+
+.account-action-lock {
+  background-color: #fdf2f8;
+  color: #e11d48;
+}
+.account-action-lock:hover {
+  background-color: #e11d48;
+  color: #ffffff;
+}
+
+.account-action-unlock {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+.account-action-unlock:hover {
+  background-color: #16a34a;
+  color: #ffffff;
+}
+
 /* RESPONSIVE */
 @media (max-width: 800px) {
   .staff-login-container {

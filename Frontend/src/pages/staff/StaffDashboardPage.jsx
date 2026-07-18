@@ -84,6 +84,10 @@ function BarChart({ data }) {
         const val = item.value ?? item.revenue ?? 0
         return (
           <div key={i} className="bar-column">
+            <div className="bar-tooltip">
+              <span className="bar-tooltip-date">{item.date ? item.date.split('-').slice(1).reverse().join('/') : ''}</span>
+              <span className="bar-tooltip-revenue">Doanh thu : {formatCurrency(val)}</span>
+            </div>
             <div className="bar-track">
               <div
                 className="bar-fill"
@@ -160,10 +164,6 @@ export default function StaffDashboardPage() {
             <FileDown size={16} />
             Xuất báo cáo
           </button>
-          <Link to="/staff/tours/create" className="dash-btn-primary">
-            <Plus size={16} />
-            Thêm Tour mới
-          </Link>
         </div>
       </div>
 
@@ -342,11 +342,7 @@ export default function StaffDashboardPage() {
                 ))}
               </tbody>
             </table>
-            <div className="table-footer-action">
-              <Link to="/staff/business-requests" className="dash-btn-outline-sm">
-                Tạo yêu cầu báo giá mới
-              </Link>
-            </div>
+
           </StaffTable>
         </div>
       </div>

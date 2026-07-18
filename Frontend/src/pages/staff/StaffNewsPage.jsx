@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Bar, CartesianGrid, Cell, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { staffNewsApi } from '../../api/staffNewsApi'
 import EmptyState from '../../components/common/EmptyState'
@@ -18,6 +18,7 @@ const STATUS_COLORS = {
 
 export default function StaffNewsPage() {
   const location = useLocation()
+  const navigate = useNavigate()
   const [toastMessage, setToastMessage] = useState('')
   const [filters, setFilters] = useState({ q: '', loai: '', tt: '', page: 1, per_page: 5 })
   const [state, setState] = useState({ loading: true, error: '', rows: [], pagination: null })
@@ -303,7 +304,12 @@ export default function StaffNewsPage() {
                   {state.rows.map((item) => {
                     const isVisible = item.TrangThai === 'Hiển thị'
                     return (
-                      <tr key={item.MaTin} style={{ backgroundColor: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+                      <tr 
+                        key={item.MaTin} 
+                        onClick={() => navigate(`/staff/news/${item.MaTin}`)}
+                        style={{ backgroundColor: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', cursor: 'pointer' }}
+                        className="hover-bg-light"
+                      >
                         <td className="ps-4 py-3 border-0 rounded-start" style={{ width: '60px', textAlign: 'center', fontWeight: 700, color: '#111827', padding: '16px 20px' }}>
                           #{item.MaTin}
                         </td>
@@ -330,10 +336,20 @@ export default function StaffNewsPage() {
                         </td>
                         <td className="pe-4 py-3 border-0 rounded-end text-center">
                           <div className="d-flex gap-2 justify-content-center">
-                            <Link to={`/staff/news/${item.MaTin}/edit`} className="btn btn-sm btn-outline-primary rounded-pill me-1" title="Sửa">
+                            <Link 
+                              to={`/staff/news/${item.MaTin}/edit`} 
+                              className="btn btn-sm btn-outline-primary rounded-pill me-1" 
+                              title="Sửa"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <i className="fa-solid fa-pen"></i>
                             </Link>
-                            <button type="button" onClick={() => requestToggle(item)} className={`btn btn-sm rounded-pill ${isVisible ? 'btn-outline-secondary' : 'btn-outline-success'}`} title={isVisible ? 'Ẩn' : 'Hiện'}>
+                            <button 
+                              type="button" 
+                              onClick={(e) => { e.stopPropagation(); requestToggle(item); }} 
+                              className={`btn btn-sm rounded-pill ${isVisible ? 'btn-outline-secondary' : 'btn-outline-success'}`} 
+                              title={isVisible ? 'Ẩn' : 'Hiện'}
+                            >
                               {isVisible ? <i className="fa-regular fa-eye-slash"></i> : <i className="fa-regular fa-eye"></i>}
                             </button>
                           </div>

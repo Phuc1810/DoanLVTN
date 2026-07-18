@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use App\Http\Controllers\Api\ChuongTrinhKhuyenMaiController;
 use App\Http\Controllers\Api\Admin\AccountController;
@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\Staff\BusinessRequestManagementController;
 use App\Http\Controllers\Api\Staff\DashboardController;
+use App\Http\Controllers\Api\Staff\OmniSearchController;
 use App\Http\Controllers\Api\Staff\NewsManagementController;
 use App\Http\Controllers\Api\Staff\OrderManagementController;
 use App\Http\Controllers\Api\Staff\PromotionManagementController;
@@ -53,7 +54,7 @@ Route::get('/test-db', function () {
     try {
         return response()->json([
             'success' => true,
-            'message' => 'Kết nối database thành công',
+            'message' => 'Káº¿t ná»‘i database thÃ nh cÃ´ng',
             'tong_so_tour' => Tour::count(),
             'tong_so_khach_hang' => KhachHang::count(),
             'tong_so_don_dat_tour' => DonDatTour::count(),
@@ -65,7 +66,7 @@ Route::get('/test-db', function () {
     } catch (\Throwable $e) {
         return response()->json([
             'success' => false,
-            'message' => 'Kết nối database thất bại',
+            'message' => 'Káº¿t ná»‘i database tháº¥t báº¡i',
             'error' => $e->getMessage(),
         ], 500);
     }
@@ -114,10 +115,12 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'role:AD'])->group(function 
 });
 
 Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(function () {
-    // Dashboard thống kê
+    // Dashboard thá»‘ng kÃª
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
     Route::get('/dashboard/revenue-weekly', [DashboardController::class, 'revenueWeekly']);
     Route::get('/dashboard/tour-status', [DashboardController::class, 'tourStatus']);
+
+    Route::get('/omni-search', [OmniSearchController::class, 'search']);
 
     Route::get('/orders', [OrderManagementController::class, 'index']);
     Route::get('/orders/stats', [OrderManagementController::class, 'stats']);
@@ -186,3 +189,4 @@ Route::post('/tin-tuc/{id}/comments', [TinTucController::class, 'postComment'])-
 
 Route::get('/khuyen-mai', [ChuongTrinhKhuyenMaiController::class, 'index']);
 Route::get('/khuyen-mai/{id}', [ChuongTrinhKhuyenMaiController::class, 'show']);
+

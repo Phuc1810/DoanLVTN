@@ -1,6 +1,6 @@
 import { Banknote, CheckCircle2, ClipboardList, MapPin, RefreshCw, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 import { staffOrderApi } from '../../api/staffOrderApi'
 import EmptyState from '../../components/common/EmptyState'
@@ -25,6 +25,7 @@ const STATUS_COLORS = {
 }
 
 export default function StaffOrdersPage() {
+  const navigate = useNavigate()
   const [filters, setFilters] = useState({ q: '', TrangThai: '', page: 1, per_page: 5 })
   const [state, setState] = useState({ loading: true, error: '', rows: [], pagination: null })
   const [stats, setStats] = useState(null)
@@ -186,11 +187,16 @@ export default function StaffOrdersPage() {
           footer={<Pagination pagination={state.pagination} onPageChange={(page) => setFilters((current) => ({ ...current, page }))} itemName="đơn hàng" />}
         >
           {state.rows.length === 0 ? <EmptyState /> : (
-            <table className="table">
-              <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Tour</th><th>Ngày đặt</th><th>Số người</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thanh toán</th><th></th></tr></thead>
+            <table className="table table-hover">
+              <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Tour</th><th>Ngày đặt</th><th>Số người</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thanh toán</th></tr></thead>
               <tbody>
                 {state.rows.map((order) => (
-                  <tr key={order.MaDon}>
+                  <tr 
+                    key={order.MaDon}
+                    onClick={() => navigate('/staff/orders/' + order.MaDon)}
+                    style={{ cursor: 'pointer' }}
+                    className="hover-bg-light"
+                  >
                     <td className="col-id">#{order.MaDon}</td>
                     <td>{order.khach_hang?.HoTen || order.KhachHang?.HoTen || order.HoTen}</td>
                     <td>
@@ -209,9 +215,6 @@ export default function StaffOrdersPage() {
                     <td>{formatCurrency(order.TongTienPhaiTra || order.TongTienGoc)}</td>
                     <td><StaffStatusBadge status={order.TrangThai} /></td>
                     <td><StaffStatusBadge status={order.payment?.TrangThaiTT || order.TrangThaiTT} /></td>
-                    <td className="text-center">
-                      <Link className="btn btn-outline-primary btn-sm rounded-pill px-3" to={`/staff/orders/${order.MaDon}`}>Chi tiết</Link>
-                    </td>
                   </tr>
                 ))}
               </tbody>

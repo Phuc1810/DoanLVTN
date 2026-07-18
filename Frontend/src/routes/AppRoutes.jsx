@@ -47,6 +47,7 @@ import StaffChangePasswordPage from '../pages/staff/StaffChangePasswordPage'
 import StaffDashboardPage from '../pages/staff/StaffDashboardPage'
 import StaffLoginPage from '../pages/staff/StaffLoginPage'
 import StaffNewsCreatePage from '../pages/staff/StaffNewsCreatePage'
+import StaffNewsDetailPage from '../pages/staff/StaffNewsDetailPage'
 import StaffNewsEditPage from '../pages/staff/StaffNewsEditPage'
 import StaffNewsPage from '../pages/staff/StaffNewsPage'
 import StaffOrderDetailPage from '../pages/staff/StaffOrderDetailPage'
@@ -102,6 +103,7 @@ const router = createBrowserRouter([
       { path: '/staff/promotions/:id/edit', element: <StaffPromotionEditPage /> },
       { path: '/staff/news', element: <StaffNewsPage /> },
       { path: '/staff/news/create', element: <StaffNewsCreatePage /> },
+      { path: '/staff/news/:id', element: <StaffNewsDetailPage /> },
       { path: '/staff/news/:id/edit', element: <StaffNewsEditPage /> },
       { path: '/staff/business-requests', element: <StaffBusinessRequestsPage /> },
       { path: '/staff/business-requests/:id', element: <StaffBusinessRequestDetailPage /> },

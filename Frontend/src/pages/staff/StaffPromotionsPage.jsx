@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { staffPromotionApi } from '../../api/staffPromotionApi'
 import EmptyState from '../../components/common/EmptyState'
@@ -10,6 +10,7 @@ import { formatDate } from '../../utils/formatDate'
 import { extractList, extractPagination, imageSrc, normalizeError } from './staffPageUtils'
 
 export default function StaffPromotionsPage() {
+  const navigate = useNavigate()
   const [filters, setFilters] = useState({ q: '', tt: '', page: 1, per_page: 5 })
   const [state, setState] = useState({ loading: true, error: '', rows: [], pagination: null })
   const [stats, setStats] = useState({ total: 0, active: 0, upcoming: 0, ending_soon: 0 })
@@ -242,7 +243,7 @@ export default function StaffPromotionsPage() {
             <>
               {state.rows.length === 0 ? <EmptyState /> : (
                 <div className="table-responsive">
-                  <table className="table mb-0 align-middle" style={{ borderCollapse: 'collapse' }}>
+                  <table className="table table-hover mb-0 align-middle" style={{ borderCollapse: 'collapse' }}>
                     <thead>
                       <tr>
                         <th className="table-header-cell">Thông tin chiến dịch</th>
@@ -267,7 +268,12 @@ export default function StaffPromotionsPage() {
                         else if (item.TrangThai === 'Sắp diễn ra') progressColor = '#d1d5db'
 
                         return (
-                          <tr key={item.MaCTKM}>
+                          <tr 
+                            key={item.MaCTKM} 
+                            onClick={() => navigate(`/staff/promotions/${item.MaCTKM}`)}
+                            style={{ cursor: 'pointer' }}
+                            className="hover-bg-light"
+                          >
                             <td className="table-row-cell">
                               <div className="d-flex align-items-center gap-3">
                                 <img src={imageSrc(item.AnhDaiDien)} alt={item.TenKM} style={{ width: '70px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e5e7eb' }} />
@@ -293,10 +299,10 @@ export default function StaffPromotionsPage() {
                             </td>
                             <td className="table-row-cell text-end">
                               <div className="d-flex gap-2 justify-content-end">
-                                <Link to={'/staff/promotions/' + item.MaCTKM + '/edit'} className="action-btn-pill edit" title="Sửa">
+                                <Link to={'/staff/promotions/' + item.MaCTKM + '/edit'} className="action-btn-pill edit" title="Sửa" onClick={(e) => e.stopPropagation()}>
                                   <i className="fa-solid fa-pen"></i>
                                 </Link>
-                                <button type="button" className={"action-btn-pill " + (isActive ? 'toggle-active' : 'toggle-inactive')} onClick={() => setToggleModal({ isOpen: true, id: item.MaCTKM, isActive })} title={isActive ? 'Ngừng hoạt động' : 'Kích hoạt'}>
+                                <button type="button" className={"action-btn-pill " + (isActive ? 'toggle-active' : 'toggle-inactive')} onClick={(e) => { e.stopPropagation(); setToggleModal({ isOpen: true, id: item.MaCTKM, isActive }); }} title={isActive ? 'Ngừng hoạt động' : 'Kích hoạt'}>
                                   <i className={"fa-regular " + (isActive ? 'fa-eye-slash' : 'fa-eye')}></i>
                                 </button>
                               </div>

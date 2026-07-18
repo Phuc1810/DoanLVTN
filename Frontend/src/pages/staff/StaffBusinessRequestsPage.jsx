@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { staffBusinessRequestApi } from '../../api/staffBusinessRequestApi'
 import EmptyState from '../../components/common/EmptyState'
@@ -20,6 +20,7 @@ const STATUS_COLORS = {
 }
 
 export default function StaffBusinessRequestsPage() {
+  const navigate = useNavigate()
   const [filters, setFilters] = useState({ q: '', TrangThai: '', page: 1, per_page: 5 })
   const [state, setState] = useState({ loading: true, error: '', rows: [], pagination: null })
   const [stats, setStats] = useState(null)
@@ -186,7 +187,6 @@ export default function StaffBusinessRequestsPage() {
                   <th>Thông tin Tour / Đoàn</th>
                   <th>Trạng thái</th>
                   <th>NV Phụ trách</th>
-                  <th className="text-center">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -194,7 +194,12 @@ export default function StaffBusinessRequestsPage() {
                   const requestId = getId(request, ['MaYC', 'MaYCDN', 'id'])
                   const staffName = request.nhan_vien?.HoTen || request.NhanVien?.HoTen
                   return (
-                    <tr key={requestId}>
+                    <tr 
+                      key={requestId}
+                      onClick={() => navigate('/staff/business-requests/' + requestId)}
+                      style={{ cursor: 'pointer' }}
+                      className="hover-bg-light"
+                    >
                       <td><span className="fw-bold">#{requestId}</span></td>
 
                       <td>
@@ -231,10 +236,6 @@ export default function StaffBusinessRequestsPage() {
                         ) : (
                           'Chưa gán'
                         )}
-                      </td>
-
-                      <td className="text-center">
-                        <Link className="btn btn-outline-primary btn-sm rounded-pill px-3" to={`/staff/business-requests/${requestId}`}>Chi tiết</Link>
                       </td>
                     </tr>
                   )

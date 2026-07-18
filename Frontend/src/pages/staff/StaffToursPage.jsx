@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { staffTourApi } from '../../api/staffTourApi'
 import EmptyState from '../../components/common/EmptyState'
@@ -20,6 +20,7 @@ const STATUS_COLORS = {
 
 export default function StaffToursPage() {
   const location = useLocation()
+  const navigate = useNavigate()
   const [toastMessage, setToastMessage] = useState('')
 
   useEffect(() => {
@@ -237,7 +238,7 @@ export default function StaffToursPage() {
                   const percent = soCho > 0 ? Math.min(100, (soChoDaDat / soCho) * 100) : 0
 
                   return (
-                    <tr key={tour.MaTour}>
+                    <tr key={tour.MaTour} onClick={() => navigate(`/staff/tours/${tour.MaTour}`)} style={{ cursor: 'pointer' }} className="hover-bg-light">
                       <td style={{ width: '60px', textAlign: 'center', fontWeight: 700, color: '#111827', padding: '16px 20px' }}>
                         #{tour.MaTour}
                       </td>
@@ -273,10 +274,20 @@ export default function StaffToursPage() {
                         <StaffStatusBadge status={tour.TrangThai} />
                       </td>
                       <td className="text-end" style={{ padding: '16px 20px' }}>
-                        <Link className="btn btn-sm btn-outline-primary rounded-pill me-1" to={`/staff/tours/${tour.MaTour}/edit`} title="Sửa">
+                        <Link 
+                          className="btn btn-sm btn-outline-primary rounded-pill me-1" 
+                          to={`/staff/tours/${tour.MaTour}/edit`} 
+                          title="Sửa"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <i className="fa-solid fa-pen"></i>
                         </Link>
-                        <button type="button" onClick={() => setToggleModal({ isOpen: true, tourId: tour.MaTour, isActive })} className={`btn btn-sm rounded-pill ${isActive ? 'btn-outline-secondary' : 'btn-outline-success'}`} title={isActive ? 'Ngừng hoạt động' : 'Kích hoạt'}>
+                        <button 
+                          type="button" 
+                          onClick={(e) => { e.stopPropagation(); setToggleModal({ isOpen: true, tourId: tour.MaTour, isActive }); }} 
+                          className={`btn btn-sm rounded-pill ${isActive ? 'btn-outline-secondary' : 'btn-outline-success'}`} 
+                          title={isActive ? 'Ngừng hoạt động' : 'Kích hoạt'}
+                        >
                           {isActive ? <i className="fa-regular fa-eye-slash"></i> : <i className="fa-regular fa-eye"></i>}
                         </button>
                       </td>

@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import { useAuth } from '../../auth/useAuth'
 import StaffSidebar from './StaffSidebar'
+import StaffGlobalSearch from './StaffGlobalSearch'
 import { Search, Bell, HelpCircle } from 'lucide-react'
 
 export default function StaffLayout() {
@@ -12,10 +13,7 @@ export default function StaffLayout() {
     <div className="dashboard-wrapper staff-page">
       <StaffSidebar />
       <header className="top-header">
-        <div className="top-search">
-          <Search size={18} className="search-icon" />
-          <input type="text" placeholder="Tìm kiếm..." />
-        </div>
+        <StaffGlobalSearch />
         <div className="top-actions">
           <button className="action-btn has-dot">
             <Bell size={20} />

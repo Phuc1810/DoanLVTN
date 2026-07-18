@@ -61,24 +61,21 @@ export default function StaffGlobalSearch() {
   const hasResults = results.tours.length > 0 || results.orders.length > 0 || results.news.length > 0 || results.promotions.length > 0;
 
   return (
-    <div className="top-search omni-search-container" ref={dropdownRef} style={{ position: 'relative', width: '350px' }}>
-      <div className="search-input-wrapper">
-        <Search size={18} className="search-icon text-muted" />
-        <input 
-          type="text" 
-          placeholder="Tìm tour, đơn hàng, tin tức..." 
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => setIsFocused(true)}
-          className="form-control rounded-pill border-0 shadow-sm px-5"
-          style={{ height: '40px', backgroundColor: '#f3f4f6' }}
-        />
-        {isLoading && (
-          <div style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)' }}>
-            <Loader2 size={18} className="spinner-border text-primary" style={{ animation: 'spin 1s linear infinite' }} />
-          </div>
-        )}
-      </div>
+    <div className="top-search omni-search-container" ref={dropdownRef} style={{ position: 'relative', width: '400px' }}>
+      <Search size={18} className="search-icon text-muted" style={{ marginRight: '12px', flexShrink: 0 }} />
+      <input 
+        type="text" 
+        placeholder="Tìm tour, đơn hàng, tin tức..." 
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onFocus={() => setIsFocused(true)}
+        style={{ border: 'none', background: 'transparent', width: '100%', fontSize: '15px', color: '#334155', outline: 'none' }}
+      />
+      {isLoading && (
+        <div style={{ flexShrink: 0, marginLeft: '12px' }}>
+          <Loader2 size={18} className="text-primary" style={{ animation: 'spin 1s linear infinite' }} />
+        </div>
+      )}
 
       {isFocused && (
         <div className="omni-search-dropdown shadow-lg rounded-3 bg-white p-2" style={{ position: 'absolute', top: '50px', left: 0, width: '450px', zIndex: 9999, maxHeight: '500px', overflowY: 'auto' }}>

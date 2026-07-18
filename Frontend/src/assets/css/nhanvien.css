@@ -126,15 +126,7 @@ body {
     .main-content { margin-left: 0; padding: 20px; }
 }
 /* OMNI SEARCH STYLES */
-.omni-search-container .search-input-wrapper {
-  position: relative;
-}
-.omni-search-container .search-icon {
-  position: absolute;
-  left: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-}
+
 .omni-search-dropdown {
   border: 1px solid rgba(0,0,0,0.1);
 }

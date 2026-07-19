@@ -10,6 +10,34 @@ class BusinessRequestResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $trangThai = $this->TrangThai;
+
+        $ngayKhoiHanhRaw = $this->ThoiGianKhoiHanh;
+        
+        if ($trangThai === 'Đã thanh toán' && $ngayKhoiHanhRaw) {
+            $today = \Carbon\Carbon::today();
+            $khoiHanh = \Carbon\Carbon::parse($ngayKhoiHanhRaw)->startOfDay();
+            
+            $ketThuc = null;
+            if (!empty($this->NgayKetThuc)) {
+                $ketThuc = \Carbon\Carbon::parse($this->NgayKetThuc)->startOfDay();
+            }
+            
+            if ($ketThuc) {
+                if ($today > $ketThuc) {
+                    $trangThai = 'Đã hoàn tất';
+                } elseif ($today >= $khoiHanh && $today <= $ketThuc) {
+                    $trangThai = 'Đang diễn ra';
+                }
+            } else {
+                if ($today->equalTo($khoiHanh)) {
+                    $trangThai = 'Đang diễn ra';
+                } elseif ($today > $khoiHanh) {
+                    $trangThai = 'Đã hoàn tất';
+                }
+            }
+        }
+
         return [
             'MaYC' => $this->MaYC,
             'TenCongTy' => $this->TenCongTy,
@@ -19,7 +47,8 @@ class BusinessRequestResource extends JsonResource
             'ThoiGianKhoiHanh' => $this->ThoiGianKhoiHanh,
             'GiaTriHopDong' => $this->GiaTriHopDong,
             'NgayThanhToan' => $this->NgayThanhToan,
-            'TrangThai' => $this->TrangThai,
+            'TrangThai' => $trangThai,
+            'RawTrangThai' => $this->TrangThai,
             'MaKH' => $this->MaKH,
             'MaNV' => $this->MaNV,
             'MaTour' => $this->MaTour,

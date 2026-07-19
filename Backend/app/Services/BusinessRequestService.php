@@ -17,15 +17,18 @@ class BusinessRequestService
 {
     private const STATUS_PENDING = 'Chờ xử lý';
     private const STATUS_CONTACTED = 'Đã liên hệ';
+    private const STATUS_PAID = 'Đã thanh toán';
     private const STATUS_CANCELLED = 'Hủy tour';
-    private const STATUS_COMPLETED = 'Hoàn thành';
+    private const STATUS_COMPLETED = 'Đã hoàn tất';
     private const TOUR_FULL = 'Hết chỗ';
     private const BUSINESS_TOUR = 'Doanh nghiệp';
     private const CUSTOMER_STATUSES = [
         self::STATUS_PENDING,
         self::STATUS_CONTACTED,
+        self::STATUS_PAID,
         self::STATUS_CANCELLED,
         self::STATUS_COMPLETED,
+        'Đang diễn ra',
     ];
 
     public function store(TaiKhoan $user, array $payload): array
@@ -46,13 +49,17 @@ class BusinessRequestService
                 if ($tour->LoaiTour !== self::BUSINESS_TOUR) {
                     $this->throwValidation('MaTour', 'Tour không thuộc loại doanh nghiệp.');
                 }
+            }
 
-                $soNguoi = (int) $payload['SoNguoi'];
-                $soCho = (int) $tour->SoCho;
-                $soChoDaDat = (int) $tour->SoChoDaDat;
-
-                if ($soCho > 0 && ($soChoDaDat + $soNguoi) > $soCho) {
-                    $this->throwValidation('SoNguoi', 'Tour không đủ chỗ. Vui lòng chọn tour khác hoặc giảm số người.');
+            $ngayKetThuc = null;
+            if ($tour && !empty($tour->ThoiLuong)) {
+                if (preg_match('/^\D*(\d+)/', $tour->ThoiLuong, $matches)) {
+                    $days = (int) $matches[1];
+                    if ($days > 0) {
+                        $ngayKetThuc = \Carbon\Carbon::parse($payload['ThoiGianKhoiHanh'])
+                            ->addDays($days - 1)
+                            ->format('Y-m-d');
+                    }
                 }
             }
 
@@ -62,22 +69,14 @@ class BusinessRequestService
                 'SDT' => $payload['SDT'],
                 'SoNguoi' => (int) $payload['SoNguoi'],
                 'ThoiGianKhoiHanh' => $payload['ThoiGianKhoiHanh'],
+                'NgayKetThuc' => $ngayKetThuc,
                 'TrangThai' => self::STATUS_PENDING,
                 'MaKH' => $customer->MaKH,
                 'MaTour' => $tour?->MaTour,
                 'MaNV' => null,
             ]);
 
-            if ($tour) {
-                $newBookedSeats = (int) $tour->SoChoDaDat + (int) $payload['SoNguoi'];
-                $updates = ['SoChoDaDat' => $newBookedSeats];
-
-                if ((int) $tour->SoCho > 0 && $newBookedSeats >= (int) $tour->SoCho) {
-                    $updates['TrangThai'] = self::TOUR_FULL;
-                }
-
-                $tour->update($updates);
-            }
+            // Chúng ta không trừ chỗ lúc khách gửi yêu cầu nữa, chỉ lưu lại.
 
             return $this->resource($request->load(['tour.anhChinh', 'khachHang', 'nhanVien']));
         });
@@ -100,7 +99,7 @@ class BusinessRequestService
         }
 
         if ($status !== '') {
-            $query->where('TrangThai', $status);
+            $this->applyStatusFilter($query, $status);
         }
 
         $paginator = $query->orderByDesc('MaYC')
@@ -153,7 +152,7 @@ class BusinessRequestService
 
         $status = trim((string) ($filters['status'] ?? $filters['TrangThai'] ?? ''));
         if ($status !== '') {
-            $query->where('TrangThai', $status);
+            $this->applyStatusFilter($query, $status);
         }
 
         $paginator = $query->orderByDesc('MaYC')
@@ -189,15 +188,49 @@ class BusinessRequestService
             ];
         }
 
-        $statusRatioRaw = YeuCauDoanhNghiep::select('TrangThai', DB::raw('count(*) as count'))
-            ->groupBy('TrangThai')
-            ->get();
+        $allRequests = YeuCauDoanhNghiep::with('tour:MaTour,NgayKhoiHanh,NgayKetThuc')->select('MaYC', 'TrangThai', 'ThoiGianKhoiHanh', 'MaTour')->get();
+        $statusCounts = [];
+
+        $today = \Carbon\Carbon::today();
+
+        foreach ($allRequests as $req) {
+            $trangThai = $req->TrangThai;
+            $ngayKhoiHanhRaw = $req->ThoiGianKhoiHanh;
+
+            if ($trangThai === 'Đã thanh toán' && $ngayKhoiHanhRaw) {
+                $khoiHanh = \Carbon\Carbon::parse($ngayKhoiHanhRaw)->startOfDay();
+                $ketThuc = null;
+
+                if (!empty($req->NgayKetThuc)) {
+                    $ketThuc = \Carbon\Carbon::parse($req->NgayKetThuc)->startOfDay();
+                }
+
+                if ($ketThuc) {
+                    if ($today > $ketThuc) {
+                        $trangThai = 'Đã hoàn tất';
+                    } elseif ($today >= $khoiHanh && $today <= $ketThuc) {
+                        $trangThai = 'Đang diễn ra';
+                    }
+                } else {
+                    if ($today->equalTo($khoiHanh)) {
+                        $trangThai = 'Đang diễn ra';
+                    } elseif ($today > $khoiHanh) {
+                        $trangThai = 'Đã hoàn tất';
+                    }
+                }
+            }
+
+            if (!isset($statusCounts[$trangThai])) {
+                $statusCounts[$trangThai] = 0;
+            }
+            $statusCounts[$trangThai]++;
+        }
             
         $statusRatio = [];
-        foreach ($statusRatioRaw as $item) {
+        foreach ($statusCounts as $name => $count) {
             $statusRatio[] = [
-                'name' => $item->TrangThai,
-                'value' => $item->count,
+                'name' => $name,
+                'value' => $count,
             ];
         }
 
@@ -256,6 +289,15 @@ class BusinessRequestService
 
             if ((int) $request->MaNV !== (int) $staff->MaNV) {
                 $this->throwValidation('MaNV', 'Bạn không có quyền cập nhật yêu cầu của nhân viên khác.');
+            }
+        }
+
+        if ($payload['TrangThai'] === self::STATUS_PAID) {
+            if (empty($payload['GiaTriHopDong'])) {
+                $this->throwValidation('GiaTriHopDong', 'Bắt buộc nhập Giá trị hợp đồng khi thanh toán.');
+            }
+            if (empty($payload['NgayThanhToan'])) {
+                $this->throwValidation('NgayThanhToan', 'Bắt buộc chọn Ngày thanh toán khi thanh toán.');
             }
         }
 
@@ -346,5 +388,44 @@ class BusinessRequestService
                 $key => [$message],
             ],
         ], 422));
+    }
+    private function applyStatusFilter(Builder $query, string $status): void
+    {
+        $today = \Carbon\Carbon::today()->format('Y-m-d');
+
+        if ($status === 'Đã thanh toán') {
+            $query->where('TrangThai', 'Đã thanh toán')
+                  ->where(function ($q) use ($today) {
+                      $q->whereNull('ThoiGianKhoiHanh')
+                        ->orWhere('ThoiGianKhoiHanh', '>', $today);
+                  });
+        } elseif ($status === 'Đang diễn ra') {
+            $query->where('TrangThai', 'Đã thanh toán')
+                  ->whereNotNull('ThoiGianKhoiHanh')
+                  ->where('ThoiGianKhoiHanh', '<=', $today)
+                  ->where(function ($q) use ($today) {
+                      $q->where(function ($q1) use ($today) {
+                          $q1->whereNull('NgayKetThuc')
+                             ->where('ThoiGianKhoiHanh', '=', $today);
+                      })->orWhere(function ($q2) use ($today) {
+                          $q2->whereNotNull('NgayKetThuc')
+                             ->where('NgayKetThuc', '>=', $today);
+                      });
+                  });
+        } elseif ($status === 'Đã hoàn tất') {
+            $query->where('TrangThai', 'Đã thanh toán')
+                  ->whereNotNull('ThoiGianKhoiHanh')
+                  ->where(function ($q) use ($today) {
+                      $q->where(function ($q1) use ($today) {
+                          $q1->whereNull('NgayKetThuc')
+                             ->where('ThoiGianKhoiHanh', '<', $today);
+                      })->orWhere(function ($q2) use ($today) {
+                          $q2->whereNotNull('NgayKetThuc')
+                             ->where('NgayKetThuc', '<', $today);
+                      });
+                  });
+        } else {
+            $query->where('TrangThai', $status);
+        }
     }
 }

@@ -12,7 +12,7 @@ import { buildImageUrl } from '../../utils/imageUrl'
 import { ArrowLeft, Briefcase, Building2, UserCircle, Settings, HandHeart, Save, Lock, Bell } from 'lucide-react'
 import { useAuth } from '../../auth/useAuth'
 
-const STATUSES = ['Chờ xử lý', 'Đã liên hệ', 'Hủy tour', 'Hoàn thành']
+const STATUSES = ['Đã liên hệ', 'Đã thanh toán', 'Hủy tour']
 
 // Style constants (matching StaffOrderDetailPage)
 const infoRowStyle = { display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px dashed #e5e7eb', gap: '12px' }
@@ -40,7 +40,7 @@ export default function StaffBusinessRequestDetailPage() {
       .then((request) => {
         setState({ loading: false, error: '', request })
         setForm({
-          TrangThai: request?.TrangThai || '',
+          TrangThai: request?.RawTrangThai || request?.TrangThai || '',
           GiaTriHopDong: request?.GiaTriHopDong || '',
           NgayThanhToan: request?.NgayThanhToan || '',
         })
@@ -309,13 +309,13 @@ export default function StaffBusinessRequestDetailPage() {
                 <div className="mb-3">
                   <label className="form-label fw-bold small text-muted">Giá trị hợp đồng (VNĐ)</label>
                   <input type="text" className="form-control" value={form.GiaTriHopDong} onChange={(e) => setForm(f => ({ ...f, GiaTriHopDong: e.target.value }))} placeholder="VD: 20000000" />
-                  <div className="form-text">Bắt buộc khi chọn <b>Hoàn thành</b>.</div>
+                  <div className="form-text">Bắt buộc khi chọn <b>Đã thanh toán</b>.</div>
                 </div>
 
                 <div className="mb-3">
                   <label className="form-label fw-bold small text-muted">Ngày thanh toán</label>
                   <input type="date" className="form-control" value={form.NgayThanhToan || ''} onChange={(e) => setForm(f => ({ ...f, NgayThanhToan: e.target.value }))} max={new Date().toISOString().split('T')[0]} />
-                  <div className="form-text">Bắt buộc khi chọn <b>Hoàn thành</b>.</div>
+                  <div className="form-text">Bắt buộc khi chọn <b>Đã thanh toán</b>.</div>
                 </div>
 
                 <button type="submit" className="btn btn-success w-100 fw-bold py-2">

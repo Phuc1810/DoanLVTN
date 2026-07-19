@@ -16,6 +16,7 @@ export default function CreateBusinessRequestPage() {
   const [tour, setTour] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState({ message: '', errors: {} })
+  const [toastMessage, setToastMessage] = useState('')
   const [success, setSuccess] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState({
@@ -89,7 +90,39 @@ export default function CreateBusinessRequestPage() {
         })
       }
     } catch (err) {
-      setError({ message: err.message, errors: err.errors || {} })
+      let isCapacityError = false
+      let capacityMsg = ''
+
+      const checkCapacity = (msg) => {
+        const lower = msg.toLowerCase()
+        return lower.includes('hết chỗ') || lower.includes('chỗ trống') || lower.includes('không đủ chỗ') || lower.includes('không hoạt động')
+      }
+
+      if (err.message && checkCapacity(err.message)) {
+        isCapacityError = true
+        capacityMsg = err.message
+      }
+      
+      if (err.errors) {
+        Object.values(err.errors).forEach(errArray => {
+          errArray.forEach(errMsg => {
+            if (checkCapacity(errMsg)) {
+              isCapacityError = true
+              capacityMsg = errMsg
+            }
+          })
+        })
+      }
+
+      if (isCapacityError) {
+        setToastMessage(capacityMsg)
+        setTimeout(() => setToastMessage(''), 5000)
+      } else if (err.message && (!err.errors || Object.keys(err.errors).length === 0)) {
+        setToastMessage(err.message)
+        setTimeout(() => setToastMessage(''), 5000)
+      } else {
+        setError({ message: err.message, errors: err.errors || {} })
+      }
     } finally {
       setSubmitting(false)
     }
@@ -98,6 +131,23 @@ export default function CreateBusinessRequestPage() {
   if (loading) return <Loading />
 
   return (
+    <>
+      {toastMessage && (
+        <div 
+          className="position-fixed top-0 end-0 p-4"
+          style={{ zIndex: 9999, marginTop: '80px' }}
+        >
+          <div className="toast show align-items-center text-bg-danger border-0 shadow-lg" role="alert">
+            <div className="d-flex">
+              <div className="toast-body fw-bold" style={{ fontSize: '1.05rem' }}>
+                <i className="fa-solid fa-circle-exclamation me-2"></i>
+                {toastMessage}
+              </div>
+              <button type="button" className="btn-close btn-close-white me-3 m-auto" onClick={() => setToastMessage('')}></button>
+            </div>
+          </div>
+        </div>
+      )}
     <div className="container wrap">
       <div className="cardx p-4 p-lg-5">
         <div className="d-flex justify-content-between flex-wrap gap-2 align-items-start">
@@ -187,5 +237,6 @@ export default function CreateBusinessRequestPage() {
         </div>
       </div>
     </div>
+    </>
   )
 }

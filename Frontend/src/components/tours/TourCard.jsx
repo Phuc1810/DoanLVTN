@@ -23,7 +23,11 @@ export default function TourCard({ tour }) {
         <img src={buildImageUrl(tourImagePath(tour))} alt={tour.TenTour || ''} />
       </div>
 
-      {discount > 0 && <div className="tour-discount-badge">-{discount}%</div>}
+      {tour.TrangThai === 'Hết chỗ' ? (
+        <div className="tour-discount-badge" style={{ background: '#dc3545', fontSize: '13px' }}>Hết chỗ</div>
+      ) : discount > 0 ? (
+        <div className="tour-discount-badge">-{discount}%</div>
+      ) : null}
 
       <div className="tour-body p-3">
         <h5 className="fw-bold mb-1">{tour.TenTour}</h5>

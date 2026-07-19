@@ -283,7 +283,7 @@ class TourService
     {
         return Tour::query()
             ->with(['anhChinh', 'danhGias'])
-            ->where('TrangThai', self::ACTIVE_STATUS);
+            ->whereIn('TrangThai', [self::ACTIVE_STATUS, 'Hết chỗ']);
     }
 
     private function applyCommonFilters(Builder $query, array $filters): void
@@ -370,7 +370,7 @@ class TourService
 
     private function ensureActiveTourExists(int $tourId): void
     {
-        if (! Tour::where('MaTour', $tourId)->where('TrangThai', self::ACTIVE_STATUS)->exists()) {
+        if (! Tour::where('MaTour', $tourId)->whereIn('TrangThai', [self::ACTIVE_STATUS, 'Hết chỗ'])->exists()) {
             $this->throwNotFound();
         }
     }

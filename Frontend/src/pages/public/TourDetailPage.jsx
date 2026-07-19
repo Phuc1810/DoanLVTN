@@ -86,28 +86,32 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
           <div className="tour-info-card shadow-sm rounded-4 p-3">
             <p className="mb-2"><i className="fa-solid fa-location-dot text-danger me-2"></i><strong>Địa điểm:</strong> {tour.DiaDiem}</p>
             <p className="mb-2"><i className="fa-regular fa-clock text-primary me-2"></i><strong>Thời lượng:</strong> {tour.ThoiLuong}</p>
-            <p className="mb-3"><i className="fa-regular fa-calendar-days text-primary me-2"></i><strong>Khởi hành:</strong> {formatDate(tour.NgayKhoiHanh)}</p>
+            {!isBusinessMode && (
+              <p className="mb-3"><i className="fa-regular fa-calendar-days text-primary me-2"></i><strong>Khởi hành:</strong> {formatDate(tour.NgayKhoiHanh)}</p>
+            )}
             
-            <div className="mb-3 p-3 bg-light rounded-3 border">
-              <div className="d-flex justify-content-between align-items-end mb-2">
-                <span className="fw-bold text-dark"><i className="fa-solid fa-users me-2 text-secondary"></i>Tình trạng chỗ</span>
-                <span className="badge bg-white text-dark border shadow-sm">Còn {availableSeats} chỗ</span>
+            {!isBusinessMode && (
+              <div className="mb-3 p-3 bg-light rounded-3 border">
+                <div className="d-flex justify-content-between align-items-end mb-2">
+                  <span className="fw-bold text-dark"><i className="fa-solid fa-users me-2 text-secondary"></i>Tình trạng chỗ</span>
+                  <span className="badge bg-white text-dark border shadow-sm">Còn {availableSeats} chỗ</span>
+                </div>
+                <div className="progress" style={{ height: '8px', borderRadius: '4px' }}>
+                  <div 
+                    className={`progress-bar ${progressColor}`} 
+                    role="progressbar" 
+                    style={{ width: `${bookedPercent}%` }} 
+                    aria-valuenow={bookedPercent} 
+                    aria-valuemin="0" 
+                    aria-valuemax="100"
+                  ></div>
+                </div>
+                <div className="d-flex justify-content-between mt-2" style={{ fontSize: '0.8rem' }}>
+                  <span className="text-muted">Đã đặt: <strong>{bookedSeats}</strong></span>
+                  <span className="text-muted">Tổng: <strong>{totalSeats}</strong></span>
+                </div>
               </div>
-              <div className="progress" style={{ height: '8px', borderRadius: '4px' }}>
-                <div 
-                  className={`progress-bar ${progressColor}`} 
-                  role="progressbar" 
-                  style={{ width: `${bookedPercent}%` }} 
-                  aria-valuenow={bookedPercent} 
-                  aria-valuemin="0" 
-                  aria-valuemax="100"
-                ></div>
-              </div>
-              <div className="d-flex justify-content-between mt-2" style={{ fontSize: '0.8rem' }}>
-                <span className="text-muted">Đã đặt: <strong>{bookedSeats}</strong></span>
-                <span className="text-muted">Tổng: <strong>{totalSeats}</strong></span>
-              </div>
-            </div>
+            )}
             <hr />
             <p className="mb-1">
               <span className="text-muted">Giá gốc:</span>

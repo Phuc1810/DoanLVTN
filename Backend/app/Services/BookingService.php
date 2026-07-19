@@ -36,15 +36,23 @@ class BookingService
             ]);
         }
 
-        if ((int) $tour->SoChoDaDat >= (int) $tour->SoCho) {
+        $soLuongNguoiLon = (int) $data['SoLuongNguoiLon'];
+        $soLuongTreEm = (int) $data['SoLuongTreEm'];
+        $soLuongTreNho = (int) $data['SoLuongTreNho'];
+        $needSeats = $soLuongNguoiLon + $soLuongTreEm + $soLuongTreNho;
+        $soChoConLai = (int) $tour->SoCho - (int) $tour->SoChoDaDat;
+
+        if ($soChoConLai <= 0) {
             throw ValidationException::withMessages([
                 'MaTour' => ['Tour đã hết chỗ.'],
             ]);
         }
 
-        $soLuongNguoiLon = (int) $data['SoLuongNguoiLon'];
-        $soLuongTreEm = (int) $data['SoLuongTreEm'];
-        $soLuongTreNho = (int) $data['SoLuongTreNho'];
+        if ($needSeats > $soChoConLai) {
+            throw ValidationException::withMessages([
+                'MaTour' => ['Chỉ còn ' . $soChoConLai . ' chỗ trống, không đủ chỗ cho yêu cầu của bạn.'],
+            ]);
+        }
 
         $giaNguoiLonApDung = (float) $tour->GiaGoc;
         $giaTreEmApDung = round($giaNguoiLonApDung * self::CHILD_RATE);

@@ -81,12 +81,14 @@ export default function BusinessRequestsPage() {
           <div className="col-md-4">
             <label className="form-label fw-semibold mb-1">Lọc theo trạng thái</label>
             <select className="form-select" value={selectedStatus} onChange={(event) => setSelectedStatus(event.target.value)}>
-              {statuses.map((status) => (
-                <option key={status || 'all'} value={status}>
-                  {status || 'Tất cả'}
-                </option>
-              ))}
-            </select>
+            <option value="">Tất cả trạng thái</option>
+            <option value="Chờ xử lý">Chờ xử lý</option>
+            <option value="Đã liên hệ">Đã liên hệ</option>
+            <option value="Đã thanh toán">Đã thanh toán</option>
+            <option value="Đang diễn ra">Đang diễn ra</option>
+            <option value="Đã hoàn tất">Đã hoàn tất</option>
+            <option value="Hủy tour">Hủy tour</option>
+          </select>
           </div>
 
           <div className="col-md-2">

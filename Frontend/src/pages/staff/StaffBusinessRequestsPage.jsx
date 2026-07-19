@@ -15,8 +15,10 @@ import { RefreshCw, User, Phone, Calendar, Users } from 'lucide-react'
 const STATUS_COLORS = {
   'Chờ xử lý': '#b45309', // warning
   'Đã liên hệ': '#1d4ed8', // info
+  'Đã thanh toán': '#0891b2', // cyan
   'Hủy tour': '#b91c1c', // danger
-  'Hoàn thành': '#15803d', // success
+  'Đang diễn ra': '#8b5cf6', // purple
+  'Đã hoàn tất': '#15803d', // success
 }
 
 export default function StaffBusinessRequestsPage() {
@@ -165,8 +167,10 @@ export default function StaffBusinessRequestsPage() {
                 <option value="">Tất cả trạng thái</option>
                 <option value="Chờ xử lý">Chờ xử lý</option>
                 <option value="Đã liên hệ">Đã liên hệ</option>
+                <option value="Đã thanh toán">Đã thanh toán</option>
+                <option value="Đang diễn ra">Đang diễn ra</option>
+                <option value="Đã hoàn tất">Đã hoàn tất</option>
                 <option value="Hủy tour">Hủy tour</option>
-                <option value="Hoàn thành">Hoàn thành</option>
               </select>
             </div>
           </div>

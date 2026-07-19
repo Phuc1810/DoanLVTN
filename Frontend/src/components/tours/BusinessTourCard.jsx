@@ -1,36 +1,52 @@
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { buildImageUrl, tourImagePath } from '../../utils/imageUrl'
 
 export default function BusinessTourCard({ tour }) {
-  const discount = Number(tour.PhanTramGiam || tour.discount_percent || 0)
-  const hasSale = Number(tour.GiaGiam) > 0 && Number(tour.GiaGiam) < Number(tour.GiaGoc)
-  const displayPrice = hasSale ? tour.GiaGiam : tour.GiaGoc
+  const navigate = useNavigate()
+  const discount = Number(tour.discount_percent || tour.PhanTramGiam || 0)
+
+  const reviews = tour.danh_gias || tour.danhGias || []
+  let averageRating = tour.review_stats?.average_rating
+  if (!averageRating && reviews.length > 0) {
+    const sum = reviews.reduce((acc, curr) => acc + Number(curr.SoSao || 0), 0)
+    averageRating = (sum / reviews.length).toFixed(1)
+  }
 
   return (
-    <div className="tour-card">
-      <div className="thumb-wrap">
-        {tourImagePath(tour) ? (
-          <img className="thumb" src={buildImageUrl(tourImagePath(tour))} alt={tour.TenTour || ''} />
-        ) : (
-          <div className="thumb thumb-placeholder"></div>
-        )}
-        {discount > 0 && <div className="badge-sale">-{discount}%</div>}
+    <div 
+      className="tour-card shadow-sm"
+      onClick={() => navigate(`/business-tours/${tour.MaTour}`)}
+      style={{ cursor: 'pointer' }}
+    >
+      <div className="tour-img">
+        <img src={buildImageUrl(tourImagePath(tour))} alt={tour.TenTour || ''} />
       </div>
 
-      <div className="card-bodyx">
-        <div className="tour-name">{tour.TenTour}</div>
-        <div className="tour-loc">
-          <i className="fa-solid fa-location-dot loc-ic"></i>
-          <span>{tour.DiaDiem}</span>
+      {discount > 0 && <div className="tour-discount-badge">-{discount}%</div>}
+
+      <div className="tour-body p-3">
+        <h5 className="fw-bold mb-1">{tour.TenTour}</h5>
+        <p className="text-muted mb-2">
+          <i className="fa-solid fa-location-dot text-danger"></i> {tour.DiaDiem}
+        </p>
+        <hr className="my-2" style={{ opacity: 0.15 }} />
+        <div className="d-flex justify-content-between align-items-end pt-1">
+          <div className="d-flex flex-column">
+            {Number(tour.GiaGoc) > Number(tour.GiaGiam) && (
+              <span className="text-muted text-decoration-line-through mb-1" style={{ fontSize: 13, lineHeight: 1 }}>
+                {formatCurrency(tour.GiaGoc)}
+              </span>
+            )}
+            <span className="fw-bold text-danger mb-0" style={{ fontSize: 18, lineHeight: 1 }}>
+              {formatCurrency(tour.GiaGiam)}
+            </span>
+          </div>
+          <div className="text-muted d-flex align-items-center pb-1" style={{ fontSize: 15, lineHeight: 1 }}>
+            <i className="fa-solid fa-star text-warning me-1"></i>
+            <span className="fw-medium">{averageRating ? Number(averageRating).toFixed(1) : '0'}</span>
+          </div>
         </div>
-        <div className="price-row">
-          <div className="price-new">{formatCurrency(displayPrice)}</div>
-          {hasSale && <div className="price-old">{formatCurrency(tour.GiaGoc)}</div>}
-        </div>
-        <Link className="btn btn-view" to={`/business-tours/${tour.MaTour}`} style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>
-          XEM TOUR
-        </Link>
       </div>
     </div>
   )

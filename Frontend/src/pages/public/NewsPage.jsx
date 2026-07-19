@@ -13,7 +13,7 @@ export default function NewsPage() {
   const [state, setState] = useState({ loading: true, error: '', news: [] })
 
   useEffect(() => {
-    newsApi.list({ loai_tin: loai, per_page: 12 })
+    newsApi.list({ loai_tin: loai, trang_thai: 'Hiển thị', per_page: 12 })
       .then((payload) => setState({ loading: false, error: '', news: listFrom(payload) }))
       .catch((error) => setState({ loading: false, error: error.message, news: [] }))
   }, [loai])

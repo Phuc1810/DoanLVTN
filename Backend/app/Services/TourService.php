@@ -282,7 +282,7 @@ class TourService
     private function baseActiveQuery(): Builder
     {
         return Tour::query()
-            ->with('anhChinh')
+            ->with(['anhChinh', 'danhGias'])
             ->where('TrangThai', self::ACTIVE_STATUS);
     }
 

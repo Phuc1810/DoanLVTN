@@ -51,6 +51,15 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
     ? 'Bạn cần đăng nhập hoặc đăng ký để gửi yêu cầu tour doanh nghiệp.'
     : 'Bạn cần đăng nhập hoặc đăng ký để tiến hành đặt tour.'
 
+  const totalSeats = Number(tour.SoCho) || 0
+  const bookedSeats = Number(tour.SoChoDaDat) || 0
+  const availableSeats = Math.max(0, totalSeats - bookedSeats)
+  const bookedPercent = totalSeats > 0 ? Math.min(100, (bookedSeats / totalSeats) * 100) : 0
+  
+  let progressColor = 'bg-success'
+  if (bookedPercent >= 90) progressColor = 'bg-danger'
+  else if (bookedPercent >= 60) progressColor = 'bg-warning'
+
   return (
     <div className="container tour-detail-wrapper">
       <h2 className="fw-bold mb-3 tour-detail-title">{tour.TenTour}</h2>
@@ -75,10 +84,30 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
 
         <div className="col-lg-4">
           <div className="tour-info-card shadow-sm rounded-4 p-3">
-            <p className="mb-2"><i className="fa-solid fa-location-dot text-danger me-1"></i><strong>Địa điểm:</strong> {tour.DiaDiem}</p>
-            <p className="mb-2"><i className="fa-regular fa-clock text-primary me-1"></i><strong>Thời lượng:</strong> {tour.ThoiLuong}</p>
-            <p className="mb-2"><i className="fa-regular fa-calendar-days text-primary me-1"></i><strong>Khởi hành:</strong> {formatDate(tour.NgayKhoiHanh)}</p>
-            <p className="mb-2"><i className="fa-solid fa-users me-1"></i><strong>Số chỗ:</strong> {tour.SoCho} (Đã đặt: {tour.SoChoDaDat || 0})</p>
+            <p className="mb-2"><i className="fa-solid fa-location-dot text-danger me-2"></i><strong>Địa điểm:</strong> {tour.DiaDiem}</p>
+            <p className="mb-2"><i className="fa-regular fa-clock text-primary me-2"></i><strong>Thời lượng:</strong> {tour.ThoiLuong}</p>
+            <p className="mb-3"><i className="fa-regular fa-calendar-days text-primary me-2"></i><strong>Khởi hành:</strong> {formatDate(tour.NgayKhoiHanh)}</p>
+            
+            <div className="mb-3 p-3 bg-light rounded-3 border">
+              <div className="d-flex justify-content-between align-items-end mb-2">
+                <span className="fw-bold text-dark"><i className="fa-solid fa-users me-2 text-secondary"></i>Tình trạng chỗ</span>
+                <span className="badge bg-white text-dark border shadow-sm">Còn {availableSeats} chỗ</span>
+              </div>
+              <div className="progress" style={{ height: '8px', borderRadius: '4px' }}>
+                <div 
+                  className={`progress-bar ${progressColor}`} 
+                  role="progressbar" 
+                  style={{ width: `${bookedPercent}%` }} 
+                  aria-valuenow={bookedPercent} 
+                  aria-valuemin="0" 
+                  aria-valuemax="100"
+                ></div>
+              </div>
+              <div className="d-flex justify-content-between mt-2" style={{ fontSize: '0.8rem' }}>
+                <span className="text-muted">Đã đặt: <strong>{bookedSeats}</strong></span>
+                <span className="text-muted">Tổng: <strong>{totalSeats}</strong></span>
+              </div>
+            </div>
             <hr />
             <p className="mb-1">
               <span className="text-muted">Giá gốc:</span>
@@ -130,7 +159,10 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
         <div className="d-flex justify-content-between align-items-start flex-wrap gap-2">
           <div>
             <h4 className="fw-bold mb-1">ĐÁNH GIÁ KHÁCH HÀNG</h4>
-            <div className="text-muted">{stats.average_rating || 0}/5 • {stats.total_reviews || state.reviews.length} đánh giá</div>
+            <div className="text-muted">
+              <i className="fa-solid fa-star text-warning me-1"></i>
+              {stats.average_rating || (state.reviews.length ? (state.reviews.reduce((acc, curr) => acc + Number(curr.SoSao || 0), 0) / state.reviews.length).toFixed(1) : 0)}/5 • {stats.total_reviews || state.reviews.length} đánh giá
+            </div>
           </div>
           {!user && <span className="badge bg-secondary p-2">Đăng nhập để đánh giá</span>}
         </div>

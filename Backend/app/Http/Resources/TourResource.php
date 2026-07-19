@@ -35,6 +35,11 @@ class TourResource extends JsonResource
             'image_url' => $this->imageUrl($duongDan),
             'discount_percent' => $this->discountPercent(),
             'promotion' => $this->promotionPayload(),
+            'review_stats' => [
+                'average_rating' => $this->danh_gias_avg_so_sao ? (float) $this->danh_gias_avg_so_sao : 0,
+                'total_reviews' => $this->danh_gias_count ?? 0,
+            ],
+            'danh_gias' => $this->whenLoaded('danhGias'),
         ];
     }
 

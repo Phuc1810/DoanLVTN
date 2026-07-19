@@ -19,7 +19,7 @@ export default function BusinessToursPage() {
   }, [searchParams])
 
   return (
-    <div className="container wrap">
+    <div className="container wrap search-results-area">
       <h2 className="page-title">TOUR DOANH NGHIỆP</h2>
       {state.loading && <Loading />}
       {state.error && <ErrorState message={state.error} />}

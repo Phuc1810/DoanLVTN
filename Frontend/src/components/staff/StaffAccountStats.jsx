@@ -3,7 +3,7 @@ import Loading from '../common/Loading'
 
 const ROLE_COLORS = {
   AD: '#0047b3', // Xanh dương đậm
-  NV: '#596575', // Xám đen
+  NV: '#b45309', // Cam đất (Amber)
   KH: '#007b55', // Xanh lá đậm
 }
 

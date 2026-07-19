@@ -109,6 +109,7 @@ Route::post('/orders/{id}/review', [ReviewController::class, 'store'])
 Route::prefix('admin')->middleware(['auth:sanctum', 'role:AD'])->group(function () {
     Route::get('/accounts', [AccountController::class, 'index']);
     Route::get('/accounts/stats', [AccountController::class, 'stats']);
+    Route::get('/accounts/{id}', [AccountController::class, 'show'])->whereNumber('id');
     Route::post('/accounts/staff', [AccountController::class, 'storeStaff']);
     Route::patch('/accounts/{id}/role', [AccountController::class, 'updateRole'])->whereNumber('id');
     Route::patch('/accounts/{id}/status', [AccountController::class, 'toggleStatus'])->whereNumber('id');

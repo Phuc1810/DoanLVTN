@@ -45,6 +45,7 @@ import StaffBusinessRequestDetailPage from '../pages/staff/StaffBusinessRequestD
 import StaffBusinessRequestsPage from '../pages/staff/StaffBusinessRequestsPage'
 import StaffChangePasswordPage from '../pages/staff/StaffChangePasswordPage'
 import StaffAccountsPage from '../pages/staff/StaffAccountsPage'
+import StaffAccountDetailsPage from '../pages/staff/StaffAccountDetailsPage'
 import StaffDashboardPage from '../pages/staff/StaffDashboardPage'
 import StaffLoginPage from '../pages/staff/StaffLoginPage'
 import StaffNewsCreatePage from '../pages/staff/StaffNewsCreatePage'
@@ -93,6 +94,7 @@ const router = createBrowserRouter([
     children: [
       { path: '/staff', element: <StaffDashboardPage /> },
       { path: '/staff/accounts', element: <StaffAccountsPage /> },
+      { path: '/staff/accounts/:id', element: <StaffAccountDetailsPage /> },
       { path: '/staff/tours', element: <StaffToursPage /> },
       { path: '/staff/tours/create', element: <StaffTourCreatePage /> },
       { path: '/staff/tours/:id', element: <StaffTourDetailPage /> },

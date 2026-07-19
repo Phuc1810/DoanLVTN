@@ -41,6 +41,15 @@ class AccountController extends Controller
         ]);
     }
 
+    public function show(int $id)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy thông tin tài khoản thành công',
+            'data' => $this->adminAccountService->getAccountDetails($id),
+        ]);
+    }
+
     public function storeStaff(CreateStaffAccountRequest $request)
     {
         return response()->json([

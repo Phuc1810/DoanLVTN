@@ -78,6 +78,111 @@ class AdminAccountService
         ];
     }
 
+    public function getAccountDetails(int $id): array
+    {
+        $account = TaiKhoan::with([
+            'khachHang.donDatTours.tour:MaTour,TenTour,ThoiLuong',
+            'khachHang.donDatTours.tour.anhChinh',
+            'khachHang.danhGias.tour:MaTour,TenTour',
+            'nhanVien.tours:MaTour,TenTour,ThoiLuong,TrangThai',
+            'nhanVien.tinTucs:MaTin,TieuDe,NgayDang,TrangThai'
+        ])->find($id);
+
+        if (!$account) {
+            throw new HttpResponseException(response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy tài khoản',
+            ], 404));
+        }
+
+        $result = [
+            'id' => $account->MaTK,
+            'username' => $account->TenDangNhap,
+            'role' => $account->VaiTro,
+            'status' => $account->TrangThai,
+            'profile' => null,
+            'activities' => []
+        ];
+
+        if ($account->VaiTro === self::ROLE_CUSTOMER && $account->khachHang) {
+            $kh = $account->khachHang;
+            $result['profile'] = [
+                'fullname' => $kh->HoTen,
+                'email' => $kh->Email,
+                'phone' => $kh->SoDienThoai,
+                'address' => $kh->DiaChi,
+                'dob' => $kh->NgaySinh,
+                'gender' => $kh->GioiTinh,
+            ];
+            $result['activities'] = [
+                'bookings' => $kh->donDatTours()->orderByDesc('NgayDat')->get()->map(function ($booking) {
+                    return [
+                        'id' => $booking->MaDon,
+                        'booking_date' => $booking->NgayDat,
+                        'total_price' => $booking->TongTienPhaiTra,
+                        'status' => $booking->TrangThai,
+                        'tour' => [
+                            'id' => $booking->tour?->MaTour,
+                            'name' => $booking->tour?->TenTour,
+                            'image' => $booking->tour?->anhChinh?->DuongDan
+                        ]
+                    ];
+                })->values(),
+                'reviews' => $kh->danhGias()->orderByDesc('NgayDG')->get()->map(function ($review) {
+                    return [
+                        'id' => $review->MaDG,
+                        'rating' => $review->SoSao,
+                        'comment' => $review->NoiDung,
+                        'date' => $review->NgayDG,
+                        'tour' => [
+                            'id' => $review->tour?->MaTour,
+                            'name' => $review->tour?->TenTour
+                        ]
+                    ];
+                })->values()
+            ];
+        } elseif (in_array($account->VaiTro, [self::ROLE_STAFF, self::ROLE_ADMIN]) && $account->nhanVien) {
+            $nv = $account->nhanVien;
+            $result['profile'] = [
+                'fullname' => $nv->HoTen,
+                'email' => $nv->Email,
+                'phone' => $nv->SDT,
+                'position' => $nv->ChucVu,
+            ];
+            $result['activities'] = [
+                'managed_tours' => $nv->tours()->orderByDesc('MaTour')->get()->map(function ($tour) {
+                    return [
+                        'id' => $tour->MaTour,
+                        'name' => $tour->TenTour,
+                        'duration' => $tour->ThoiLuong,
+                        'status' => $tour->TrangThai,
+                        'image' => $tour->anhChinh?->DuongDan,
+                    ];
+                })->values(),
+                'news' => $nv->tinTucs()->orderByDesc('NgayDang')->get()->map(function ($news) {
+                    return [
+                        'id' => $news->MaTin,
+                        'title' => $news->TieuDe,
+                        'date' => $news->NgayDang,
+                        'status' => $news->TrangThai,
+                        'image' => $news->AnhDaiDien,
+                    ];
+                })->values(),
+                'business_requests' => $nv->yeuCauDoanhNghieps()->orderByDesc('NgayGui')->get()->map(function ($req) {
+                    return [
+                        'id' => $req->MaYC,
+                        'company' => $req->TenCongTy,
+                        'contact' => $req->NguoiLienHe,
+                        'date' => $req->NgayGui,
+                        'status' => $req->TrangThai,
+                    ];
+                })->values()
+            ];
+        }
+
+        return $result;
+    }
+
     public function createStaff(array $payload): array
     {
         return DB::transaction(function () use ($payload) {

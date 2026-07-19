@@ -1,6 +1,6 @@
 import { CheckCircle2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { adminAccountApi } from '../../api/adminAccountApi'
 import { useAuth } from '../../auth/useAuth'
 import AccountRoleSelect from '../../components/admin/AccountRoleSelect'
@@ -35,6 +35,7 @@ const SolidUnlock = ({ size = 18 }) => (
 
 export default function StaffAccountsPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [filters, setFilters] = useState({ q: '', role: '', st: '', page: 1, per_page: 5 })
   const [state, setState] = useState({ loading: true, error: '', rows: [], pagination: null })
   const [actionError, setActionError] = useState(null)
@@ -168,13 +169,25 @@ export default function StaffAccountsPage() {
                   const isMe = account.MaTK === user?.MaTK
                   const profile = profileText(account)
                   return (
-                    <tr key={account.MaTK}>
-                      <td className="fw-bold text-secondary">#{account.MaTK}</td>
-                      <td><span className="fw-bold text-dark">{account.TenDangNhap}</span>{isMe && <span className="badge bg-light text-secondary border ms-2">Của bạn</span>}</td>
+                    <tr 
+                      key={account.MaTK} 
+                      onClick={() => navigate(`/staff/accounts/${account.MaTK}`)} 
+                      style={{ cursor: 'pointer' }}
+                      className="position-relative"
+                    >
+                      <td className="fw-bold">
+                        <span className="text-secondary">#{account.MaTK}</span>
+                      </td>
+                      <td>
+                        <span className="fw-bold text-dark">
+                          {account.TenDangNhap}
+                        </span>
+                        {isMe && <span className="badge bg-light text-secondary border ms-2">Của bạn</span>}
+                      </td>
                       <td><div className="fw-bold text-primary" style={{ fontSize: '1rem' }}>{profile.name}</div><div className="small text-muted">{profile.email || profile.phone}</div></td>
                       <td><AccountRoleBadge role={account.VaiTro} /></td>
                       <td><AccountStatusBadge status={account.TrangThai} /></td>
-                      <td className="text-end">
+                      <td className="text-end" onClick={(e) => e.stopPropagation()}>
                         {isMe ? <span className="badge bg-light text-secondary border">Không thao tác</span> : (
                           <div className="d-flex justify-content-end align-items-center">
                             <div style={{ width: 84 }}><AccountRoleSelect value={account.VaiTro} disabled={isMe} onChange={(role) => promptChangeRole(account, role)} /></div>

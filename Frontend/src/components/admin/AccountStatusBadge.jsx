@@ -1,7 +1,7 @@
 export function AccountRoleBadge({ role }) {
   const styles = {
     AD: { color: '#0047b3', backgroundColor: '#f0f7ff', borderColor: '#99c2ff' },
-    NV: { color: '#4b5563', backgroundColor: '#f3f4f6', borderColor: '#d1d5db' },
+    NV: { color: '#b45309', backgroundColor: '#fffbeb', borderColor: '#fde68a' },
     KH: { color: '#007b55', backgroundColor: '#f0fdf4', borderColor: '#86efac' },
   }
   const labels = {

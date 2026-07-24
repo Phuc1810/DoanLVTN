@@ -14,50 +14,15 @@ class BookingService
 {
     private const ACTIVE_STATUS = 'Hoạt động';
     private const PENDING_PAYMENT_STATUS = 'Chờ thanh toán';
+    private const STATUS_SOLD_OUT = 'Hết chỗ';
     private const CHILD_RATE = 0.7;
 
     public function createPersonalBooking(TaiKhoan $taiKhoan, array $data): array
     {
-        $tour = Tour::where('MaTour', (int) $data['MaTour'])->first();
-
-        if (! $tour) {
-            throw new HttpResponseException(response()->json([
-                'success' => false,
-                'message' => 'Không tìm thấy dữ liệu',
-                'errors' => [
-                    'MaTour' => ['Tour không tồn tại.'],
-                ],
-            ], 404));
-        }
-
-        if ($tour->TrangThai !== self::ACTIVE_STATUS) {
-            throw ValidationException::withMessages([
-                'MaTour' => ['Tour không hoạt động.'],
-            ]);
-        }
-
         $soLuongNguoiLon = (int) $data['SoLuongNguoiLon'];
         $soLuongTreEm = (int) $data['SoLuongTreEm'];
         $soLuongTreNho = (int) $data['SoLuongTreNho'];
         $needSeats = $soLuongNguoiLon + $soLuongTreEm + $soLuongTreNho;
-        $soChoConLai = (int) $tour->SoCho - (int) $tour->SoChoDaDat;
-
-        if ($soChoConLai <= 0) {
-            throw ValidationException::withMessages([
-                'MaTour' => ['Tour đã hết chỗ.'],
-            ]);
-        }
-
-        if ($needSeats > $soChoConLai) {
-            throw ValidationException::withMessages([
-                'MaTour' => ['Chỉ còn ' . $soChoConLai . ' chỗ trống, không đủ chỗ cho yêu cầu của bạn.'],
-            ]);
-        }
-
-        $giaNguoiLonApDung = (float) $tour->GiaGoc;
-        $giaTreEmApDung = round($giaNguoiLonApDung * self::CHILD_RATE);
-        $tongTienGoc = ($soLuongNguoiLon * $giaNguoiLonApDung)
-            + ($soLuongTreEm * $giaTreEmApDung);
 
         $maCtkm = isset($data['MaCTKM']) && (int) $data['MaCTKM'] > 0
             ? (int) $data['MaCTKM']
@@ -66,15 +31,54 @@ class BookingService
         return DB::transaction(function () use (
             $taiKhoan,
             $data,
-            $tour,
             $soLuongNguoiLon,
             $soLuongTreEm,
             $soLuongTreNho,
-            $giaNguoiLonApDung,
-            $giaTreEmApDung,
-            $tongTienGoc,
+            $needSeats,
             $maCtkm
         ) {
+            // Lock Tour row để chống Race Condition (2 request đồng thời)
+            $tour = Tour::where('MaTour', (int) $data['MaTour'])->lockForUpdate()->first();
+
+            if (! $tour) {
+                throw new HttpResponseException(response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy dữ liệu',
+                    'errors' => ['MaTour' => ['Tour không tồn tại.']],
+                ], 404));
+            }
+
+            if ($tour->TrangThai !== self::ACTIVE_STATUS) {
+                throw ValidationException::withMessages([
+                    'MaTour' => ['Tour không hoạt động.'],
+                ]);
+            }
+
+            if (\Carbon\Carbon::parse($tour->NgayKhoiHanh)->startOfDay()->lte(\Carbon\Carbon::today())) {
+                throw ValidationException::withMessages([
+                    'MaTour' => ['Tour này đã khởi hành hoặc đã kết thúc, không thể đặt chỗ.'],
+                ]);
+            }
+
+            $soChoConLai = (int) $tour->SoCho - (int) $tour->SoChoDaDat;
+
+            if ($soChoConLai <= 0) {
+                throw ValidationException::withMessages([
+                    'MaTour' => ['Tour đã hết chỗ.'],
+                ]);
+            }
+
+            if ($needSeats > $soChoConLai) {
+                throw ValidationException::withMessages([
+                    'MaTour' => ['Chỉ còn ' . $soChoConLai . ' chỗ trống, không đủ chỗ cho yêu cầu của bạn.'],
+                ]);
+            }
+
+            $giaNguoiLonApDung = (float) $tour->GiaGoc;
+            $giaTreEmApDung = round($giaNguoiLonApDung * self::CHILD_RATE);
+            $tongTienGoc = ($soLuongNguoiLon * $giaNguoiLonApDung)
+                + ($soLuongTreEm * $giaTreEmApDung);
+
             $khachHang = $this->ensureCustomer($taiKhoan);
             $this->syncCustomerProfileForBooking($khachHang, $data);
 
@@ -92,6 +96,13 @@ class BookingService
                 'MaTour' => $tour->MaTour,
                 'MaCTKM' => $maCtkm,
             ]);
+
+            // Giữ chỗ ngay khi tạo đơn (Lock seats)
+            $tour->SoChoDaDat = (int) $tour->SoChoDaDat + $needSeats;
+            if ((int) $tour->SoChoDaDat >= (int) $tour->SoCho) {
+                $tour->TrangThai = self::STATUS_SOLD_OUT;
+            }
+            $tour->save();
 
             return [
                 'MaDon' => $donDatTour->MaDon,

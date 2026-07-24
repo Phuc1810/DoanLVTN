@@ -271,7 +271,10 @@ export default function StaffToursPage() {
                         <span className="small text-muted">{tour.LoaiTour || tour.Mien || ''}</span>
                       </td>
                       <td style={{ padding: '16px 20px' }}>
-                        <StaffStatusBadge status={tour.TrangThai} />
+                        <div className="d-flex flex-column gap-1 align-items-start">
+                          <StaffStatusBadge status={tour.TrangThai} />
+                          {tour.TienDo && <StaffStatusBadge status={tour.TienDo} />}
+                        </div>
                       </td>
                       <td className="text-end" style={{ padding: '16px 20px' }}>
                         <Link 

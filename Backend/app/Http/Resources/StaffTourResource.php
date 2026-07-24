@@ -12,6 +12,29 @@ class StaffTourResource extends JsonResource
     {
         $mainImage = $this->whenLoaded('anhChinh', fn () => $this->anhChinh);
 
+        $trangThai = $this->TrangThai;
+        $tienDo = 'Sắp khởi hành';
+
+        if (in_array($trangThai, ['Hoạt động', 'Hết chỗ']) && $this->NgayKhoiHanh) {
+            $today = \Carbon\Carbon::today();
+            $khoiHanh = \Carbon\Carbon::parse($this->NgayKhoiHanh)->startOfDay();
+            $ketThuc = $this->NgayKetThuc ? \Carbon\Carbon::parse($this->NgayKetThuc)->startOfDay() : null;
+
+            if ($ketThuc) {
+                if ($today > $ketThuc) {
+                    $tienDo = 'Đã hoàn tất';
+                } elseif ($today >= $khoiHanh && $today <= $ketThuc) {
+                    $tienDo = 'Đang diễn ra';
+                }
+            } else {
+                if ($today->equalTo($khoiHanh)) {
+                    $tienDo = 'Đang diễn ra';
+                } elseif ($today > $khoiHanh) {
+                    $tienDo = 'Đã hoàn tất';
+                }
+            }
+        }
+
         return [
             'MaTour' => $this->MaTour,
             'TenTour' => $this->TenTour,
@@ -27,7 +50,8 @@ class StaffTourResource extends JsonResource
             'SoChoConLai' => max(0, (int) $this->SoCho - (int) $this->SoChoDaDat),
             'Mien' => $this->Mien,
             'LoaiTour' => $this->LoaiTour,
-            'TrangThai' => $this->TrangThai,
+            'TrangThai' => $trangThai,
+            'TienDo' => $tienDo,
             'MaNV' => $this->MaNV,
             'AnhChinh' => $mainImage?->DuongDan,
             'LoaiAnh' => $mainImage?->LoaiAnh,

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/useAuth'
 import FormError from '../../components/common/FormError'
@@ -10,6 +10,15 @@ export default function AdminLoginPage() {
   const [form, setForm] = useState({ login_key: '', password: '' })
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (error?.message) {
+      const timer = setTimeout(() => {
+        setError(curr => curr ? { ...curr, message: null } : null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error?.message]);
 
   async function submit(event) {
     event.preventDefault()
@@ -24,7 +33,11 @@ export default function AdminLoginPage() {
       }
       navigate(location.state?.from?.pathname || '/admin', { replace: true })
     } catch (err) {
-      setError({ message: err.message, errors: err.errors })
+      let topMsg = err.message;
+      if (topMsg === 'Dữ liệu không hợp lệ' || topMsg === 'Dữ liệu không hợp lệ.') {
+        topMsg = err.errors?.account?.[0] || '';
+      }
+      setError({ message: topMsg, errors: err.errors })
     } finally {
       setSubmitting(false)
     }
@@ -44,7 +57,17 @@ export default function AdminLoginPage() {
         <section className="admin-login-right">
           <h3 className="fw-bold mb-2">Đăng nhập Admin</h3>
           <p className="text-muted mb-4">Dùng tài khoản có vai trò AD.</p>
-          <FormError message={error?.message} errors={error?.errors} />
+          {error?.message && (
+            <div className="toast align-items-center text-white bg-danger border-0 show fade" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 9999, minWidth: '250px' }}>
+              <div className="d-flex">
+                <div className="toast-body fw-semibold">
+                  <i className="fa-solid fa-triangle-exclamation me-2"></i>
+                  {error.message}
+                </div>
+                <button type="button" className="btn-close btn-close-white me-2 m-auto" onClick={() => setError(curr => curr ? { ...curr, message: null } : null)}></button>
+              </div>
+            </div>
+          )}
           <form onSubmit={submit}>
             <div className="mb-3">
               <label className="form-label fw-bold small text-muted">Tên đăng nhập hoặc email</label>

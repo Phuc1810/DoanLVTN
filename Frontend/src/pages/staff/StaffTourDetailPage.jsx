@@ -61,7 +61,12 @@ export default function StaffTourDetailPage() {
                   <div className="bg-light p-2 rounded me-3 text-primary"><Tag size={20} /></div>
                   <div>
                     <div className="text-muted small">Mã tour / Trạng thái</div>
-                    <div className="fw-semibold">#{tour.MaTour} <span className="mx-2">•</span> <StaffStatusBadge status={tour.TrangThai} /></div>
+                    <div className="fw-semibold d-flex align-items-center gap-2">
+                      #{tour.MaTour} 
+                      <span className="text-muted">•</span> 
+                      <StaffStatusBadge status={tour.TrangThai} />
+                      {tour.TienDo && <StaffStatusBadge status={tour.TienDo} />}
+                    </div>
                   </div>
                 </div>
 

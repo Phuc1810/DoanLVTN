@@ -146,36 +146,7 @@ class PaymentService
                 ]);
             }
 
-            $tour = Tour::where('MaTour', $order->MaTour)->lockForUpdate()->first();
-            if (! $tour) {
-                return $this->ignored('tour_not_found', ['MaDon' => $order->MaDon]);
-            }
-
-            $needSeats = (int) $order->SoLuongNguoiLon + (int) $order->SoLuongTreEm + (int) $order->SoLuongTreNho;
-
-            if ((int) $tour->SoChoDaDat + $needSeats > (int) $tour->SoCho) {
-                $order->update(['TrangThai' => self::STATUS_SOLD_OUT]);
-                $this->recordPayment($order->MaDon, $amount, self::PAYMENT_SOLD_OUT);
-                $notify = ['type' => 'soldout', 'info' => $this->notificationPayload($order->MaDon, $amount)];
-
-                return [
-                    'success' => true,
-                    'message' => 'Payment received but tour sold out',
-                    'data' => [
-                        'status' => 'soldout',
-                        'MaDon' => $order->MaDon,
-                        'amount' => $amount,
-                    ],
-                ];
-            }
-
-            $newBookedSeats = (int) $tour->SoChoDaDat + $needSeats;
-            $tourUpdates = ['SoChoDaDat' => $newBookedSeats];
-            if ($newBookedSeats >= (int) $tour->SoCho) {
-                $tourUpdates['TrangThai'] = self::STATUS_SOLD_OUT;
-            }
-            $tour->update($tourUpdates);
-
+            // Chỗ đã được giữ khi tạo đơn (BookingService), chỉ cần cập nhật trạng thái
             $order->update(['TrangThai' => self::STATUS_PAID]);
             $this->recordPayment($order->MaDon, $amount, self::PAYMENT_SUCCESS);
             $notify = ['type' => 'paid', 'info' => $this->notificationPayload($order->MaDon, $amount)];

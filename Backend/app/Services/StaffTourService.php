@@ -268,11 +268,7 @@ class StaffTourService
 
     private function normalizePerPage(int $perPage): int
     {
-        if ($perPage <= 0) {
-            return 10;
-        }
-
-        return min($perPage, 50);
+        return $perPage > 0 ? min($perPage, 100) : 10;
     }
 
     private function paginationPayload(LengthAwarePaginator $paginator): array

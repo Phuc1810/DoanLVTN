@@ -55,6 +55,11 @@ class TourService
         $items = DB::table('tour as t')
             ->join('hinhanhtour as h', 't.MaTour', '=', 'h.MaTour')
             ->where('h.LoaiAnh', 'noibat')
+            ->whereIn('t.TrangThai', [self::ACTIVE_STATUS, 'Hết chỗ'])
+            ->where(function ($q) {
+                $q->where('t.LoaiTour', 'Doanh nghiệp')
+                  ->orWhere('t.NgayKhoiHanh', '>', \Carbon\Carbon::today()->format('Y-m-d'));
+            })
             ->orderByDesc('t.MaTour')
             ->limit($limit)
             ->get([
@@ -192,7 +197,11 @@ class TourService
                     ->where('h.LaAnhChinh', '=', 1);
             })
             ->where('t.PhanTramGiam', '>=', 20)
-            ->where('t.TrangThai', 'Hoạt động')
+            ->whereIn('t.TrangThai', [self::ACTIVE_STATUS, 'Hết chỗ'])
+            ->where(function ($q) {
+                $q->where('t.LoaiTour', 'Doanh nghiệp')
+                  ->orWhere('t.NgayKhoiHanh', '>', \Carbon\Carbon::today()->format('Y-m-d'));
+            })
             ->groupBy('t.MaTour', 't.TenTour', 't.GiaGoc', 't.GiaGiam', 't.PhanTramGiam', 'h.DuongDan')
             ->limit($limit)
             ->get([
@@ -283,7 +292,11 @@ class TourService
     {
         return Tour::query()
             ->with(['anhChinh', 'danhGias'])
-            ->whereIn('TrangThai', [self::ACTIVE_STATUS, 'Hết chỗ']);
+            ->whereIn('TrangThai', [self::ACTIVE_STATUS, 'Hết chỗ'])
+            ->where(function ($q) {
+                $q->where('LoaiTour', 'Doanh nghiệp')
+                  ->orWhere('NgayKhoiHanh', '>', \Carbon\Carbon::today()->format('Y-m-d'));
+            });
     }
 
     private function applyCommonFilters(Builder $query, array $filters): void

@@ -7,6 +7,7 @@ use App\Http\Resources\OrderResource;
 use App\Models\DonDatTour;
 use App\Models\KhachHang;
 use App\Models\TaiKhoan;
+use App\Models\Tour;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -159,6 +160,19 @@ class OrderService
                 : self::STATUS_CANCEL_REQUEST;
 
             $order->update(['TrangThai' => $newStatus]);
+
+            // Hoàn trả chỗ khi đơn chưa thanh toán bị hủy trực tiếp
+            if ($newStatus === self::STATUS_CANCELLED) {
+                $tour = Tour::where('MaTour', $order->MaTour)->lockForUpdate()->first();
+                if ($tour) {
+                    $seats = (int) $order->SoLuongNguoiLon + (int) $order->SoLuongTreEm + (int) $order->SoLuongTreNho;
+                    $tour->SoChoDaDat = max(0, (int) $tour->SoChoDaDat - $seats);
+                    if ($tour->TrangThai === 'Hết chỗ' && (int) $tour->SoChoDaDat < (int) $tour->SoCho) {
+                        $tour->TrangThai = 'Hoạt động';
+                    }
+                    $tour->save();
+                }
+            }
 
             $lyDo = $data['ly_do'] ?? '';
 

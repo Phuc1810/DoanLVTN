@@ -219,6 +219,7 @@ export default function StaffTourFormPage({ mode }) {
                 <select className="form-select" name="TrangThai" value={form.TrangThai} onChange={updateField}>
                   <option value="Hoạt động">Hoạt động</option>
                   <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+                  <option value="Hết chỗ">Hết chỗ</option>
                 </select>
               </div>
 

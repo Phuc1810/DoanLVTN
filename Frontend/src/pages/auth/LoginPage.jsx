@@ -20,6 +20,15 @@ export default function LoginPage() {
   const [error, setError] = useState({ message: '', errors: {} })
   const [submitting, setSubmitting] = useState(false)
 
+  useEffect(() => {
+    if (error.message) {
+      const timer = setTimeout(() => {
+        setError(curr => ({ ...curr, message: '' }));
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error.message]);
+
   const handleGoogleCredential = useCallback(async (googleResponse) => {
     if (!googleResponse?.credential) {
       setError({ message: 'Google không trả về thông tin đăng nhập.', errors: {} })
@@ -37,7 +46,11 @@ export default function LoginPage() {
         : searchParams.get('redirect') || '/'
       navigate(roleRedirect(auth.user, fallback), { replace: true })
     } catch (err) {
-      setError({ message: err.message, errors: err.errors || {} })
+      let topMsg = err.message;
+      if (topMsg === 'Dữ liệu không hợp lệ' || topMsg === 'Dữ liệu không hợp lệ.') {
+        topMsg = err.errors?.account?.[0] || '';
+      }
+      setError({ message: topMsg, errors: err.errors || {} })
     } finally {
       setSubmitting(false)
     }
@@ -119,7 +132,7 @@ export default function LoginPage() {
     } catch (err) {
       let topMsg = err.message;
       if (topMsg === 'Dữ liệu không hợp lệ' || topMsg === 'Dữ liệu không hợp lệ.') {
-        topMsg = '';
+        topMsg = err.errors?.account?.[0] || '';
       }
       setError({ message: topMsg, errors: err.errors || {} })
     } finally {
@@ -156,7 +169,17 @@ export default function LoginPage() {
             </li>
           </ul>
 
-          <FormError message={error.message} />
+          {error.message && (
+            <div className="toast align-items-center text-white bg-danger border-0 show fade" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 9999, minWidth: '250px' }}>
+              <div className="d-flex">
+                <div className="toast-body fw-semibold">
+                  <i className="fa-solid fa-triangle-exclamation me-2"></i>
+                  {error.message}
+                </div>
+                <button type="button" className="btn-close btn-close-white me-2 m-auto" onClick={() => setError(curr => ({ ...curr, message: '' }))}></button>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={submit} noValidate>
             <div className="auth-field">

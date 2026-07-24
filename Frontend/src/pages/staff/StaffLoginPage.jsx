@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/useAuth'
 import { Eye, EyeOff, Lock, User, ArrowLeft, ShieldCheck, AlertCircle } from 'lucide-react'
@@ -11,6 +11,15 @@ export default function StaffLoginPage() {
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+
+  useEffect(() => {
+    if (error?.message) {
+      const timer = setTimeout(() => {
+        setError(curr => curr ? { ...curr, message: null } : null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error?.message]);
 
   function updateField(event) {
     const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value
@@ -53,7 +62,11 @@ export default function StaffLoginPage() {
       }
       navigate(location.state?.from?.pathname || '/staff', { replace: true })
     } catch (err) {
-      setError({ message: err.message, errors: err.errors })
+      let topMsg = err.message;
+      if (topMsg === 'Dữ liệu không hợp lệ' || topMsg === 'Dữ liệu không hợp lệ.') {
+        topMsg = err.errors?.account?.[0] || '';
+      }
+      setError({ message: topMsg, errors: err.errors })
     } finally {
       setSubmitting(false)
     }
@@ -89,9 +102,15 @@ export default function StaffLoginPage() {
             <p>Vui lòng nhập thông tin để tiếp tục</p>
           </div>
 
-          {error?.message && (!error?.errors || Object.keys(error.errors).length === 0) && (
-            <div className="alert alert-danger mb-4 py-2 px-3 fs-6 rounded-3">
-              {error.message}
+          {error?.message && (
+            <div className="toast align-items-center text-white bg-danger border-0 show fade" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 9999, minWidth: '250px' }}>
+              <div className="d-flex">
+                <div className="toast-body fw-semibold">
+                  <i className="fa-solid fa-triangle-exclamation me-2"></i>
+                  {error.message}
+                </div>
+                <button type="button" className="btn-close btn-close-white me-2 m-auto" onClick={() => setError(curr => curr ? { ...curr, message: null } : null)}></button>
+              </div>
             </div>
           )}
 

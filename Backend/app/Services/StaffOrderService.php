@@ -6,6 +6,7 @@ use App\Http\Resources\StaffOrderDetailResource;
 use App\Http\Resources\StaffOrderResource;
 use App\Models\DonDatTour;
 use App\Models\ThanhToan;
+use App\Models\Tour;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -208,6 +209,17 @@ class StaffOrderService
 
             // Update order status
             $order->update(['TrangThai' => self::STATUS_REFUNDED]);
+
+            // Hoàn trả chỗ khi duyệt hủy đơn đã thanh toán
+            $tourLocked = Tour::where('MaTour', $order->MaTour)->lockForUpdate()->first();
+            if ($tourLocked) {
+                $seats = (int) $order->SoLuongNguoiLon + (int) $order->SoLuongTreEm + (int) $order->SoLuongTreNho;
+                $tourLocked->SoChoDaDat = max(0, (int) $tourLocked->SoChoDaDat - $seats);
+                if ($tourLocked->TrangThai === 'Hết chỗ' && (int) $tourLocked->SoChoDaDat < (int) $tourLocked->SoCho) {
+                    $tourLocked->TrangThai = 'Hoạt động';
+                }
+                $tourLocked->save();
+            }
 
             // Dispatch Email
             try {

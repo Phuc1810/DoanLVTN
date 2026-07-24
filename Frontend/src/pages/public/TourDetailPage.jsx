@@ -46,7 +46,34 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
   const bookingPath = isBusinessMode
     ? `/business-requests/create?tour=${tour.MaTour}`
     : `/bookings/create/${tour.MaTour}`
-  const bookingLabel = isBusinessMode ? 'GỬI YÊU CẦU DOANH NGHIỆP' : 'ĐẶT TOUR'
+
+  let bookingLabel = ''
+  let isBookingDisabled = false
+
+  if (isBusinessMode) {
+    if (tour.TrangThai === 'Ngừng hoạt động') {
+      bookingLabel = 'TOUR ĐÃ NGỪNG KHAI THÁC'
+      isBookingDisabled = true
+    } else {
+      bookingLabel = 'GỬI YÊU CẦU DOANH NGHIỆP'
+    }
+  } else {
+    if (tour.TrangThai === 'Ngừng hoạt động') {
+      bookingLabel = 'TOUR ĐÃ NGỪNG KHAI THÁC'
+      isBookingDisabled = true
+    } else if (tour.TrangThai === 'Hết chỗ') {
+      bookingLabel = 'TOUR ĐÃ HẾT CHỖ'
+      isBookingDisabled = true
+    } else if (tour.TienDo === 'Đang diễn ra') {
+      bookingLabel = 'TOUR ĐÃ KHỞI HÀNH'
+      isBookingDisabled = true
+    } else if (tour.TienDo === 'Đã hoàn tất') {
+      bookingLabel = 'TOUR ĐÃ KẾT THÚC'
+      isBookingDisabled = true
+    } else {
+      bookingLabel = 'ĐẶT TOUR'
+    }
+  }
   const loginMessage = isBusinessMode
     ? 'Bạn cần đăng nhập hoặc đăng ký để gửi yêu cầu tour doanh nghiệp.'
     : 'Bạn cần đăng nhập hoặc đăng ký để tiến hành đặt tour.'
@@ -121,18 +148,24 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
               <span>Giá chỉ còn:</span>
               <span className="ms-2">{formatCurrency(tour.GiaGiam)}</span>
             </p>
-            <Link
-              to={bookingPath}
-              className="btn btn-book-detail w-100"
-              onClick={(e) => {
-                if (!user) {
-                  e.preventDefault()
-                  setShowLoginModal(true)
-                }
-              }}
-            >
-              {bookingLabel}
-            </Link>
+            {isBookingDisabled ? (
+              <button className="btn btn-secondary w-100 fw-bold py-2" disabled style={{ cursor: 'not-allowed', opacity: 0.8 }}>
+                {bookingLabel}
+              </button>
+            ) : (
+              <Link
+                to={bookingPath}
+                className="btn btn-book-detail w-100"
+                onClick={(e) => {
+                  if (!user) {
+                    e.preventDefault()
+                    setShowLoginModal(true)
+                  }
+                }}
+              >
+                {bookingLabel}
+              </Link>
+            )}
           </div>
         </div>
       </div>

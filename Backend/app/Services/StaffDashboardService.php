@@ -159,4 +159,74 @@ class StaffDashboardService
 
         return round(($current - $previous) / $previous * 100, 1);
     }
+
+    /**
+     * Lấy dữ liệu đơn hàng đã thanh toán để xuất báo cáo CSV.
+     */
+    public function revenueExportData(): array
+    {
+        return DB::table('dondattour as d')
+            ->join('tour as t', 't.MaTour', '=', 'd.MaTour')
+            ->whereIn('d.TrangThai', ['Đã thanh toán', 'Đang diễn ra', 'Đã hoàn tất'])
+            ->selectRaw('
+                t.MaTour,
+                t.TenTour,
+                COUNT(d.MaDon) as TongSoDon,
+                SUM(d.SoLuongNguoiLon + d.SoLuongTreEm + d.SoLuongTreNho) as TongSoVeDaBan,
+                SUM(d.TongTienPhaiTra) as TongDoanhThu
+            ')
+            ->groupBy('t.MaTour', 't.TenTour')
+            ->orderByDesc('TongDoanhThu')
+            ->get()
+            ->all();
+    }
+
+    /**
+     * Lấy dữ liệu cho Báo cáo Vận hành & Khách hàng
+     */
+    public function operationsExportData(): array
+    {
+        $now = Carbon::now();
+        $next7Days = $now->copy()->addDays(7);
+
+        // Phần 1: Báo cáo tình trạng Tour
+        $tourStats = [
+            'hoat_dong' => Tour::where('TrangThai', 'Hoạt động')->count(),
+            'sap_khoi_hanh' => Tour::whereBetween('NgayKhoiHanh', [$now, $next7Days])->count(),
+            'het_cho' => Tour::where('TrangThai', 'Hết chỗ')->orWhereRaw('SoChoDaDat >= SoCho')->count(),
+        ];
+
+        // Phần 2: Báo cáo số lượng khách
+        $customerStats = DB::table('dondattour')
+            ->whereIn('TrangThai', ['Đã thanh toán', 'Đang diễn ra', 'Đã hoàn tất'])
+            ->selectRaw('
+                SUM(SoLuongNguoiLon) as TongNguoiLon,
+                SUM(SoLuongTreEm) as TongTreEm,
+                SUM(SoLuongTreNho) as TongTreNho
+            ')
+            ->first();
+
+        // Phần 3: Danh sách đơn hủy & lý do
+        $cancelledOrders = DB::table('dondattour as d')
+            ->join('tour as t', 't.MaTour', '=', 'd.MaTour')
+            ->join('khachhang as kh', 'kh.MaKH', '=', 'd.MaKH')
+            ->leftJoin('hoantien as ht', 'ht.MaDon', '=', 'd.MaDon')
+            ->where('d.TrangThai', 'Đã hủy')
+            ->select([
+                'd.MaDon',
+                'kh.HoTen',
+                't.TenTour',
+                'd.NgayDat',
+                'ht.LyDo',
+            ])
+            ->orderByDesc('d.NgayDat')
+            ->get()
+            ->all();
+
+        return [
+            'tourStats' => $tourStats,
+            'customerStats' => $customerStats,
+            'cancelledOrders' => $cancelledOrders,
+        ];
+    }
 }

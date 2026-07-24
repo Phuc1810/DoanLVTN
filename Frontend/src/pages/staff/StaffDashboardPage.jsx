@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { staffBusinessRequestApi } from '../../api/staffBusinessRequestApi'
 import { staffDashboardApi } from '../../api/staffDashboardApi'
@@ -9,6 +9,7 @@ import StaffStatCard from '../../components/staff/StaffStatCard'
 import StaffStatusBadge from '../../components/staff/StaffStatusBadge'
 import StaffTable from '../../components/staff/StaffTable'
 import { formatCurrency } from '../../utils/formatCurrency'
+import { getToken } from '../../utils/tokenStorage'
 import { API_TODO_MESSAGE, countPeople, extractList } from './staffPageUtils'
 import {
   ClipboardList,
@@ -18,6 +19,8 @@ import {
   MoreVertical,
   Plus,
   FileDown,
+  TrendingUp,
+  Activity,
 } from 'lucide-react'
 
 function getVietnameseWeekday() {
@@ -149,6 +152,48 @@ export default function StaffDashboardPage() {
 
   if (state.loading) return <Loading />
 
+  const handleExportRevenue = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api'
+      const res = await fetch(`${baseUrl}/staff/dashboard/export-revenue`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+      if (!res.ok) throw new Error('Tải báo cáo thất bại')
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `bao_cao_doanh_thu_${new Date().toISOString().slice(0, 10)}.csv`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+    } catch {
+      alert('Không thể tải báo cáo. Vui lòng thử lại.')
+    }
+  }
+
+  const handleExportOperations = async () => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api'
+      const res = await fetch(`${baseUrl}/staff/dashboard/export-operations`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+      if (!res.ok) throw new Error('Tải báo cáo thất bại')
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `bao_cao_van_hanh_${new Date().toISOString().slice(0, 10)}.csv`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+    } catch {
+      alert('Không thể tải báo cáo. Vui lòng thử lại.')
+    }
+  }
+
   return (
     <>
       {/* ===== HEADER ===== */}
@@ -159,11 +204,124 @@ export default function StaffDashboardPage() {
             Chào mừng trở lại! Đây là những gì đang diễn ra hôm nay, {formatVietnameseDate()}
           </div>
         </div>
-        <div className="dash-header-actions">
-          <button className="dash-btn-outline">
-            <FileDown size={16} />
-            Xuất báo cáo
+        <div className="dash-header-actions export-dropdown">
+          <button className="dash-btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FileDown size={18} />
+            <span style={{ fontWeight: 500 }}>Xuất báo cáo</span>
           </button>
+          
+          <div className="export-menu-wrapper">
+            <div className="export-menu shadow-lg">
+              <div className="export-menu-header">
+                Chọn loại báo cáo
+              </div>
+              <button className="export-item" onClick={handleExportRevenue}>
+                <div className="export-item-icon revenue">
+                  <TrendingUp size={16} />
+                </div>
+                <div className="export-item-content">
+                  <span className="export-item-title">Báo cáo doanh thu</span>
+                  <span className="export-item-desc">Thống kê doanh thu theo từng Tour</span>
+                </div>
+              </button>
+              
+              <button className="export-item" onClick={handleExportOperations}>
+                <div className="export-item-icon operations">
+                  <Activity size={16} />
+                </div>
+                <div className="export-item-content">
+                  <span className="export-item-title">Vận hành & Khách hàng</span>
+                  <span className="export-item-desc">Tình trạng tour, số khách, đơn hủy</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <style>{`
+            .export-dropdown {
+              position: relative;
+              display: inline-block;
+            }
+            .export-menu-wrapper {
+              position: absolute;
+              right: 0;
+              top: calc(100% + 5px);
+              padding-top: 8px; /* Safe hover area */
+              z-index: 1050;
+              opacity: 0;
+              visibility: hidden;
+              transform: translateY(5px);
+              transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .export-dropdown:hover .export-menu-wrapper {
+              opacity: 1;
+              visibility: visible;
+              transform: translateY(0);
+            }
+            .export-menu {
+              background-color: white;
+              min-width: 280px;
+              border-radius: 12px;
+              padding: 6px;
+              border: 1px solid rgba(0,0,0,0.08);
+              box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+            }
+            .export-menu-header {
+              font-size: 11px;
+              text-transform: uppercase;
+              color: #888;
+              font-weight: 600;
+              padding: 8px 12px;
+              letter-spacing: 0.5px;
+            }
+            .export-item {
+              display: flex;
+              align-items: center;
+              width: 100%;
+              padding: 10px 12px;
+              text-align: left;
+              background: none;
+              border: none;
+              border-radius: 8px;
+              gap: 12px;
+              transition: background-color 0.15s ease;
+            }
+            .export-item:hover {
+              background-color: #f8fafc;
+            }
+            .export-item-icon {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              width: 32px;
+              height: 32px;
+              border-radius: 8px;
+              flex-shrink: 0;
+            }
+            .export-item-icon.revenue {
+              background-color: #ecfdf5;
+              color: #10b981;
+            }
+            .export-item-icon.operations {
+              background-color: #eff6ff;
+              color: #3b82f6;
+            }
+            .export-item-content {
+              display: flex;
+              flex-direction: column;
+              gap: 2px;
+            }
+            .export-item-title {
+              color: #1e293b;
+              font-weight: 600;
+              font-size: 14px;
+            }
+            .export-item-desc {
+              color: #64748b;
+              font-size: 12px;
+              line-height: 1.2;
+            }
+          `}</style>
         </div>
       </div>
 

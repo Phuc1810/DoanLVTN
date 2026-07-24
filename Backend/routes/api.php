@@ -121,6 +121,8 @@ Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(functi
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
     Route::get('/dashboard/revenue-weekly', [DashboardController::class, 'revenueWeekly']);
     Route::get('/dashboard/tour-status', [DashboardController::class, 'tourStatus']);
+    Route::get('/dashboard/export-revenue', [DashboardController::class, 'exportRevenue']);
+    Route::get('/dashboard/export-operations', [DashboardController::class, 'exportOperations']);
 
     Route::get('/omni-search', [OmniSearchController::class, 'search']);
 

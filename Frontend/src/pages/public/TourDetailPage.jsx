@@ -12,7 +12,7 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
   const { id } = useParams()
   const { user } = useAuth()
   const [showLoginModal, setShowLoginModal] = useState(false)
-  const [state, setState] = useState({ loading: true, error: '', tour: null, schedules: [], reviews: [] })
+  const [state, setState] = useState({ loading: true, error: '', tour: null, schedules: [], reviews: [], reviewSummary: null })
 
   useEffect(() => {
     Promise.allSettled([tourApi.detail(id), tourApi.schedules(id), tourApi.reviews(id)])
@@ -29,9 +29,10 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
           reviews: reviews.status === 'fulfilled'
             ? (Array.isArray(reviews.value) ? reviews.value : reviews.value.items || reviews.value.data || tourData.danh_gias || tourData.danhGias || [])
             : (tourData.danh_gias || tourData.danhGias || []),
+          reviewSummary: reviews.status === 'fulfilled' && !Array.isArray(reviews.value) && reviews.value.summary ? reviews.value.summary : null,
         })
       })
-      .catch((error) => setState({ loading: false, error: error.message, tour: null, schedules: [], reviews: [] }))
+      .catch((error) => setState({ loading: false, error: error.message, tour: null, schedules: [], reviews: [], reviewSummary: null }))
   }, [id])
 
   if (state.loading) return <div className="tour-detail-wrapper"><Loading /></div>
@@ -86,6 +87,22 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
   let progressColor = 'bg-success'
   if (bookedPercent >= 90) progressColor = 'bg-danger'
   else if (bookedPercent >= 60) progressColor = 'bg-warning'
+
+  const reviewSummary = state.reviewSummary || {
+    average_rating: stats.average_rating || (state.reviews.length ? (state.reviews.reduce((acc, curr) => acc + Number(curr.SoSao || 0), 0) / state.reviews.length).toFixed(1) : 0),
+    total_reviews: stats.total_reviews || state.reviews.length,
+    rating_counts: state.reviews.reduce((acc, curr) => {
+      const star = Number(curr.SoSao) || 5;
+      acc[star] = (acc[star] || 0) + 1;
+      return acc;
+    }, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 })
+  }
+  
+  const satisfiedCount = (reviewSummary.rating_counts[4] || 0) + (reviewSummary.rating_counts[5] || 0);
+  const getPercentage = (count) => {
+    if (!reviewSummary.total_reviews) return 0;
+    return ((count / reviewSummary.total_reviews) * 100).toFixed(1).replace('.0', '');
+  }
 
   return (
     <div className="container tour-detail-wrapper">
@@ -193,16 +210,44 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
       </div>
 
       <div className="mt-5" id="danhgia">
-        <div className="d-flex justify-content-between align-items-start flex-wrap gap-2">
-          <div>
-            <h4 className="fw-bold mb-1">ĐÁNH GIÁ KHÁCH HÀNG</h4>
-            <div className="text-muted">
-              <i className="fa-solid fa-star text-warning me-1"></i>
-              {stats.average_rating || (state.reviews.length ? (state.reviews.reduce((acc, curr) => acc + Number(curr.SoSao || 0), 0) / state.reviews.length).toFixed(1) : 0)}/5 • {stats.total_reviews || state.reviews.length} đánh giá
-            </div>
-          </div>
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h4 className="fw-bold mb-0">ĐÁNH GIÁ KHÁCH HÀNG</h4>
           {!user && <span className="badge bg-secondary p-2">Đăng nhập để đánh giá</span>}
         </div>
+        
+        <div className="row mb-5 align-items-center">
+          <div className="col-md-4 text-center border-end">
+            <div className="display-6 fw-bold mb-2">
+              <i className="fa-solid fa-star text-warning me-2" style={{ fontSize: '0.85em' }}></i>
+              {reviewSummary.average_rating}<span className="fs-5 text-muted">/5</span>
+            </div>
+            <div className="text-muted mt-2" style={{ fontSize: '15px' }}>
+              <span className="fw-semibold text-dark">{getPercentage(satisfiedCount)}%</span> khách hài lòng <i className="fa-regular fa-circle-question text-muted" title="Dựa trên đánh giá 4 sao và 5 sao"></i>
+            </div>
+            <div className="text-muted small mt-1">{reviewSummary.total_reviews} đánh giá</div>
+          </div>
+          
+          <div className="col-md-8 ps-md-5">
+            {[5, 4, 3, 2, 1].map(star => {
+              const count = reviewSummary.rating_counts[star] || 0;
+              const percent = getPercentage(count);
+              return (
+                <div key={star} className="d-flex align-items-center mb-2">
+                  <div style={{ width: '35px', fontWeight: '500', color: '#4b5563' }}>
+                    {star} <i className="fa-solid fa-star text-warning" style={{ fontSize: '13px' }}></i>
+                  </div>
+                  <div className="progress flex-grow-1 mx-3" style={{ height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px' }}>
+                    <div className="progress-bar" style={{ width: `${percent}%`, backgroundColor: '#60a5fa', borderRadius: '4px' }} role="progressbar" aria-valuenow={percent} aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <div style={{ width: '45px', textAlign: 'right', fontSize: '14px', color: '#111827', fontWeight: '500' }}>
+                    {percent === '0.0' || percent === '0' ? '0' : percent}%
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
         <hr />
         {!state.reviews.length ? (
           <div className="text-muted">Chưa có đánh giá nào cho tour này.</div>

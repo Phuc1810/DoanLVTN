@@ -40,6 +40,7 @@ class BusinessRequestResource extends JsonResource
 
         return [
             'MaYC' => $this->MaYC,
+            'MaDG' => $this->MaDG ? (int) $this->MaDG : null,
             'TenCongTy' => $this->TenCongTy,
             'NguoiLienHe' => $this->NguoiLienHe,
             'SDT' => $this->SDT,

@@ -13,7 +13,7 @@ const statuses = ['', 'Chờ xử lý', 'Đã liên hệ', 'Hoàn thành', 'Hủ
 
 function reviewLink(request) {
   if (!request?.MaTour) return null
-  return `/business-tours/${request.MaTour}#danhgia`
+  return `/review-business-request/${request.MaYC || request.id}`
 }
 
 export default function BusinessRequestsPage() {
@@ -143,9 +143,10 @@ export default function BusinessRequestsPage() {
                   </div>
 
                   <div className="business-request-right">
-                    {item.TrangThai === 'Hoàn thành' && reviewLink(item) && (
+                    {item.TrangThai === 'Đã hoàn tất' && reviewLink(item) && (
                       <Link className="btn btn-outline-warning btn-detail" to={reviewLink(item)}>
-                        <i className="fa-solid fa-star me-1"></i> Đánh giá
+                        <i className={item.MaDG ? 'fa-solid fa-pen-to-square me-1' : 'fa-solid fa-star me-1'}></i>
+                        {item.MaDG ? 'Sửa đánh giá' : 'Đánh giá'}
                       </Link>
                     )}
 

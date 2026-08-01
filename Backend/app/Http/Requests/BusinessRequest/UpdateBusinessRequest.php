@@ -11,7 +11,7 @@ class UpdateBusinessRequest extends FormRequest
         'Chờ xử lý',
         'Đã liên hệ',
         'Hủy tour',
-        'Hoàn thành',
+        'Đã thanh toán',
     ];
 
     public function authorize(): bool
@@ -59,13 +59,13 @@ class UpdateBusinessRequest extends FormRequest
                 'nullable',
                 'numeric',
                 'min:0',
-                Rule::requiredIf(fn () => $this->input('action') === 'update_status' && $this->input('TrangThai') === 'Hoàn thành'),
+                Rule::requiredIf(fn () => $this->input('action') === 'update_status' && $this->input('TrangThai') === 'Đã thanh toán'),
             ],
             'NgayThanhToan' => [
                 'nullable',
                 'date',
                 'before_or_equal:today',
-                Rule::requiredIf(fn () => $this->input('action') === 'update_status' && $this->input('TrangThai') === 'Hoàn thành'),
+                Rule::requiredIf(fn () => $this->input('action') === 'update_status' && $this->input('TrangThai') === 'Đã thanh toán'),
             ],
         ];
     }
@@ -77,10 +77,10 @@ class UpdateBusinessRequest extends FormRequest
             'action.in' => 'Thao tác không hợp lệ.',
             'TrangThai.required_if' => 'Vui lòng chọn trạng thái.',
             'TrangThai.in' => 'Trạng thái không hợp lệ.',
-            'GiaTriHopDong.required' => 'Khi chọn Hoàn thành phải nhập Giá trị hợp đồng.',
+            'GiaTriHopDong.required' => 'Khi chọn Đã thanh toán phải nhập Giá trị hợp đồng.',
             'GiaTriHopDong.numeric' => 'Giá trị hợp đồng không hợp lệ.',
             'GiaTriHopDong.min' => 'Giá trị hợp đồng không hợp lệ.',
-            'NgayThanhToan.required' => 'Khi chọn Hoàn thành phải chọn Ngày thanh toán.',
+            'NgayThanhToan.required' => 'Khi chọn Đã thanh toán phải chọn Ngày thanh toán.',
             'NgayThanhToan.date' => 'Ngày thanh toán không hợp lệ.',
             'NgayThanhToan.before_or_equal' => 'Ngày thanh toán không được lớn hơn ngày hiện tại.',
         ];

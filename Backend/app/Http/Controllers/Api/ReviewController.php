@@ -24,4 +24,17 @@ class ReviewController extends Controller
             'data' => $data,
         ]);
     }
+
+    public function storeForBusinessRequest(StoreReviewRequest $request, int $id)
+    {
+        $data = $this->reviewService->storeForBusinessRequest($request->user(), $id, $request->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => $data['action'] === 'created'
+                ? 'Đánh giá yêu cầu doanh nghiệp thành công'
+                : 'Cập nhật đánh giá yêu cầu doanh nghiệp thành công',
+            'data' => $data,
+        ]);
+    }
 }

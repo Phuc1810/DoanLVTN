@@ -29,6 +29,7 @@ import OrdersPage from '../pages/customer/OrdersPage'
 import PaymentPage from '../pages/customer/PaymentPage'
 import ProfilePage from '../pages/customer/ProfilePage'
 import ReviewOrderPage from '../pages/customer/ReviewOrderPage'
+import ReviewBusinessRequestPage from '../pages/customer/ReviewBusinessRequestPage'
 import BusinessTourDetailPage from '../pages/public/BusinessTourDetailPage'
 import BusinessToursPage from '../pages/public/BusinessToursPage'
 import HomePage from '../pages/public/HomePage'
@@ -143,6 +144,7 @@ const router = createBrowserRouter([
       { path: '/orders/:id', element: <OrderDetailPage /> },
       { path: '/orders/:id/cancel', element: <CancelOrderPage /> },
       { path: '/orders/:id/review', element: <ReviewOrderPage /> },
+      { path: '/review-business-request/:id', element: <ReviewBusinessRequestPage /> },
       { path: '/business-requests/create', element: <CreateBusinessRequestPage /> },
       { path: '/business-requests', element: <BusinessRequestsPage /> },
       { path: '/business-requests/:id', element: <BusinessRequestDetailPage /> },

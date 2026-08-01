@@ -95,7 +95,14 @@ class BusinessRequestService
 
         $query = YeuCauDoanhNghiep::query()
             ->where('MaKH', $customer->MaKH)
-            ->with(['tour.anhChinh', 'khachHang', 'nhanVien']);
+            ->with(['tour.anhChinh', 'khachHang', 'nhanVien'])
+            ->addSelect([
+                'MaDG' => DB::table('danhgia as dg')
+                    ->select('dg.MaDG')
+                    ->whereColumn('dg.MaTour', 'yeucaudoanhnghiep.MaTour')
+                    ->whereColumn('dg.MaKH', 'yeucaudoanhnghiep.MaKH')
+                    ->limit(1)
+            ]);
 
         $status = trim((string) ($filters['st'] ?? $filters['status'] ?? $filters['TrangThai'] ?? ''));
         if (! in_array($status, self::CUSTOMER_STATUSES, true)) {
@@ -125,6 +132,13 @@ class BusinessRequestService
         $request = YeuCauDoanhNghiep::with(['tour.anhChinh', 'khachHang', 'nhanVien'])
             ->where('MaYC', $id)
             ->where('MaKH', $customer->MaKH)
+            ->addSelect([
+                'MaDG' => DB::table('danhgia as dg')
+                    ->select('dg.MaDG')
+                    ->whereColumn('dg.MaTour', 'yeucaudoanhnghiep.MaTour')
+                    ->whereColumn('dg.MaKH', 'yeucaudoanhnghiep.MaKH')
+                    ->limit(1)
+            ])
             ->first();
 
         if (! $request) {

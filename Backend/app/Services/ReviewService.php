@@ -7,6 +7,7 @@ use App\Models\DanhGia;
 use App\Models\DonDatTour;
 use App\Models\TaiKhoan;
 use App\Models\Tour;
+use App\Models\YeuCauDoanhNghiep;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
 class ReviewService
@@ -64,6 +65,70 @@ class ReviewService
                 'message' => 'Đơn chưa đủ điều kiện đánh giá.',
                 'errors' => [
                     'TrangThai' => ['Chỉ được đánh giá khi đơn tour đã ở trạng thái "Đã hoàn tất".'],
+                ],
+            ], 422));
+        }
+
+        $review = DanhGia::where('MaKH', $customer->MaKH)
+            ->where('MaTour', $order->MaTour)
+            ->first();
+
+        $action = $review ? 'updated' : 'created';
+
+        if ($review) {
+            $review->update([
+                'SoSao' => (int) $payload['SoSao'],
+                'NoiDung' => $payload['NoiDung'] ?? '',
+                'NgayDG' => now()->toDateString(),
+            ]);
+        } else {
+            $review = DanhGia::create([
+                'SoSao' => (int) $payload['SoSao'],
+                'NoiDung' => $payload['NoiDung'] ?? '',
+                'NgayDG' => now()->toDateString(),
+                'MaKH' => $customer->MaKH,
+                'MaTour' => $order->MaTour,
+            ]);
+        }
+
+        return array_merge(
+            (new ReviewResource($review->refresh()->load('khachHang')))->resolve(),
+            ['action' => $action]
+        );
+    }
+
+    public function storeForBusinessRequest(TaiKhoan $user, int $requestId, array $payload): array
+    {
+        $customer = $user->khachHang()->first();
+
+        if (! $customer) {
+            $this->throwNotFound('customer', 'Không tìm thấy hồ sơ khách hàng.');
+        }
+
+        $order = YeuCauDoanhNghiep::where('MaYC', $requestId)
+            ->where('MaKH', $customer->MaKH)
+            ->first();
+
+        if (! $order) {
+            $this->throwNotFound('order', 'Yêu cầu doanh nghiệp không tồn tại hoặc không thuộc khách hàng hiện tại.');
+        }
+
+        if (! $order->MaTour) {
+            throw new HttpResponseException(response()->json([
+                'success' => false,
+                'message' => 'Yêu cầu chưa được liên kết với Tour nào.',
+            ], 422));
+        }
+
+        $resource = (new \App\Http\Resources\BusinessRequestResource($order))->resolve();
+        $actualStatus = $resource['TrangThai'] ?? $order->TrangThai;
+
+        if ($actualStatus !== self::STATUS_COMPLETED) {
+            throw new HttpResponseException(response()->json([
+                'success' => false,
+                'message' => 'Yêu cầu chưa đủ điều kiện đánh giá.',
+                'errors' => [
+                    'TrangThai' => ['Chỉ được đánh giá khi yêu cầu doanh nghiệp đã ở trạng thái "Đã hoàn tất".'],
                 ],
             ], 422));
         }

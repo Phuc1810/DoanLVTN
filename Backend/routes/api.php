@@ -106,6 +106,9 @@ Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel'])
 Route::post('/orders/{id}/review', [ReviewController::class, 'store'])
     ->whereNumber('id')
     ->middleware(['auth:sanctum', 'role:KH']);
+Route::post('/business-requests/{id}/review', [ReviewController::class, 'storeForBusinessRequest'])
+    ->whereNumber('id')
+    ->middleware(['auth:sanctum', 'role:KH']);
 
 Route::prefix('admin')->middleware(['auth:sanctum', 'role:AD'])->group(function () {
     Route::get('/accounts', [AccountController::class, 'index']);

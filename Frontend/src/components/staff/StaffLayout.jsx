@@ -2,7 +2,8 @@ import { Outlet } from 'react-router-dom'
 import { useAuth } from '../../auth/useAuth'
 import StaffSidebar from './StaffSidebar'
 import StaffGlobalSearch from './StaffGlobalSearch'
-import { Search, Bell, HelpCircle } from 'lucide-react'
+import { Search, HelpCircle } from 'lucide-react'
+import NotificationDropdown from '../layout/NotificationDropdown'
 
 export default function StaffLayout() {
   const { user } = useAuth()
@@ -15,9 +16,7 @@ export default function StaffLayout() {
       <header className="top-header">
         <StaffGlobalSearch />
         <div className="top-actions">
-          <button className="action-btn has-dot">
-            <Bell size={20} />
-          </button>
+          <NotificationDropdown />
           <button className="action-btn">
             <HelpCircle size={20} />
           </button>

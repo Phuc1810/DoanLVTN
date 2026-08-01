@@ -188,6 +188,10 @@ class OrderService
                     'SoTaiKhoan' => $data['SoTaiKhoan'] ?? null,
                     'TenTaiKhoan' => $data['TenTaiKhoan'] ?? null,
                 ]);
+
+                // Notify staff & admin
+                $users = \App\Models\TaiKhoan::whereIn('VaiTro', ['AD', 'NV'])->get();
+                \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\RefundRequestNotification($order));
             }
 
             return (new OrderDetailResource($order->fresh()))->resolve();

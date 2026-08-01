@@ -77,6 +77,10 @@ class BusinessRequestService
             ]);
 
             // Chúng ta không trừ chỗ lúc khách gửi yêu cầu nữa, chỉ lưu lại.
+            
+            // Notify staff & admin
+            $users = \App\Models\TaiKhoan::whereIn('VaiTro', ['AD', 'NV'])->get();
+            \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\BusinessRequestNotification($request));
 
             return $this->resource($request->load(['tour.anhChinh', 'khachHang', 'nhanVien']));
         });

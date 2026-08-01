@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\Staff\NewsManagementController;
 use App\Http\Controllers\Api\Staff\OrderManagementController;
 use App\Http\Controllers\Api\Staff\PromotionManagementController;
 use App\Http\Controllers\Api\Staff\TourManagementController;
+use App\Http\Controllers\Api\Staff\NotificationController;
 use App\Http\Controllers\Api\TinTucController;
 use App\Http\Controllers\Api\TourController;
 use App\Models\DonDatTour;
@@ -125,6 +126,10 @@ Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(functi
     Route::get('/dashboard/export-operations', [DashboardController::class, 'exportOperations']);
 
     Route::get('/omni-search', [OmniSearchController::class, 'search']);
+
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
     Route::get('/orders', [OrderManagementController::class, 'index']);
     Route::get('/orders/stats', [OrderManagementController::class, 'stats']);

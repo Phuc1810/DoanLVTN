@@ -1,4 +1,9 @@
 <?php
-$pdo = new PDO('mysql:host=127.0.0.1;dbname=tourdulich', 'root', '');
-$stmt = $pdo->query('SELECT TrangThai, LoaiTour, NgayKhoiHanh FROM tour WHERE MaTour = 31');
-print_r($stmt->fetch(PDO::FETCH_ASSOC));
+
+require __DIR__.'/vendor/autoload.php';
+$app = require_once __DIR__.'/bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
+$notifications = \Illuminate\Support\Facades\DB::table('notifications')->get();
+echo json_encode($notifications, JSON_PRETTY_PRINT);

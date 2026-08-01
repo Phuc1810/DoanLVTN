@@ -9,7 +9,7 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 class StoreBookingRequest extends FormRequest
 {
     protected function prepareForValidation(): void
-    {
+    {   //chuẩn hóa dữ liệu đầu vào trước khi validate
         $this->merge([
             'MaTour' => $this->input('MaTour', $this->input('tour_id')),
             'MaCTKM' => $this->input('MaCTKM', $this->input('ctkm')),

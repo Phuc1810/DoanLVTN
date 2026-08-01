@@ -76,7 +76,7 @@ class StaffOrderService
             ];
         }
 
-        $statusRatioRaw = DonDatTour::select('TrangThai', \DB::raw('count(*) as count'))
+        $statusRatioRaw = DonDatTour::select('TrangThai', DB::raw('count(*) as count'))
             ->groupBy('TrangThai')
             ->get();
             

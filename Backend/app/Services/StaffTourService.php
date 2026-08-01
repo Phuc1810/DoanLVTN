@@ -40,7 +40,7 @@ class StaffTourService
                 });
             }
         }
-
+        //Lọc động theo loại, trạng thái, miền
         if (! empty($filters['loai'])) {
             $query->where('LoaiTour', $filters['loai']);
         }
@@ -53,7 +53,7 @@ class StaffTourService
         if (! empty($filters['mien'])) {
             $query->where('Mien', $filters['mien']);
         }
-
+        //Phân trang
         $paginator = $query->orderByDesc('MaTour')
             ->paginate($this->normalizePerPage((int) ($filters['per_page'] ?? 10)));
 
@@ -124,9 +124,10 @@ class StaffTourService
             'lichTrinhs' => fn ($query) => $query->orderBy('NgayThu')->orderBy('MaLT'),
         ]));
     }
-
+    //Tạo tour mới, upload ảnh chính và lưu lịch trình
     public function create(array $payload, UploadedFile $image): array
     {
+        //DB transaction để đảm bảo tính toàn vẹn dữ liệu
         return DB::transaction(function () use ($payload, $image) {
             $tour = Tour::create([
                 'TenTour' => $payload['TenTour'],

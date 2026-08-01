@@ -12,7 +12,7 @@ class UpdateProfileRequest extends BaseAuthRequest
     public function rules(): array
     {
         return [
-            'HoTen' => ['nullable', 'string'],
+            'HoTen' => ['nullable', 'string'],//có thể bỏ trống
             'Email' => ['nullable', 'string'],
             'SoDienThoai' => ['nullable', 'string'],
             'DiaChi' => ['nullable', 'string'],

@@ -15,7 +15,7 @@ function scheduleRowsFrom(tour) {
   if (!Array.isArray(rows) || rows.length === 0) return [{ NgayThu: 1, TieuDe: '', NoiDung: '' }]
   return rows.map((row) => ({ NgayThu: row.NgayThu || '', TieuDe: row.TieuDe || '', NoiDung: row.NoiDung || '' }))
 }
-
+// Khai báo component StaffTourFormPage, nhận prop mode để xác định chế độ (tạo mới hoặc chỉnh sửa)
 export default function StaffTourFormPage({ mode }) {
   const isEdit = mode === 'edit'
   const { id } = useParams()
@@ -34,7 +34,7 @@ export default function StaffTourFormPage({ mode }) {
     d.setDate(d.getDate() + 1)
     return d.toISOString().split('T')[0]
   }, [])
-
+  // Xử lý khi component được mount hoặc id thay đổi (chỉ khi ở chế độ chỉnh sửa)
   useEffect(() => {
     if (!isEdit) return
     staffTourApi.show(id)
@@ -55,7 +55,7 @@ export default function StaffTourFormPage({ mode }) {
     if (!original) return ''
     return Math.round(original * (100 - percent) / 100)
   }, [form.GiaGoc, form.PhanTramGiam])
-
+  // Update form field value based on input changes
   function updateField(event) {
     const { name, value } = event.target
     setForm((current) => ({ ...current, [name]: value }))

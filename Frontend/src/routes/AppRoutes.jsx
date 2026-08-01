@@ -74,6 +74,7 @@ const router = createBrowserRouter([
         <AdminLayout />
       </ProtectedRoute>
     ),
+    // danh sách các route con cho admin
     children: [
       { path: '/admin', element: <AdminDashboardPage /> },
       { path: '/admin/accounts', element: <AdminAccountsPage /> },

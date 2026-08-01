@@ -12,8 +12,8 @@ class LoginRequest extends BaseAuthRequest
     public function rules(): array
     {
         return [
-            'login_key' => ['required_without:username', 'string'],
-            'username' => ['required_without:login_key', 'string'],
+            'login_key' => ['required_without:username', 'string'],//dùng cho khách hàng đăng nhập
+            'username' => ['required_without:login_key', 'string'],//dùng cho nhân viên/admin đăng nhập
             'password' => ['required', 'string'],
         ];
     }

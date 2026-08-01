@@ -18,6 +18,7 @@ class PaymentService
     private const PAYMENT_METHOD = 'Chuyển khoản';
     private const PAYMENT_SUCCESS = 'Thành công';
     private const PAYMENT_SOLD_OUT = 'Nhận tiền - Hết chỗ';
+    private const PAYMENT_TIMEOUT_MINUTES = 15;
 
     public function __construct(
         private PromotionService $promotionService,
@@ -38,6 +39,9 @@ class PaymentService
                 $this->throwNotFound();
             }
 
+            // Lazy evaluation: huỷ đơn quá hạn ngay khi frontend gọi API
+            $this->cancelIfExpired($order);
+            // Tính giảm giá mới nhất (nếu có) và cập nhật lại đơn
             $discount = $this->recalculateDiscount($order);
             $order->refresh()->load(['tour.anhChinh', 'khachHang']);
 
@@ -45,6 +49,11 @@ class PaymentService
         });
 
         [$order, $discount] = $order;
+
+        // Tính thời điểm hết hạn thanh toán
+        $expiresAt = \Carbon\Carbon::parse($order->NgayDat)
+            ->addMinutes(self::PAYMENT_TIMEOUT_MINUTES)
+            ->toIso8601String();
 
         return [
             'order' => $this->orderPayload($order),
@@ -59,21 +68,30 @@ class PaymentService
             'payment' => $this->vietQrPayload($order),
             'payment_status' => $this->statusCode($order->TrangThai),
             'raw_status' => $order->TrangThai,
+            'payment_expires_at' => $expiresAt,//thời điểm hết hạn thanh toán
+            'payment_timeout_minutes' => self::PAYMENT_TIMEOUT_MINUTES,//thời gian chờ thanh toán (phút)
         ];
     }
 
     public function checkStatus(TaiKhoan $user, int $orderId): array
     {
-        $order = $this->ownedOrderQuery($user, $orderId)->first();
+        return DB::transaction(function () use ($user, $orderId) {
+            $order = $this->ownedOrderQuery($user, $orderId)
+                ->lockForUpdate()
+                ->first();
 
-        if (! $order) {
-            $this->throwNotFound();
-        }
+            if (! $order) {
+                $this->throwNotFound();
+            }
 
-        return [
-            'status' => $this->statusCode($order->TrangThai),
-            'raw_status' => $order->TrangThai,
-        ];
+            // Lazy evaluation: huỷ đơn quá hạn khi frontend poll trạng thái
+            $this->cancelIfExpired($order);
+
+            return [
+                'status' => $this->statusCode($order->TrangThai),
+                'raw_status' => $order->TrangThai,
+            ];
+        });
     }
 
     public function handleSepayWebhook(Request $request): array
@@ -98,25 +116,25 @@ class PaymentService
                 ],
             ], 400));
         }
-
+        // Kiểm tra loại giao dịch (in or out)
         $transferType = strtolower((string) $this->pickValue($payload, ['transferType', 'type']));
         if ($transferType !== '' && $transferType !== 'in') {
             return $this->ignored('not_incoming');
         }
-
+        // Lấy thông tin nội dung và số tiền từ payload
         $content = trim((string) $this->pickValue($payload, ['content', 'description', 'transactionContent', 'transferContent']));
         $amountRaw = $this->pickValue($payload, ['transferAmount', 'amount', 'money', 'value']);
         $amount = is_numeric($amountRaw) ? (int) round((float) $amountRaw) : 0;
-
+        //Đọc nội dung để tìm mã đơn đặt tour (DHxxxx)
         if ($content === '' || ! preg_match('/\bDH\s*([0-9]+)\b/i', $content, $matches)) {
             return $this->ignored('no_DH_code');
         }
-
+        //lấy mã đơn và kiểm tra số tiền
         $orderId = (int) $matches[1];
         if ($amount <= 0) {
             return $this->ignored('no_amount', ['MaDon' => $orderId]);
         }
-
+        // Xử lý thanh toán trong transaction để tránh race condition
         $notify = null;
         $result = DB::transaction(function () use ($orderId, $amount, &$notify) {
             $order = DonDatTour::where('MaDon', $orderId)->lockForUpdate()->first();
@@ -124,7 +142,7 @@ class PaymentService
             if (! $order) {
                 return $this->ignored('order_not_found', ['MaDon' => $orderId]);
             }
-
+            //Kiểm tra trạng thái đơn đặt tour, nếu đã thanh toán hoặc hết chỗ thì bỏ qua
             if (in_array($order->TrangThai, [self::STATUS_PAID, self::STATUS_SOLD_OUT], true)) {
                 return [
                     'success' => true,
@@ -136,7 +154,7 @@ class PaymentService
                     ],
                 ];
             }
-
+            //Kiểm tra số tiền phải trả > số tiền khách thanh toán
             $expected = (int) round((float) $order->TongTienPhaiTra);
             if ($amount < $expected) {
                 return $this->ignored('amount_less_than_expected', [
@@ -287,7 +305,7 @@ class PaymentService
             'image_url' => $this->imageUrl($tour->anhChinh?->DuongDan),
         ];
     }
-
+    //Tạo mã QR VietQR cho đơn đặt tour
     private function vietQrPayload(DonDatTour $order): array
     {
         $amount = (int) round((float) $order->TongTienPhaiTra);
@@ -325,10 +343,41 @@ class PaymentService
         return match ($status) {
             self::STATUS_PAID => 'paid',
             self::STATUS_SOLD_OUT => 'soldout',
-            'Đã hủy' => 'cancelled',
+            'Đã huỷ', 'Đã hủy' => 'expired',
             'Đã hoàn tiền' => 'refunded',
             default => 'pending',
         };
+    }
+
+    /**
+     * Lazy evaluation: nếu đơn đang "Chờ thanh toán" quá 15 phút → tự động huỷ và hoàn chỗ.
+     */
+    private function cancelIfExpired(DonDatTour $order): void
+    {
+        if ($order->TrangThai !== self::STATUS_PENDING) {
+            return;
+        }
+
+        $expiresAt = \Carbon\Carbon::parse($order->NgayDat)
+            ->addMinutes(self::PAYMENT_TIMEOUT_MINUTES);
+
+        if (now()->lt($expiresAt)) {
+            return; // Chưa hết hạn
+        }
+
+        // Huỷ đơn
+        $order->update(['TrangThai' => 'Đã huỷ']);
+
+        // Hoàn trả chỗ
+        $tour = Tour::where('MaTour', $order->MaTour)->lockForUpdate()->first();
+        if ($tour) {
+            $seats = (int) $order->SoLuongNguoiLon + (int) $order->SoLuongTreEm + (int) $order->SoLuongTreNho;
+            $tour->SoChoDaDat = max(0, (int) $tour->SoChoDaDat - $seats);
+            if ($tour->TrangThai === 'Hết chỗ' && (int) $tour->SoChoDaDat < (int) $tour->SoCho) {
+                $tour->TrangThai = 'Hoạt động';
+            }
+            $tour->save();
+        }
     }
 
     private function validWebhookToken(Request $request): bool

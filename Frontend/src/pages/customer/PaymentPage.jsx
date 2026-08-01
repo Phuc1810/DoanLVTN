@@ -31,9 +31,17 @@ export default function PaymentPage() {
   }, [navigate, orderId])
 
   useEffect(() => {
-    if (!state.payment) return undefined
+    if (!state.payment || state.liveStatus === 'expired') return undefined
 
     const timer = window.setInterval(() => {
+      // Kiểm tra hết hạn ở phía frontend trước
+      const expiresAt = state.payment?.payment_expires_at
+      if (expiresAt && new Date(expiresAt).getTime() <= Date.now()) {
+        setState((current) => ({ ...current, liveStatus: 'expired' }))
+        window.clearInterval(timer)
+        return
+      }
+
       paymentApi.checkPayment(orderId)
         .then((payload) => {
           const status = payload?.status || payload?.payment_status || payload?.TrangThai || 'pending'
@@ -43,13 +51,16 @@ export default function PaymentPage() {
             window.setTimeout(() => {
               navigate(`/booking-success/${orderId}`)
             }, status === 'paid' ? 1500 : 300)
+          } else if (status === 'expired') {
+            setState((current) => ({ ...current, liveStatus: 'expired' }))
+            window.clearInterval(timer)
           }
         })
         .catch(() => {})
     }, 2000)
 
     return () => window.clearInterval(timer)
-  }, [navigate, orderId, state.payment])
+  }, [navigate, orderId, state.payment, state.liveStatus])
 
   const data = state.payment || {}
   const order = data.order || {}
@@ -93,9 +104,9 @@ export default function PaymentPage() {
             </div>
           </div>
 
-          <span className="payment-pill d-none d-md-inline-flex">
+          <span className={`payment-pill d-none d-md-inline-flex ${state.liveStatus === 'expired' ? 'payment-pill-expired' : ''}`}>
             <span className="payment-dot"></span>
-            Đang chờ thanh toán
+            {state.liveStatus === 'expired' ? 'Hết hạn thanh toán' : 'Đang chờ thanh toán'}
           </span>
         </div>
       </div>
@@ -107,6 +118,7 @@ export default function PaymentPage() {
             addInfo={payment.add_info || `DH${orderId}`}
             qrUrl={payment.qr_url}
             liveStatus={state.liveStatus}
+            expiresAt={data.payment_expires_at}
           />
         </div>
 
@@ -165,9 +177,18 @@ export default function PaymentPage() {
                 </div>
               </div>
 
-              <div className="payment-note">
-                <b>Lưu ý quan trọng</b>
-                Hệ thống sẽ tự động kích hoạt vé sau khi nhận được chuyển khoản (thường mất 10-30 giây). Vui lòng không tắt trình duyệt.
+              <div className="alert alert-warning mt-4 mb-0" style={{ fontSize: '14px', borderRadius: '8px' }}>
+                <div className="fw-bold mb-2 text-dark">
+                  <i className="fa-solid fa-triangle-exclamation me-2 text-warning"></i>Lưu ý quan trọng
+                </div>
+                <ul className="mb-0 ps-3" style={{ color: '#555', lineHeight: '1.6' }}>
+                  <li>
+                    Bạn có <b className="text-danger">15 phút</b> để hoàn tất thanh toán. Quá thời gian này, hệ thống sẽ tự động hủy đơn và nhường vé cho khách khác.
+                  </li>
+                  <li>
+                    Vé sẽ được kích hoạt tự động ngay khi hệ thống nhận được tiền (thường chỉ mất từ 10 - 30 giây).
+                  </li>
+                </ul>
               </div>
             </div>
           </div>

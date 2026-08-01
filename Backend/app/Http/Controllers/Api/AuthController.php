@@ -27,10 +27,10 @@ class AuthController extends Controller
     public function register(RegisterRequest $request)
     {
         return response()->json([
-            'success' => true,
-            'message' => 'Đăng ký thành công.',
-            'data' => $this->authService->registerCustomer($request->validated()),
-        ], 201);
+            'success' => true, // thông báo cho fe biết API đang ở trạng thái success/failure
+            'message' => 'Đăng ký thành công.',//thông báo hiển thị cho người dùng
+            'data' => $this->authService->registerCustomer($request->validated()),//lấy dữ liệu trả về từ service, có thể là thông tin user và token
+        ], 201);//201 là mã trạng thái HTTP
     }
 
     public function login(LoginRequest $request)

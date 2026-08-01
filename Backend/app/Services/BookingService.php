@@ -83,7 +83,7 @@ class BookingService
             $this->syncCustomerProfileForBooking($khachHang, $data);
 
             $donDatTour = DonDatTour::create([
-                'NgayDat' => now()->toDateString(),
+                'NgayDat' => now()->toDateTimeString(),
                 'SoLuongNguoiLon' => $soLuongNguoiLon,
                 'SoLuongTreEm' => $soLuongTreEm,
                 'SoLuongTreNho' => $soLuongTreNho,
@@ -115,7 +115,7 @@ class BookingService
             ];
         });
     }
-
+    //đảm bảo khách hàng tồn tại, nếu chưa có thì tạo mới
     private function ensureCustomer(TaiKhoan $taiKhoan): KhachHang
     {
         $khachHang = KhachHang::where('MaTK', $taiKhoan->MaTK)->first();
@@ -132,7 +132,7 @@ class BookingService
             'MaTK' => $taiKhoan->MaTK,
         ]);
     }
-
+    // Đồng bộ thông tin khách hàng từ dữ liệu đặt tour, nhưng không ghi đè số điện thoại nếu đã tồn tại trong hệ thống
     private function syncCustomerProfileForBooking(KhachHang $khachHang, array $data): void
     {
         $payload = [

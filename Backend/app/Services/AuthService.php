@@ -15,7 +15,7 @@ class AuthService
     public function __construct(private OtpService $otpService)
     {
     }
-
+    //Xử lý đăng ký khách hàng
     public function registerCustomer(array $data): array
     {
         $hoten = trim($data['hoten']);
@@ -73,7 +73,7 @@ class AuthService
             ];
         });
     }
-
+    //Xử lý đăng nhập khách hàng
     public function loginCustomer(array $data): array
     {
         $loginKey = trim($data['login_key'] ?? $data['username'] ?? '');
@@ -107,7 +107,7 @@ class AuthService
 
         return $this->tokenPayload($taiKhoan, 'customer-api-token');
     }
-
+    //Xử lý đăng nhập nhân viên/admin
     public function loginStaff(array $data): array
     {
         $username = trim($data['username'] ?? $data['login_key'] ?? '');
@@ -130,6 +130,7 @@ class AuthService
         return $this->tokenPayload($taiKhoan, 'staff-api-token');
     }
 
+    //Lấy thông tin người dùng hiện tại dựa trên token
     public function me(TaiKhoan $taiKhoan): array
     {
         $taiKhoan->loadMissing(['khachHang', 'nhanVien', 'admin']);
@@ -142,7 +143,7 @@ class AuthService
             'admin' => $taiKhoan->VaiTro === 'AD' ? $taiKhoan->admin : null,
         ];
     }
-
+    //Xư lý cập nhật thông tin hồ sơ khách hàng
     public function updateCustomerProfile(TaiKhoan $taiKhoan, array $data): array
     {
         if ($taiKhoan->VaiTro !== 'KH') {
@@ -283,7 +284,7 @@ class AuthService
                 ->first();
 
             if ($taiKhoan) {
-                $this->ensureActive($taiKhoan);
+                $this->ensureActive($taiKhoan);//kiem tra tai khoan co bi khoa hay khong
                 $taiKhoan->update([
                     'Provider' => 'google',
                     'GoogleSub' => $taiKhoan->GoogleSub ?: $sub,
@@ -311,7 +312,7 @@ class AuthService
             return $newTaiKhoan->fresh(['khachHang']);
         });
 
-        return $this->tokenPayload($taiKhoan, 'google-api-token');
+        return $this->tokenPayload($taiKhoan, 'google-api-token');// tra ve token va thong tin tai khoan
     }
 
     private function tokenPayload(TaiKhoan $taiKhoan, string $tokenName): array

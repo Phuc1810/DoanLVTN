@@ -10,12 +10,14 @@ import {
   KeyRound,
   LogOut,
   Users,
+  CalendarDays,
 } from 'lucide-react'
 
 const MAIN_MENU = [
   { to: '/staff', icon: <LayoutDashboard size={18} />, label: 'Tổng quan', end: true },
   { to: '/staff/orders', icon: <ShoppingCart size={18} />, label: 'Đơn đặt tour' },
   { to: '/staff/business-requests', icon: <ClipboardCheck size={18} />, label: 'Xử lý yêu cầu' },
+  { to: '/staff/calendar', icon: <CalendarDays size={18} />, label: 'Lịch trình' },
   { to: '/staff/tours', icon: <Compass size={18} />, label: 'Quản lý tour' },
   { to: '/staff/news', icon: <Newspaper size={18} />, label: 'Quản lý tin tức' },
   { to: '/staff/promotions', icon: <Tag size={18} />, label: 'Quản lý khuyến mãi' },

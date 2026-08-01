@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\Staff\BusinessRequestManagementController;
+use App\Http\Controllers\Api\Staff\CalendarController;
 use App\Http\Controllers\Api\Staff\DashboardController;
 use App\Http\Controllers\Api\Staff\OmniSearchController;
 use App\Http\Controllers\Api\Staff\NewsManagementController;
@@ -127,6 +128,8 @@ Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(functi
     Route::get('/dashboard/tour-status', [DashboardController::class, 'tourStatus']);
     Route::get('/dashboard/export-revenue', [DashboardController::class, 'exportRevenue']);
     Route::get('/dashboard/export-operations', [DashboardController::class, 'exportOperations']);
+
+    Route::get('/calendar', [CalendarController::class, 'index']);
 
     Route::get('/omni-search', [OmniSearchController::class, 'search']);
 

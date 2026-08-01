@@ -418,30 +418,40 @@ class BusinessRequestService
                         ->orWhere('ThoiGianKhoiHanh', '>', $today);
                   });
         } elseif ($status === 'Đang diễn ra') {
-            $query->where('TrangThai', 'Đã thanh toán')
-                  ->whereNotNull('ThoiGianKhoiHanh')
-                  ->where('ThoiGianKhoiHanh', '<=', $today)
-                  ->where(function ($q) use ($today) {
-                      $q->where(function ($q1) use ($today) {
-                          $q1->whereNull('NgayKetThuc')
-                             ->where('ThoiGianKhoiHanh', '=', $today);
-                      })->orWhere(function ($q2) use ($today) {
-                          $q2->whereNotNull('NgayKetThuc')
-                             ->where('NgayKetThuc', '>=', $today);
-                      });
-                  });
+            $query->where(function ($qParent) use ($today) {
+                $qParent->where('TrangThai', 'Đang diễn ra')
+                        ->orWhere(function ($qDynamic) use ($today) {
+                            $qDynamic->where('TrangThai', 'Đã thanh toán')
+                                  ->whereNotNull('ThoiGianKhoiHanh')
+                                  ->where('ThoiGianKhoiHanh', '<=', $today)
+                                  ->where(function ($q) use ($today) {
+                                      $q->where(function ($q1) use ($today) {
+                                          $q1->where(fn($q1a) => $q1a->whereNull('NgayKetThuc')->orWhere('NgayKetThuc', ''))
+                                             ->where('ThoiGianKhoiHanh', '>=', $today);
+                                      })->orWhere(function ($q2) use ($today) {
+                                          $q2->whereNotNull('NgayKetThuc')->where('NgayKetThuc', '!=', '')
+                                             ->where('NgayKetThuc', '>=', $today);
+                                      });
+                                  });
+                        });
+            });
         } elseif ($status === 'Đã hoàn tất') {
-            $query->where('TrangThai', 'Đã thanh toán')
-                  ->whereNotNull('ThoiGianKhoiHanh')
-                  ->where(function ($q) use ($today) {
-                      $q->where(function ($q1) use ($today) {
-                          $q1->whereNull('NgayKetThuc')
-                             ->where('ThoiGianKhoiHanh', '<', $today);
-                      })->orWhere(function ($q2) use ($today) {
-                          $q2->whereNotNull('NgayKetThuc')
-                             ->where('NgayKetThuc', '<', $today);
-                      });
-                  });
+            $query->where(function ($qParent) use ($today) {
+                $qParent->where('TrangThai', 'Đã hoàn tất')
+                        ->orWhere(function ($qDynamic) use ($today) {
+                            $qDynamic->where('TrangThai', 'Đã thanh toán')
+                                  ->whereNotNull('ThoiGianKhoiHanh')
+                                  ->where(function ($q) use ($today) {
+                                      $q->where(function ($q1) use ($today) {
+                                          $q1->where(fn($q1a) => $q1a->whereNull('NgayKetThuc')->orWhere('NgayKetThuc', ''))
+                                             ->where('ThoiGianKhoiHanh', '<', $today);
+                                      })->orWhere(function ($q2) use ($today) {
+                                          $q2->whereNotNull('NgayKetThuc')->where('NgayKetThuc', '!=', '')
+                                             ->where('NgayKetThuc', '<', $today);
+                                      });
+                                  });
+                        });
+            });
         } else {
             $query->where('TrangThai', $status);
         }

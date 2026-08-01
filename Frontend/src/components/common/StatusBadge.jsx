@@ -11,6 +11,8 @@ const statusClass = {
   'Đã liên hệ': 'text-bg-info text-white',
   'Hoàn thành': 'text-bg-success',
   'Hủy tour': 'text-bg-danger',
+  'Yêu cầu huỷ': 'text-bg-danger',
+  'Yêu cầu hủy': 'text-bg-danger',
 }
 
 export default function StatusBadge({ status }) {

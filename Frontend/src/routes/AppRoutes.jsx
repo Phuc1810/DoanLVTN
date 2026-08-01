@@ -63,6 +63,7 @@ import StaffTourCreatePage from '../pages/staff/StaffTourCreatePage'
 import StaffTourDetailPage from '../pages/staff/StaffTourDetailPage'
 import StaffTourEditPage from '../pages/staff/StaffTourEditPage'
 import StaffToursPage from '../pages/staff/StaffToursPage'
+import StaffCalendarPage from '../pages/staff/StaffCalendarPage'
 
 const router = createBrowserRouter([
   {
@@ -98,6 +99,7 @@ const router = createBrowserRouter([
       { path: '/staff/accounts', element: <StaffAccountsPage /> },
       { path: '/staff/accounts/:id', element: <StaffAccountDetailsPage /> },
       { path: '/staff/tours', element: <StaffToursPage /> },
+      { path: '/staff/calendar', element: <StaffCalendarPage /> },
       { path: '/staff/tours/create', element: <StaffTourCreatePage /> },
       { path: '/staff/tours/:id', element: <StaffTourDetailPage /> },
       { path: '/staff/tours/:id/edit', element: <StaffTourEditPage /> },

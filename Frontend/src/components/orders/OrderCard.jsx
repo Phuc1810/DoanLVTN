@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { formatDate } from '../../utils/formatDate'
 import { buildImageUrl, tourImagePath } from '../../utils/imageUrl'
@@ -24,6 +24,7 @@ function canCancelOrder(order, tour) {
 }
 
 export default function OrderCard({ order }) {
+  const navigate = useNavigate()
   const tour = order.tour || {}
   const qty = Number(order.SoLuongNguoiLon || 0) + Number(order.SoLuongTreEm || 0) + Number(order.SoLuongTreNho || 0)
   const canPay = order.TrangThai === 'Chờ thanh toán'
@@ -31,8 +32,13 @@ export default function OrderCard({ order }) {
   const canCancel = canCancelOrder(order, tour)
   const hasReview = Number(order.MaDG || 0) > 0
 
+  const handleCardClick = (e) => {
+    if (e.target.closest('.order-right')) return
+    navigate(`/orders/${order.MaDon}`)
+  }
+
   return (
-    <div className="order-item">
+    <div className="order-item" onClick={handleCardClick} style={{ cursor: 'pointer' }}>
       {tourImagePath(tour) ? (
         <img className="order-thumb" src={buildImageUrl(tourImagePath(tour))} alt="" />
       ) : (
@@ -77,9 +83,6 @@ export default function OrderCard({ order }) {
           </Link>
         )}
 
-        <Link className="btn btn-outline-secondary btn-detail" to={`/orders/${order.MaDon}`}>
-          <i className="fa-solid fa-eye me-1"></i> Xem chi tiết
-        </Link>
       </div>
     </div>
   )

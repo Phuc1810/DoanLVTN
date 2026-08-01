@@ -262,10 +262,16 @@ export default function StaffToursPage() {
                         )}
                       </td>
                       <td style={{ padding: '16px 20px' }}>
-                        <span className="fw-bold">{soChoDaDat}</span> <span className="text-muted">/ {soCho}</span>
-                        <div className="progress mt-1" style={{ height: '4px', width: '60px' }}>
-                          <div className="progress-bar bg-primary" role="progressbar" style={{ width: `${percent}%` }}></div>
-                        </div>
+                        {tour.LoaiTour === 'Doanh nghiệp' ? (
+                          <span className="text-muted fw-bold ms-3">—</span>
+                        ) : (
+                          <>
+                            <span className="fw-bold">{soChoDaDat}</span> <span className="text-muted">/ {soCho}</span>
+                            <div className="progress mt-1" style={{ height: '4px', width: '60px' }}>
+                              <div className="progress-bar bg-primary" role="progressbar" style={{ width: `${percent}%` }}></div>
+                            </div>
+                          </>
+                        )}
                       </td>
                       <td style={{ padding: '16px 20px' }}>
                         <span className="small text-muted">{tour.LoaiTour || tour.Mien || ''}</span>

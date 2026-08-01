@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { businessRequestApi } from '../../api/businessRequestApi'
 import EmptyState from '../../components/common/EmptyState'
 import ErrorState from '../../components/common/ErrorState'
@@ -17,9 +17,15 @@ function reviewLink(request) {
 }
 
 export default function BusinessRequestsPage() {
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [selectedStatus, setSelectedStatus] = useState(searchParams.get('st') || '')
   const [state, setState] = useState({ loading: true, error: '', requests: [], pagination: null })
+
+  const handleCardClick = (e, id) => {
+    if (e.target.closest('.business-request-right')) return
+    navigate(`/business-requests/${id}`)
+  }
 
   useEffect(() => {
     const st = searchParams.get('st') || ''
@@ -118,7 +124,12 @@ export default function BusinessRequestsPage() {
 
             <div className="d-grid gap-3">
               {state.requests.map((item) => (
-                <div className="business-request-item" key={item.MaYC || item.id}>
+                <div 
+                  className="business-request-item" 
+                  key={item.MaYC || item.id}
+                  onClick={(e) => handleCardClick(e, item.MaYC || item.id)}
+                  style={{ cursor: 'pointer' }}
+                >
                   {item.image_url || item.AnhChinh ? (
                     <img className="business-request-thumb" src={buildImageUrl(item.image_url || item.AnhChinh)} alt={item.TenTour || ''} />
                   ) : (
@@ -144,15 +155,11 @@ export default function BusinessRequestsPage() {
 
                   <div className="business-request-right">
                     {item.TrangThai === 'Đã hoàn tất' && reviewLink(item) && (
-                      <Link className="btn btn-outline-warning btn-detail" to={reviewLink(item)}>
+                      <Link className={`btn btn-detail ${item.MaDG ? 'btn-outline-primary' : 'btn-outline-warning'}`} to={reviewLink(item)}>
                         <i className={item.MaDG ? 'fa-solid fa-pen-to-square me-1' : 'fa-solid fa-star me-1'}></i>
-                        {item.MaDG ? 'Sửa đánh giá' : 'Đánh giá'}
+                        {item.MaDG ? 'Chỉnh sửa đánh giá' : 'Đánh giá'}
                       </Link>
                     )}
-
-                    <Link className="btn btn-outline-secondary btn-detail" to={`/business-requests/${item.MaYC || item.id}`}>
-                      <i className="fa-solid fa-eye me-1"></i> Xem chi tiết
-                    </Link>
                   </div>
                 </div>
               ))}

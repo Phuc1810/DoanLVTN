@@ -141,12 +141,11 @@ class StaffNewsService
             $monthStart = $date->copy()->startOfMonth()->toDateString();
             $monthEnd = $date->copy()->endOfMonth()->toDateString();
             
-            $monthViews = (int) TinTuc::whereBetween('NgayDang', [$monthStart, $monthEnd])->sum('LuotXem');
+            // Đếm số dòng trong lịch sử xem tin phát sinh trong tháng này
+            $monthViews = \App\Models\LichSuXemTin::whereBetween('NgayXem', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])->count();
             
-            // Lấy tổng bình luận của các bài viết được đăng trong tháng này
-            $monthComments = BinhLuan::whereHas('tinTuc', function ($query) use ($monthStart, $monthEnd) {
-                $query->whereBetween('NgayDang', [$monthStart, $monthEnd]);
-            })->count();
+            // Lấy tổng bình luận phát sinh trong tháng này
+            $monthComments = BinhLuan::whereBetween('NgayBinhLuan', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])->count();
             
             $engRate = $monthViews > 0 ? round(($monthComments / $monthViews) * 100, 1) : 0;
 

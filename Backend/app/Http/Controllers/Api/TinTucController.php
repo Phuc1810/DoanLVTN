@@ -47,8 +47,25 @@ class TinTucController extends Controller
             ], 404);
         }
 
-        // Tự động tăng lượt xem khi xem chi tiết
-        $tinTuc->increment('LuotXem');
+        // Tự động tăng lượt xem (Chống spam F5 hoặc double render từ React bằng cách lưu Cache IP trong 2 giờ)
+        $ip = request()->ip();
+        $cacheKey = "news_view_v2_{$id}_{$ip}";
+
+        if (!cache()->has($cacheKey)) {
+            $tinTuc->increment('LuotXem');
+            
+            try {
+                \App\Models\LichSuXemTin::create([
+                    'MaTin' => $id,
+                    'IP' => $ip ?? '127.0.0.1',
+                    'NgayXem' => now(),
+                ]);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Error creating LichSuXemTin: ' . $e->getMessage());
+            }
+
+            cache()->put($cacheKey, true, now()->addSeconds(10));
+        }
 
         return response()->json([
             'success' => true,

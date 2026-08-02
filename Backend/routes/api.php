@@ -111,7 +111,12 @@ Route::post('/business-requests/{id}/review', [ReviewController::class, 'storeFo
     ->whereNumber('id')
     ->middleware(['auth:sanctum', 'role:KH']);
 
+use App\Http\Controllers\Api\Admin\ReportController;
+
 Route::prefix('admin')->middleware(['auth:sanctum', 'role:AD'])->group(function () {
+    Route::get('/reports/revenue', [ReportController::class, 'revenue']);
+    Route::get('/reports/revenue/export', [ReportController::class, 'exportRevenue']);
+    
     Route::get('/accounts', [AccountController::class, 'index']);
     Route::get('/accounts/stats', [AccountController::class, 'stats']);
     Route::get('/accounts/{id}', [AccountController::class, 'show'])->whereNumber('id');
@@ -148,6 +153,7 @@ Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(functi
     Route::get('/tours/stats', [TourManagementController::class, 'stats']);
     Route::post('/tours', [TourManagementController::class, 'store']);
     Route::patch('/tours/{id}/toggle', [TourManagementController::class, 'toggle'])->whereNumber('id');
+    Route::post('/tours/{id}/clone', [TourManagementController::class, 'clone'])->whereNumber('id');
     Route::get('/tours/{id}', [TourManagementController::class, 'show'])->whereNumber('id');
     Route::put('/tours/{id}', [TourManagementController::class, 'update'])->whereNumber('id');
 

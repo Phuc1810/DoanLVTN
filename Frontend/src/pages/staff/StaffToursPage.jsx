@@ -76,9 +76,45 @@ export default function StaffToursPage() {
     setToggleModal({ isOpen: false, tourId: null, isActive: false })
   }
 
-  // Replaced toggleTour with confirmToggle and state
+  const [cloneModal, setCloneModal] = useState({ isOpen: false, tourId: null, thoiLuong: null })
+  const [cloneData, setCloneData] = useState({ NgayKhoiHanh: '', NgayKetThuc: '' })
+  const [cloneLoading, setCloneLoading] = useState(false)
 
+  function handleStartDateChange(e) {
+    const newStartDate = e.target.value;
+    let newEndDate = cloneData.NgayKetThuc;
 
+    if (cloneModal.thoiLuong && newStartDate) {
+      const match = String(cloneModal.thoiLuong).match(/\d+/);
+      if (match) {
+        const days = parseInt(match[0], 10);
+        if (days > 0) {
+          const start = new Date(newStartDate);
+          start.setDate(start.getDate() + (days - 1));
+          newEndDate = start.toISOString().split('T')[0];
+        }
+      }
+    }
+
+    setCloneData({ ...cloneData, NgayKhoiHanh: newStartDate, NgayKetThuc: newEndDate });
+  }
+
+  async function submitClone(e) {
+    e.preventDefault()
+    if (!cloneModal.tourId || !cloneData.NgayKhoiHanh) return
+    setCloneLoading(true)
+    try {
+      const res = await staffTourApi.clone(cloneModal.tourId, cloneData)
+      setToastMessage(res.data?.message || res.message || 'Gia hạn thành công!')
+      setCloneModal({ isOpen: false, tourId: null })
+      setCloneData({ NgayKhoiHanh: '', NgayKetThuc: '' })
+      setFilters((current) => ({ ...current }))
+    } catch (err) {
+      alert(normalizeError(err).message)
+    } finally {
+      setCloneLoading(false)
+    }
+  }
   return (
     <>
       <div className="page-header">
@@ -202,6 +238,7 @@ export default function StaffToursPage() {
               <select className="form-select bg-transparent border-0 shadow-none text-dark fw-medium" name="tt" value={filters.tt} onChange={updateFilter} style={{ fontSize: '14.5px', padding: '10px 12px', cursor: 'pointer' }}>
                 <option value="">-- Tất cả trạng thái --</option>
                 {metadata.ttList.map(x => <option key={x} value={x}>{x}</option>)}
+                <option value="Cần gia hạn">Cần gia hạn</option>
               </select>
             </div>
           </div>
@@ -254,6 +291,27 @@ export default function StaffToursPage() {
                           <span className="mx-1 text-secondary">•</span>
                           <i className="fa-regular fa-clock me-1 text-primary"></i>{tour.ThoiLuong || '-'}
                         </div>
+                        {tour.LoaiTour !== 'Doanh nghiệp' && (
+                          <div className="mt-1 d-flex align-items-center gap-2">
+                            {tour.TienDo && tour.TrangThai !== 'Ngừng hoạt động' && (
+                              <span 
+                                className={`badge ${tour.TienDo === 'Đang diễn ra' ? 'bg-primary' : tour.TienDo === 'Đã hoàn tất' ? 'bg-success' : 'bg-secondary'} text-white`} 
+                                style={{ fontSize: '0.7rem', fontWeight: 600, padding: '5px 8px' }}
+                              >
+                                {tour.TienDo === 'Đang diễn ra' && <i className="fa-solid fa-play me-1"></i>}
+                                {tour.TienDo === 'Đã hoàn tất' && <i className="fa-solid fa-check-double me-1"></i>}
+                                {tour.TienDo === 'Sắp khởi hành' && <i className="fa-solid fa-hourglass-half me-1"></i>}
+                                {tour.TienDo}
+                              </span>
+                            )}
+                            {tour.NgayKhoiHanh && (
+                              <span className="small text-muted fw-medium" style={{ fontSize: '0.8rem' }}>
+                                <i className="fa-regular fa-calendar me-1"></i>
+                                {new Date(tour.NgayKhoiHanh).toLocaleDateString('vi-VN')}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td style={{ padding: '16px 20px' }}>
                         <div className="fw-bold text-dark">{formatCurrency(price)}</div>
@@ -278,11 +336,24 @@ export default function StaffToursPage() {
                       </td>
                       <td style={{ padding: '16px 20px' }}>
                         <div className="d-flex flex-column gap-1 align-items-start">
-                          <StaffStatusBadge status={tour.TrangThai} />
-                          {tour.TienDo && <StaffStatusBadge status={tour.TienDo} />}
+                          {tour.TienDo === 'Đã hoàn tất' && tour.TrangThai !== 'Ngừng hoạt động' ? (
+                            <span className="text-muted fw-bold ms-3">—</span>
+                          ) : (
+                            <StaffStatusBadge status={tour.LoaiTour === 'Doanh nghiệp' && tour.TrangThai === 'Hết chỗ' ? 'Hoạt động' : tour.TrangThai} />
+                          )}
                         </div>
                       </td>
                       <td className="text-end" style={{ padding: '16px 20px' }}>
+                        {tour.TienDo === 'Đã hoàn tất' && tour.LoaiTour !== 'Doanh nghiệp' && (
+                          <button 
+                            type="button" 
+                            className="btn btn-sm btn-warning rounded-pill me-1 text-dark" 
+                            onClick={(e) => { e.stopPropagation(); setCloneModal({ isOpen: true, tourId: tour.MaTour, thoiLuong: tour.ThoiLuong }); }} 
+                            title="Gia hạn (Sao chép) tour"
+                          >
+                            <i className="fa-solid fa-copy"></i> Gia hạn
+                          </button>
+                        )}
                         <Link 
                           className="btn btn-sm btn-outline-primary rounded-pill me-1" 
                           to={`/staff/tours/${tour.MaTour}/edit`} 
@@ -364,6 +435,66 @@ export default function StaffToursPage() {
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {cloneModal.isOpen && (
+        <>
+          <div className="modal-backdrop fade show" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1040 }}></div>
+          <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1050 }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content" style={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+                <form onSubmit={submitClone}>
+                  <div className="modal-body p-4">
+                    <h5 className="mb-4 fw-bold text-center" style={{ color: '#1f2937', fontSize: '20px' }}>
+                      Gia hạn Tour (Tạo bản sao)
+                    </h5>
+                    <p className="text-muted small text-center mb-4">
+                      Hệ thống sẽ tạo ra một Tour mới copy 100% lịch trình và ảnh từ tour cũ, số chỗ đặt sẽ được reset về 0.
+                    </p>
+                    <div className="mb-3 text-start">
+                      <label className="form-label fw-semibold text-dark small">Ngày khởi hành mới <span className="text-danger">*</span></label>
+                      <input 
+                        type="date" 
+                        className="form-control" 
+                        required 
+                        min={new Date().toISOString().split('T')[0]}
+                        value={cloneData.NgayKhoiHanh}
+                        onChange={handleStartDateChange}
+                      />
+                    </div>
+                    <div className="mb-4 text-start">
+                      <label className="form-label fw-semibold text-dark small">Ngày kết thúc dự kiến (Tự động tính)</label>
+                      <input 
+                        type="date" 
+                        className="form-control bg-light text-muted" 
+                        value={cloneData.NgayKetThuc || ''}
+                        disabled
+                      />
+                    </div>
+                    <div className="d-flex justify-content-center gap-3">
+                      <button 
+                        type="button" 
+                        className="btn fw-medium modal-btn-cancel" 
+                        onClick={() => { setCloneModal({ isOpen: false, tourId: null }); setCloneData({ NgayKhoiHanh: '', NgayKetThuc: '' }); }}
+                        disabled={cloneLoading}
+                      >
+                        Hủy
+                      </button>
+                      <button 
+                        type="submit" 
+                        className="btn fw-medium modal-btn-confirm bg-warning text-dark border-0" 
+                        disabled={cloneLoading || !cloneData.NgayKhoiHanh}
+                      >
+                        {cloneLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="fa-solid fa-copy me-2"></i>}
+                        Tạo Tour mới
+                      </button>
+                    </div>
+                  </div>
+                </form>
               </div>
             </div>
           </div>

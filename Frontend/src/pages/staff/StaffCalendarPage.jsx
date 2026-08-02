@@ -134,7 +134,26 @@ export default function StaffCalendarPage() {
     }
   }
 
-  const components = {}
+  const components = {
+    week: {
+      header: ({ date }) => {
+        const dayOfMonth = String(date.getDate()).padStart(2, '0');
+        const weekDays = ['CN', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+        const weekDayName = weekDays[date.getDay()];
+        
+        return (
+          <div className="text-center py-1">
+            <div style={{ fontSize: '1.4rem', fontWeight: '700', color: '#1f2937', lineHeight: '1.2' }}>
+              {dayOfMonth}
+            </div>
+            <div style={{ fontSize: '0.85rem', color: '#6b7280', textTransform: 'uppercase', fontWeight: '600' }}>
+              {weekDayName}
+            </div>
+          </div>
+        )
+      }
+    }
+  }
 
   return (
     <div className="container-fluid px-0 h-100">
@@ -214,6 +233,9 @@ export default function StaffCalendarPage() {
             /* Hide the "all-day" gutter text since everything is all day */
             .rbc-time-header .rbc-time-gutter {
               display: none !important;
+            }
+            .rbc-header {
+              border-bottom: none !important;
             }
           `}} />
           

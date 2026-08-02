@@ -47,7 +47,37 @@ class StaffTourService
 
         $status = $filters['tt'] ?? $filters['status'] ?? null;
         if (! empty($status)) {
-            $query->where('TrangThai', $status);
+            if ($status === 'Cần gia hạn') {
+                $query->whereIn('TrangThai', ['Hoạt động', 'Hết chỗ'])
+                      ->whereNotNull('NgayKhoiHanh')
+                      ->where(function ($q) {
+                          $q->whereNull('LoaiTour')
+                            ->orWhere('LoaiTour', '!=', 'Doanh nghiệp');
+                      })
+                      ->where(function (Builder $q) {
+                          $q->whereNotNull('NgayKetThuc')
+                            ->whereDate('NgayKetThuc', '<', \Carbon\Carbon::today())
+                            ->orWhere(function (Builder $q2) {
+                                $q2->whereNull('NgayKetThuc')
+                                   ->whereDate('NgayKhoiHanh', '<', \Carbon\Carbon::today());
+                            });
+                      });
+            } elseif ($status === 'Hết chỗ') {
+                $query->where('TrangThai', 'Hết chỗ')
+                      ->where(function ($q) {
+                          $q->whereNull('LoaiTour')
+                            ->orWhere('LoaiTour', '!=', 'Doanh nghiệp');
+                      });
+            } elseif ($status === 'Hoạt động') {
+                $query->where(function ($q) {
+                    $q->where('TrangThai', 'Hoạt động')
+                      ->orWhere(function ($q2) {
+                          $q2->where('TrangThai', 'Hết chỗ')->where('LoaiTour', 'Doanh nghiệp');
+                      });
+                });
+            } else {
+                $query->where('TrangThai', $status);
+            }
         }
 
         if (! empty($filters['mien'])) {
@@ -157,6 +187,56 @@ class StaffTourService
             $this->replaceSchedules($tour->MaTour, $payload['lich_trinh']);
 
             return $this->detail($tour->MaTour);
+        });
+    }
+
+    public function cloneTour(int $id, array $payload): array
+    {
+        return DB::transaction(function () use ($id, $payload) {
+            $oldTour = $this->findTour($id);
+
+            $newTour = Tour::create([
+                'TenTour' => $oldTour->TenTour,
+                'DiaDiem' => $oldTour->DiaDiem,
+                'GiaGoc' => $oldTour->GiaGoc,
+                'GiaGiam' => $oldTour->GiaGiam,
+                'ThoiLuong' => $oldTour->ThoiLuong,
+                'NgayKhoiHanh' => $payload['NgayKhoiHanh'],
+                'NgayKetThuc' => $payload['NgayKetThuc'] ?? null,
+                'SoCho' => $oldTour->SoCho,
+                'SoChoDaDat' => 0,
+                'Mien' => $oldTour->Mien,
+                'LoaiTour' => $oldTour->LoaiTour,
+                'PhanTramGiam' => $oldTour->PhanTramGiam,
+                'TrangThai' => 'Hoạt động',
+            ]);
+
+            // Copy images
+            $oldImages = HinhAnhTour::where('MaTour', $oldTour->MaTour)->get();
+            foreach ($oldImages as $img) {
+                $newPath = $this->uploadService->copyTourImage($img->DuongDan, $newTour->MaTour);
+                if ($newPath) {
+                    HinhAnhTour::create([
+                        'DuongDan' => $newPath,
+                        'LaAnhChinh' => $img->LaAnhChinh,
+                        'LoaiAnh' => $img->LoaiAnh,
+                        'MaTour' => $newTour->MaTour,
+                    ]);
+                }
+            }
+
+            // Copy schedules
+            $oldSchedules = LichTrinhTour::where('MaTour', $oldTour->MaTour)->orderBy('NgayThu')->get();
+            foreach ($oldSchedules as $schedule) {
+                LichTrinhTour::create([
+                    'NgayThu' => $schedule->NgayThu,
+                    'TieuDe' => $schedule->TieuDe,
+                    'NoiDung' => $schedule->NoiDung,
+                    'MaTour' => $newTour->MaTour,
+                ]);
+            }
+
+            return $this->detail($newTour->MaTour);
         });
     }
 

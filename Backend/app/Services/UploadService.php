@@ -39,6 +39,32 @@ class UploadService
         return $this->uploadPromotionImage($file, $promotionId);
     }
 
+    public function copyTourImage(string $oldPath, int $newTourId): ?string
+    {
+        $originalPath = $oldPath;
+        if (preg_match('/^https?:\/\//i', $oldPath)) {
+            // It's an external URL, just return it as is.
+            return $oldPath;
+        }
+
+        $oldPath = ltrim($oldPath, '/');
+        if (str_starts_with($oldPath, 'storage/')) {
+            $oldPath = substr($oldPath, strlen('storage/'));
+        }
+
+        if (!Storage::disk('public')->exists($oldPath)) {
+            return $originalPath; // Original file not in storage, might be a static seed asset
+        }
+
+        $extension = pathinfo($oldPath, PATHINFO_EXTENSION);
+        $newFileName = 'tour_' . $newTourId . '_' . date('Ymd_His') . '_' . Str::random(8) . '.' . $extension;
+        $newPath = 'tours/' . $newFileName;
+
+        Storage::disk('public')->copy($oldPath, $newPath);
+
+        return $newPath;
+    }
+
     /**
      * Upload ảnh từ trình soạn thảo (CKEditor / TinyMCE).
      * Ảnh được lưu vào thư mục riêng "editor" trên disk public.

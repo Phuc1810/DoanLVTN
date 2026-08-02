@@ -11,6 +11,7 @@ import {
   LogOut,
   Users,
   CalendarDays,
+  BarChart3,
 } from 'lucide-react'
 
 const MAIN_MENU = [
@@ -56,10 +57,16 @@ export default function StaffSidebar() {
             </NavLink>
           ))}
           {user?.VaiTro === 'AD' && (
-            <NavLink to="/staff/accounts" className="nav-link">
-              <span className="nav-icon"><Users size={18} /></span>
-              <span className="nav-label-text">Quản lý Tài khoản</span>
-            </NavLink>
+            <>
+              <NavLink to="/staff/accounts" className="nav-link">
+                <span className="nav-icon"><Users size={18} /></span>
+                <span className="nav-label-text">Quản lý tài khoản</span>
+              </NavLink>
+              <NavLink to="/staff/reports" className="nav-link">
+                <span className="nav-icon"><BarChart3 size={18} /></span>
+                <span className="nav-label-text">Báo cáo & Thống kê</span>
+              </NavLink>
+            </>
           )}
         </div>
 

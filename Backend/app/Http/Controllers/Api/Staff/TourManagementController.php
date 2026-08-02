@@ -93,4 +93,18 @@ class TourManagementController extends Controller
             'data' => $this->staffTourService->toggle($id),
         ]);
     }
+
+    public function clone(Request $request, int $id)
+    {
+        $payload = $request->validate([
+            'NgayKhoiHanh' => ['required', 'date', 'after_or_equal:today'],
+            'NgayKetThuc' => ['nullable', 'date', 'after_or_equal:NgayKhoiHanh'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Gia hạn (nhân bản) tour thành công',
+            'data' => $this->staffTourService->cloneTour($id, $payload),
+        ], 201);
+    }
 }

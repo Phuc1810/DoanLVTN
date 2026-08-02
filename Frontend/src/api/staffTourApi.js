@@ -9,4 +9,5 @@ export const staffTourApi = {
   create: (payload) => axiosClient.post('/staff/tours', payload),
   update: (id, payload) => axiosClient.post(`/staff/tours/${id}`, payload),
   toggle: (id) => axiosClient.patch(`/staff/tours/${id}/toggle`),
+  clone: (id, payload) => axiosClient.post(`/staff/tours/${id}/clone`, payload),
 }

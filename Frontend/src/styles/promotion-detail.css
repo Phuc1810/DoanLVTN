@@ -1,0 +1,184 @@
+/* promotion-detail.css */
+
+.promo-hero-section {
+    position: relative;
+    width: 100%;
+    min-height: 400px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-bottom: 3rem;
+    overflow: hidden;
+    border-radius: 0 0 2rem 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    padding-top: 130px;
+}
+
+.promo-hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.8));
+    z-index: 1;
+}
+
+.promo-hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 2rem;
+    max-width: 800px;
+}
+
+.promo-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    line-height: 1.2;
+}
+
+.glass-badge {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    padding: 8px 24px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.discount-pulse {
+    animation: pulse-red 2s infinite;
+    background: #ff4757;
+    color: white;
+    border: none;
+    font-size: 1.3rem;
+}
+
+@keyframes pulse-red {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 15px rgba(255, 71, 87, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
+    }
+}
+
+.countdown-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 2rem;
+}
+
+.countdown-box {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 10px 15px;
+    min-width: 80px;
+    text-align: center;
+}
+
+.countdown-number {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+    color: #ffdda1;
+}
+
+.countdown-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.promo-details-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f0f0f0;
+    margin-bottom: 3rem;
+    position: relative;
+    top: -50px;
+    z-index: 3;
+}
+
+.promo-details-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #4a5568;
+}
+
+.promo-details-content p {
+    margin-bottom: 1rem;
+}
+
+.section-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 3rem 0;
+}
+
+.section-divider::before,
+.section-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 2px dashed #e2e8f0;
+}
+
+.section-divider:not(:empty)::before {
+    margin-right: 1.5em;
+}
+
+.section-divider:not(:empty)::after {
+    margin-left: 1.5em;
+}
+
+.section-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #2d3748;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .promo-title {
+        font-size: 2rem;
+    }
+    .countdown-wrapper {
+        gap: 10px;
+    }
+    .countdown-box {
+        min-width: 60px;
+        padding: 8px 10px;
+    }
+    .countdown-number {
+        font-size: 1.5rem;
+    }
+    .promo-details-card {
+        padding: 1.5rem;
+    }
+}

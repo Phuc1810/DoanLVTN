@@ -22,6 +22,7 @@ class NewsResource extends JsonResource
             'TrangThai' => $this->TrangThai,
             'MaNV' => $this->MaNV,
             'LuotXem' => (int) $this->LuotXem,
+            'binh_luans_count' => (int) $this->binh_luans_count,
             'nguoi_dang' => $this->whenLoaded('nhanVien', fn () => $this->nhanVien?->HoTen),
         ];
     }

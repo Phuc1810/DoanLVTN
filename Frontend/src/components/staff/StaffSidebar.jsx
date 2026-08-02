@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/useAuth'
 import {
@@ -13,6 +14,8 @@ import {
   CalendarDays,
   BarChart3,
   MessageSquare,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 
 const MAIN_MENU = [
@@ -32,6 +35,7 @@ const SETTINGS_MENU = [
 export default function StaffSidebar() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const [isReviewsOpen, setIsReviewsOpen] = useState(false)
 
   async function handleLogout() {
     await logout()
@@ -67,10 +71,30 @@ export default function StaffSidebar() {
                 <span className="nav-icon"><BarChart3 size={18} /></span>
                 <span className="nav-label-text">Báo cáo & Thống kê</span>
               </NavLink>
-              <NavLink to="/staff/reviews" className="nav-link">
-                <span className="nav-icon"><MessageSquare size={18} /></span>
-                <span className="nav-label-text">Quản lý Đánh giá</span>
-              </NavLink>
+              <div className="nav-item-dropdown">
+                <button 
+                  type="button" 
+                  className="nav-link w-100 text-start border-0 bg-transparent d-flex justify-content-between align-items-center shadow-none" 
+                  onClick={() => setIsReviewsOpen(!isReviewsOpen)}
+                  style={{ outline: 'none' }}
+                >
+                  <div className="d-flex align-items-center" style={{ gap: '16px' }}>
+                    <span className="nav-icon"><MessageSquare size={18} /></span>
+                    <span className="nav-label-text">Quản lý Đánh giá</span>
+                  </div>
+                  {isReviewsOpen ? <ChevronUp size={16} className="text-muted" /> : <ChevronDown size={16} className="text-muted" />}
+                </button>
+                {isReviewsOpen && (
+                  <div className="dropdown-menu-container ms-3 border-start border-2 mt-1 mb-2" style={{ borderColor: '#e2e8f0' }}>
+                    <NavLink to="/staff/reviews" className="nav-link ms-2 mb-1" style={{ padding: '10px 16px', borderRadius: '8px' }}>
+                      <span className="nav-label-text">Đánh giá tour</span>
+                    </NavLink>
+                    <NavLink to="/staff/news-comments" className="nav-link ms-2" style={{ padding: '10px 16px', borderRadius: '8px' }}>
+                      <span className="nav-label-text">Đánh giá tin tức</span>
+                    </NavLink>
+                  </div>
+                )}
+              </div>
             </>
           )}
         </div>

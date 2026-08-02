@@ -16,6 +16,9 @@ class NewsService
     public function list(array $filters): array
     {
         $query = TinTuc::query()
+            ->withCount(['binhLuans' => function ($q) {
+                $q->where('TrangThai', 'Hiển thị');
+            }])
             ->where('TrangThai', self::STATUS_VISIBLE);
 
         $type = $this->normalizeType($filters['loai'] ?? $filters['type'] ?? 'tintuc');
@@ -43,6 +46,9 @@ class NewsService
     {
         $news = TinTuc::query()
             ->with('nhanVien')
+            ->withCount(['binhLuans' => function ($q) {
+                $q->where('TrangThai', 'Hiển thị');
+            }])
             ->where('MaTin', $id)
             ->where('TrangThai', self::STATUS_VISIBLE)
             ->first();

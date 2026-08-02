@@ -128,6 +128,10 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'role:AD'])->group(function 
     Route::get('/reviews', [\App\Http\Controllers\Api\Admin\ReviewController::class, 'index']);
     Route::patch('/reviews/{id}/toggle-status', [\App\Http\Controllers\Api\Admin\ReviewController::class, 'toggleStatus'])->whereNumber('id');
     Route::post('/reviews/{id}/reply', [\App\Http\Controllers\Api\Admin\ReviewController::class, 'reply'])->whereNumber('id');
+
+    Route::get('/news-comments', [\App\Http\Controllers\Api\Admin\NewsCommentController::class, 'index']);
+    Route::patch('/news-comments/{id}/toggle-status', [\App\Http\Controllers\Api\Admin\NewsCommentController::class, 'toggleStatus'])->whereNumber('id');
+    Route::post('/news-comments/{id}/reply', [\App\Http\Controllers\Api\Admin\NewsCommentController::class, 'reply'])->whereNumber('id');
 });
 
 Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(function () {

@@ -28,10 +28,22 @@ export default function NewsCard({ news }) {
       </div>
       <div className="blog-card-body">
         <h5 className="blog-card-title">{news.TieuDe}</h5>
-        <p className="blog-card-date text-muted">
-          <i className="fa-regular fa-calendar-days me-1"></i>
-          {formatDate(news.NgayDang)}
-        </p>
+        <div className="d-flex align-items-center justify-content-between text-muted mb-3" style={{ fontSize: '13px' }}>
+          <span className="blog-card-date d-flex align-items-center">
+            <i className="fa-regular fa-calendar-days me-1"></i>
+            {formatDate(news.NgayDang)}
+          </span>
+          <div className="d-flex align-items-center gap-3">
+            <span className="blog-card-views d-flex align-items-center">
+              <i className="fa-regular fa-eye me-1"></i>
+              {news.LuotXem || 0}
+            </span>
+            <span className="blog-card-comments d-flex align-items-center">
+              <i className="fa-regular fa-comment me-1"></i>
+              {news.binh_luans_count || 0}
+            </span>
+          </div>
+        </div>
         <p className="blog-card-desc text-secondary">{String(news.MoTa || '').slice(0, 150)}...</p>
       </div>
     </Link>

@@ -18,6 +18,7 @@ class BinhLuan extends Model
         'NoiDung',
         'NgayBinhLuan',
         'TrangThai',
+        'PhanHoi',
     ];
 
     public function tinTuc()

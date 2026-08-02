@@ -14,6 +14,7 @@ import ResetSuccessPage from '../pages/auth/ResetSuccessPage'
 import VerifyOtpPage from '../pages/auth/VerifyOtpPage'
 import AdminReportsPage from '../pages/admin/AdminReportsPage'
 import AdminReviewsPage from '../pages/admin/AdminReviewsPage'
+import AdminNewsCommentsPage from '../pages/admin/AdminNewsCommentsPage'
 import BookingSuccessPage from '../pages/customer/BookingSuccessPage'
 import BusinessRequestDetailPage from '../pages/customer/BusinessRequestDetailPage'
 import BusinessRequestsPage from '../pages/customer/BusinessRequestsPage'
@@ -80,6 +81,7 @@ const router = createBrowserRouter([
       { path: '/staff/accounts/:id', element: <StaffAccountDetailsPage /> },
       { path: '/staff/reports', element: <AdminReportsPage /> },
       { path: '/staff/reviews', element: <AdminReviewsPage /> },
+      { path: '/staff/news-comments', element: <AdminNewsCommentsPage /> },
       { path: '/staff/tours', element: <StaffToursPage /> },
       { path: '/staff/calendar', element: <StaffCalendarPage /> },
       { path: '/staff/tours/create', element: <StaffTourCreatePage /> },

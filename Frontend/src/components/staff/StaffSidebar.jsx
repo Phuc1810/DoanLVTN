@@ -12,6 +12,7 @@ import {
   Users,
   CalendarDays,
   BarChart3,
+  MessageSquare,
 } from 'lucide-react'
 
 const MAIN_MENU = [
@@ -65,6 +66,10 @@ export default function StaffSidebar() {
               <NavLink to="/staff/reports" className="nav-link">
                 <span className="nav-icon"><BarChart3 size={18} /></span>
                 <span className="nav-label-text">Báo cáo & Thống kê</span>
+              </NavLink>
+              <NavLink to="/staff/reviews" className="nav-link">
+                <span className="nav-icon"><MessageSquare size={18} /></span>
+                <span className="nav-label-text">Quản lý Đánh giá</span>
               </NavLink>
             </>
           )}

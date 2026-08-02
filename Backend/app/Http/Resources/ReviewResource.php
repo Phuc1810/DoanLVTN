@@ -13,6 +13,7 @@ class ReviewResource extends JsonResource
             'MaDG' => $this->MaDG,
             'SoSao' => $this->SoSao,
             'NoiDung' => $this->NoiDung,
+            'PhanHoi' => $this->PhanHoi,
             'NgayDG' => $this->NgayDG,
             'MaKH' => $this->MaKH,
             'MaTour' => $this->MaTour,

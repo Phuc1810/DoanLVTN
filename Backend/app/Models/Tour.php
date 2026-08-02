@@ -56,7 +56,10 @@ class Tour extends Model
 
     public function danhGias()
     {
-        return $this->hasMany(DanhGia::class, 'MaTour', 'MaTour');
+        return $this->hasMany(DanhGia::class, 'MaTour', 'MaTour')
+            ->where(function ($q) {
+                $q->where('TrangThai', 'Hiển thị')->orWhereNull('TrangThai');
+            });
     }
 
     public function khuyenMais()

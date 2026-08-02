@@ -264,7 +264,17 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
                     <i key={i} className={`${i < Number(review.SoSao) ? 'fa-solid' : 'fa-regular'} fa-star text-warning`}></i>
                   ))}
                 </div>
-                {review.NoiDung && <div className="mt-2">{review.NoiDung}</div>}
+                {review.NoiDung && <div className="mt-2 text-dark" style={{ lineHeight: '1.5' }}>{review.NoiDung}</div>}
+                
+                {review.PhanHoi && (
+                  <div className="mt-3 ms-4 p-3 rounded-4" style={{ backgroundColor: '#f1f5f9', borderLeft: '4px solid #3b82f6' }}>
+                    <div className="d-flex align-items-center gap-2 mb-2">
+                      <i className="fa-solid fa-circle-check text-primary"></i>
+                      <span className="fw-bold text-primary" style={{ fontSize: '14px' }}>Phản hồi từ Quản trị viên</span>
+                    </div>
+                    <div className="mb-0 text-dark" style={{ fontSize: '14.5px', lineHeight: '1.5' }}>{review.PhanHoi}</div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

@@ -24,6 +24,9 @@ class ReviewService
 
         $reviews = DanhGia::with('khachHang')
             ->where('MaTour', $tourId)
+            ->where(function ($q) {
+                $q->where('TrangThai', 'Hiển thị')->orWhereNull('TrangThai');
+            })
             ->orderByDesc('NgayDG')
             ->orderByDesc('MaDG')
             ->get();

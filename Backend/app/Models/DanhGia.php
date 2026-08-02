@@ -18,6 +18,8 @@ class DanhGia extends Model
         'NgayDG',
         'MaKH',
         'MaTour',
+        'TrangThai',
+        'PhanHoi',
     ];
 
     public function khachHang()

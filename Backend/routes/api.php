@@ -124,6 +124,10 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'role:AD'])->group(function 
     Route::patch('/accounts/{id}/role', [AccountController::class, 'updateRole'])->whereNumber('id');
     Route::patch('/accounts/{id}/status', [AccountController::class, 'toggleStatus'])->whereNumber('id');
     Route::patch('/accounts/{id}/reset-password', [AccountController::class, 'resetPassword'])->whereNumber('id');
+    
+    Route::get('/reviews', [\App\Http\Controllers\Api\Admin\ReviewController::class, 'index']);
+    Route::patch('/reviews/{id}/toggle-status', [\App\Http\Controllers\Api\Admin\ReviewController::class, 'toggleStatus'])->whereNumber('id');
+    Route::post('/reviews/{id}/reply', [\App\Http\Controllers\Api\Admin\ReviewController::class, 'reply'])->whereNumber('id');
 });
 
 Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(function () {

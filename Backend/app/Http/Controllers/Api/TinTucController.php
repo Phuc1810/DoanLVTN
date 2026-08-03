@@ -32,7 +32,7 @@ class TinTucController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $query->orderByDesc('MaTin')->paginate(15),
+            'data' => $query->withCount('binhLuans')->orderByDesc('MaTin')->paginate(15),
         ]);
     }
 

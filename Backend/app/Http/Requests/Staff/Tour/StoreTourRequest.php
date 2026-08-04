@@ -30,8 +30,11 @@ class StoreTourRequest extends FormRequest
             'Mien' => ['required', Rule::in(['Bắc', 'Trung', 'Nam'])],
             'LoaiTour' => ['required', Rule::in(['Cá nhân', 'Doanh nghiệp'])],
             'TrangThai' => ['required', Rule::in(['Hoạt động', 'Ngừng hoạt động', 'Hết chỗ'])],
-            'NgayKhoiHanh' => ['required', 'date', 'after:today'],
-            'NgayKetThuc' => ['required', 'date', 'after:today', 'after_or_equal:NgayKhoiHanh'],
+            'TinhChatTour' => ['nullable', Rule::in(['Theo đợt', 'Định kỳ'])],
+            'LichTrinhTuan' => ['nullable', 'array'],
+            'LichTrinhTuan.*' => ['integer', 'between:0,6'],
+            'NgayKhoiHanh' => ['nullable', 'required_if:TinhChatTour,Theo đợt', 'date', 'after:today'],
+            'NgayKetThuc' => ['nullable', 'date', 'after:today', 'after_or_equal:NgayKhoiHanh'],
             'LoaiAnh' => ['nullable', Rule::in(['', 'banner', 'noibat'])],
             'AnhChinh' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'lich_trinh' => ['required', 'array', 'min:1'],
@@ -59,10 +62,14 @@ class StoreTourRequest extends FormRequest
     {
         $data = [];
 
-        foreach (['TenTour', 'DiaDiem', 'ThoiLuong', 'Mien', 'LoaiTour', 'TrangThai', 'LoaiAnh'] as $field) {
+        foreach (['TenTour', 'DiaDiem', 'ThoiLuong', 'Mien', 'LoaiTour', 'TrangThai', 'LoaiAnh', 'TinhChatTour'] as $field) {
             if ($this->has($field)) {
                 $data[$field] = trim((string) $this->input($field));
             }
+        }
+        
+        if ($this->has('LichTrinhTuan') && is_array($this->input('LichTrinhTuan'))) {
+            $data['LichTrinhTuan'] = $this->input('LichTrinhTuan');
         }
 
         $data['lich_trinh'] = $this->normalizeSchedules();

@@ -165,14 +165,16 @@ class StaffTourService
                 'GiaGoc' => $payload['GiaGoc'],
                 'GiaGiam' => $payload['GiaGiam'],
                 'ThoiLuong' => $payload['ThoiLuong'],
-                'NgayKhoiHanh' => $payload['NgayKhoiHanh'],
-                'NgayKetThuc' => $payload['NgayKetThuc'],
+                'NgayKhoiHanh' => $payload['NgayKhoiHanh'] ?? null,
+                'NgayKetThuc' => $payload['NgayKetThuc'] ?? null,
                 'SoCho' => (int) $payload['SoCho'],
                 'SoChoDaDat' => 0,
                 'Mien' => $payload['Mien'],
                 'LoaiTour' => $payload['LoaiTour'],
                 'PhanTramGiam' => $payload['PhanTramGiam'],
                 'TrangThai' => $payload['TrangThai'],
+                'TinhChatTour' => $payload['TinhChatTour'] ?? 'Theo đợt',
+                'LichTrinhTuan' => isset($payload['LichTrinhTuan']) && is_array($payload['LichTrinhTuan']) ? implode(',', $payload['LichTrinhTuan']) : null,
             ]);
 
             $path = $this->uploadService->storeTourImage($image, $tour->MaTour);
@@ -209,6 +211,8 @@ class StaffTourService
                 'LoaiTour' => $oldTour->LoaiTour,
                 'PhanTramGiam' => $oldTour->PhanTramGiam,
                 'TrangThai' => 'Hoạt động',
+                'TinhChatTour' => 'Theo đợt',
+                'IDTourGoc' => $oldTour->MaTour,
             ]);
 
             // Copy images
@@ -255,13 +259,15 @@ class StaffTourService
                 'GiaGoc' => $payload['GiaGoc'],
                 'GiaGiam' => $payload['GiaGiam'],
                 'ThoiLuong' => $payload['ThoiLuong'],
-                'NgayKhoiHanh' => $payload['NgayKhoiHanh'],
-                'NgayKetThuc' => $payload['NgayKetThuc'],
+                'NgayKhoiHanh' => $payload['NgayKhoiHanh'] ?? null,
+                'NgayKetThuc' => $payload['NgayKetThuc'] ?? null,
                 'SoCho' => (int) $payload['SoCho'],
                 'Mien' => $payload['Mien'],
                 'LoaiTour' => $payload['LoaiTour'],
                 'PhanTramGiam' => $payload['PhanTramGiam'],
                 'TrangThai' => $payload['TrangThai'],
+                'TinhChatTour' => $payload['TinhChatTour'] ?? 'Theo đợt',
+                'LichTrinhTuan' => isset($payload['LichTrinhTuan']) && is_array($payload['LichTrinhTuan']) ? implode(',', $payload['LichTrinhTuan']) : null,
             ]);
 
             $mainImage = HinhAnhTour::where('MaTour', $tour->MaTour)

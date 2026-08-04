@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Mỗi phút, quét và huỷ các đơn hàng "Chờ thanh toán" đã quá 15 phút
 Schedule::command('orders:cancel-unpaid')->everyMinute();
+
+// Quét và tự động đúc các tour định kỳ cho 4 tuần tới
+Schedule::command('tour:generate-clones')->dailyAt('00:00');

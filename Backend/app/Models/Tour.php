@@ -27,6 +27,9 @@ class Tour extends Model
         'PhanTramGiam',
         'TrangThai',
         'MaNV',
+        'TinhChatTour',
+        'LichTrinhTuan',
+        'IDTourGoc',
     ];
 
     public function nhanVien()

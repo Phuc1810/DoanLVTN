@@ -56,6 +56,7 @@ class TourService
             ->join('hinhanhtour as h', 't.MaTour', '=', 'h.MaTour')
             ->where('h.LoaiAnh', 'noibat')
             ->whereIn('t.TrangThai', [self::ACTIVE_STATUS, 'Hết chỗ'])
+            ->where('t.TinhChatTour', '!=', 'Định kỳ')
             ->where(function ($q) {
                 $q->where('t.LoaiTour', 'Doanh nghiệp')
                   ->orWhere('t.NgayKhoiHanh', '>', \Carbon\Carbon::today()->format('Y-m-d'));
@@ -105,6 +106,8 @@ class TourService
         $items = DB::table('tour as t')
             ->join('hinhanhtour as h', 't.MaTour', '=', 'h.MaTour')
             ->where('h.LoaiAnh', 'banner')
+            ->where('t.TinhChatTour', '!=', 'Định kỳ')
+            ->whereIn('t.TrangThai', [self::ACTIVE_STATUS, 'Hết chỗ'])
             ->orderByDesc('h.MaAnh')
             ->limit($limit)
             ->get([
@@ -292,6 +295,7 @@ class TourService
     {
         return Tour::query()
             ->with(['anhChinh', 'danhGias'])
+            ->where('TinhChatTour', '!=', 'Định kỳ')
             ->whereIn('TrangThai', [self::ACTIVE_STATUS, 'Hết chỗ'])
             ->where(function ($q) {
                 $q->where('LoaiTour', 'Doanh nghiệp')

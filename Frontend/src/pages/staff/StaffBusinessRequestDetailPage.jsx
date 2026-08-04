@@ -34,6 +34,15 @@ export default function StaffBusinessRequestDetailPage() {
     loadData()
   }, [id])
 
+  useEffect(() => {
+    if (formError) {
+      const timer = setTimeout(() => {
+        setFormError(null)
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [formError])
+
   function loadData() {
     setState({ loading: true, error: '', request: null })
     staffBusinessRequestApi.show(id)
@@ -146,8 +155,27 @@ export default function StaffBusinessRequestDetailPage() {
         </div>
       )}
 
-      {/* Thông báo lỗi */}
-      {formError && <FormError message={formError.message} errors={formError.errors} />}
+      {/* Thông báo lỗi toast góc phải */}
+      {formError && (
+        <div className="position-fixed top-0 end-0 p-3" style={{ zIndex: 1056, marginTop: '60px' }}>
+          <div className="toast show align-items-center text-white bg-danger border-0 shadow" role="alert">
+            <div className="d-flex">
+              <div className="toast-body fw-medium">
+                <i className="fa-solid fa-triangle-exclamation me-2"></i>
+                {formError.message}
+                {formError.errors && Object.values(formError.errors).flat().filter(msg => msg !== formError.message).length > 0 && (
+                  <ul className="mb-0 ps-3 mt-1" style={{ fontSize: '0.9em' }}>
+                    {Object.values(formError.errors).flat().filter(msg => msg !== formError.message).map((msg, idx) => (
+                      <li key={idx}>{msg}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <button type="button" className="btn-close btn-close-white me-2 m-auto" onClick={() => setFormError(null)}></button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="row g-4">
         {/* ========= CỘT TRÁI (8/12) ========= */}

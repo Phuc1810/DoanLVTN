@@ -283,6 +283,56 @@ class BusinessRequestService
             $this->throwValidation('MaNV', 'Chỉ nhân viên có hồ sơ MaNV mới được nhận xử lý yêu cầu.');
         }
 
+        
+        $activeStatuses = ['Đã liên hệ', 'Đã thanh toán', 'Đang diễn ra'];
+        $ongoingRequests = YeuCauDoanhNghiep::where('MaNV', $staff->MaNV)
+            ->whereIn('TrangThai', $activeStatuses)
+            ->where('MaYC', '!=', $request->MaYC)
+            ->with('tour')
+            ->get();
+
+        
+        $reqStartDate = null;
+        $reqEndDate = null;
+        if (!empty($request->ThoiGianKhoiHanh)) {
+            $reqStartDate = \Carbon\Carbon::parse($request->ThoiGianKhoiHanh)->startOfDay();
+            if (!empty($request->NgayKetThuc)) {
+                $reqEndDate = \Carbon\Carbon::parse($request->NgayKetThuc)->endOfDay();
+            } else {
+                $reqDays = 1;
+                $thoiLuongStr = $request->tour ? $request->tour->ThoiLuong : $request->DiaDiem;
+                if (!empty($thoiLuongStr) && preg_match('/(\d+)\s*(n|ngày)/i', $thoiLuongStr, $matches)) {
+                    $reqDays = (int)$matches[1];
+                }
+                $reqEndDate = $reqStartDate->copy()->addDays($reqDays - 1)->endOfDay();
+            }
+        }
+
+        if ($reqStartDate && $reqEndDate) {
+            foreach ($ongoingRequests as $ongoing) {
+                if (empty($ongoing->ThoiGianKhoiHanh)) {
+                    continue;
+                }
+                
+                $startDate = \Carbon\Carbon::parse($ongoing->ThoiGianKhoiHanh)->startOfDay();
+                if (!empty($ongoing->NgayKetThuc)) {
+                    $endDate = \Carbon\Carbon::parse($ongoing->NgayKetThuc)->endOfDay();
+                } else {
+                    $days = 1;
+                    $thoiLuongStr = $ongoing->tour ? $ongoing->tour->ThoiLuong : $ongoing->DiaDiem;
+                    if (!empty($thoiLuongStr) && preg_match('/(\d+)\s*(n|ngày)/i', $thoiLuongStr, $matches)) {
+                        $days = (int)$matches[1];
+                    }
+                    $endDate = $startDate->copy()->addDays($days - 1)->endOfDay();
+                }
+                
+                
+                if ($reqStartDate->lte($endDate) && $reqEndDate->gte($startDate)) {
+                    $this->throwValidation('MaNV', "Yêu cầu này trùng lịch với tour '{$ongoing->TenCongTy}' (Từ {$startDate->format('d/m/Y')} đến {$endDate->format('d/m/Y')}) mà bạn đang phụ trách. Bạn không thể tiếp nhận thêm.");
+                }
+            }
+        }
+
         if (! empty($request->MaNV)) {
             $this->throwValidation('MaNV', 'Yêu cầu đã có nhân viên xử lý.');
         }

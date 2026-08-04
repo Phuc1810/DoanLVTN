@@ -1,1 +1,1 @@
-<?php require 'vendor/autoload.php'; require_once 'bootstrap/app.php'; echo json_encode(\App\Models\HinhAnhTour::whereIn('MaTour', [2, 44, 45, 46])->get()); ?>
+<?php require 'bootstrap/app.php'; $app = app(); $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class); $kernel->bootstrap(); $r = \App\Models\YeuCauDoanhNghiep::orderBy('MaYC', 'desc')->take(3)->get(['MaYC', 'TenCongTy', 'ThoiGianKhoiHanh', 'NgayKetThuc', 'MaTour'])->toArray(); print_r($r);

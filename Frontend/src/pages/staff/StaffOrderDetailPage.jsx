@@ -57,7 +57,7 @@ export default function StaffOrderDetailPage() {
 
   useEffect(() => {
     if (prevStatusRef.current === 'Yêu cầu huỷ' && state.order?.TrangThai === 'Đã hoàn tiền') {
-      showToast('Tuyệt vời! Hệ thống đã tự động nhận diện giao dịch chuyển khoản và duyệt Hoàn Tiền thành công!')
+      showToast('Hệ thống đã nhận diện giao dịch chuyển khoản và duyệt Hoàn Tiền thành công!')
     }
     prevStatusRef.current = state.order?.TrangThai
   }, [state.order?.TrangThai])

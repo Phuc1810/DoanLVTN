@@ -64,8 +64,10 @@ export default function StaffTourDetailPage() {
                     <div className="fw-semibold d-flex align-items-center gap-2">
                       #{tour.MaTour} 
                       <span className="text-muted">•</span> 
+                      {tour.TinhChatTour === 'Định kỳ' && <span className="badge text-white" style={{ backgroundColor: '#9333ea' }}>Khuôn Định Kỳ</span>}
+                      {tour.IDTourGoc != null && <span className="badge bg-light text-dark border">Bản sao</span>}
                       <StaffStatusBadge status={tour.TrangThai} />
-                      {tour.TienDo && <StaffStatusBadge status={tour.TienDo} />}
+                      {tour.TienDo && tour.TinhChatTour !== 'Định kỳ' && <StaffStatusBadge status={tour.TienDo} />}
                     </div>
                   </div>
                 </div>
@@ -90,7 +92,21 @@ export default function StaffTourDetailPage() {
                   <div className="bg-light p-2 rounded me-3 text-primary"><Calendar size={20} /></div>
                   <div>
                     <div className="text-muted small">Khởi hành - Kết thúc</div>
-                    <div className="fw-semibold">{formatDate(tour.NgayKhoiHanh)} <span className="mx-2">→</span> {formatDate(tour.NgayKetThuc)}</div>
+                    <div className="fw-semibold">
+                      {tour.TinhChatTour === 'Định kỳ' ? (
+                        <div className="d-flex align-items-center text-primary">
+                          <i className="fa-solid fa-rotate me-2"></i>
+                          {(() => {
+                            if (!tour.LichTrinhTuan) return 'Chưa xếp lịch'
+                            const daysMap = { 0: 'Chủ nhật', 1: 'Thứ 2', 2: 'Thứ 3', 3: 'Thứ 4', 4: 'Thứ 5', 5: 'Thứ 6', 6: 'Thứ 7' }
+                            const days = tour.LichTrinhTuan.split(',').map(d => daysMap[d]).filter(Boolean).join(', ')
+                            return days ? `${days} hàng tuần` : 'Chưa xếp lịch'
+                          })()}
+                        </div>
+                      ) : (
+                        <>{formatDate(tour.NgayKhoiHanh)} <span className="mx-2">→</span> {formatDate(tour.NgayKetThuc)}</>
+                      )}
+                    </div>
                   </div>
                 </div>
 

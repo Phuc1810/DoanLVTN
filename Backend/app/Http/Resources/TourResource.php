@@ -54,6 +54,7 @@ class TourResource extends JsonResource
             'LoaiTour' => $this->LoaiTour,
             'TrangThai' => $trangThai,
             'TienDo' => $tienDo,
+            'TinhChatTour' => $this->TinhChatTour,
             'AnhChinh' => $duongDan,
             'image_url' => $this->imageUrl($duongDan),
             'discount_percent' => $this->discountPercent(),

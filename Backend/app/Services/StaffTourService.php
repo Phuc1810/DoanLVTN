@@ -158,7 +158,7 @@ class StaffTourService
     public function create(array $payload, UploadedFile $image): array
     {
         //DB transaction để đảm bảo tính toàn vẹn dữ liệu
-        return DB::transaction(function () use ($payload, $image) {
+        $result = DB::transaction(function () use ($payload, $image) {
             $tour = Tour::create([
                 'TenTour' => $payload['TenTour'],
                 'DiaDiem' => $payload['DiaDiem'],
@@ -190,6 +190,12 @@ class StaffTourService
 
             return $this->detail($tour->MaTour);
         });
+
+        if (($payload['TinhChatTour'] ?? 'Theo đợt') === 'Định kỳ') {
+            \Illuminate\Support\Facades\Artisan::call('tour:generate-clones');
+        }
+
+        return $result;
     }
 
     public function cloneTour(int $id, array $payload): array
@@ -246,7 +252,7 @@ class StaffTourService
 
     public function update(int $id, array $payload, ?UploadedFile $image = null): array
     {
-        return DB::transaction(function () use ($id, $payload, $image) {
+        $result = DB::transaction(function () use ($id, $payload, $image) {
             $tour = $this->findTour($id);
 
             if ((int) $payload['SoCho'] < (int) $tour->SoChoDaDat) {
@@ -300,6 +306,12 @@ class StaffTourService
 
             return $this->detail($tour->MaTour);
         });
+
+        if (($payload['TinhChatTour'] ?? 'Theo đợt') === 'Định kỳ') {
+            \Illuminate\Support\Facades\Artisan::call('tour:generate-clones');
+        }
+
+        return $result;
     }
 
     public function toggle(int $id): array

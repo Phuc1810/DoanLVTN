@@ -68,8 +68,17 @@ class StoreTourRequest extends FormRequest
             }
         }
         
-        if ($this->has('LichTrinhTuan') && is_array($this->input('LichTrinhTuan'))) {
-            $data['LichTrinhTuan'] = $this->input('LichTrinhTuan');
+        if ($this->has('LichTrinhTuan')) {
+            $ltt = $this->input('LichTrinhTuan');
+            if (is_string($ltt)) {
+                $decoded = json_decode($ltt, true);
+                if (is_array($decoded)) {
+                    $ltt = $decoded;
+                }
+            }
+            if (is_array($ltt)) {
+                $data['LichTrinhTuan'] = $ltt;
+            }
         }
 
         $data['lich_trinh'] = $this->normalizeSchedules();

@@ -31,6 +31,18 @@ class TourDetailResource extends TourResource
                 'total_reviews' => (int) ($this->danh_gias_count ?? 0),
             ],
             'khuyenMais' => $this->whenLoaded('khuyenMais'),
+            'available_dates' => $this->TinhChatTour === 'Định kỳ' ? \App\Models\Tour::where('IDTourGoc', $this->MaTour)
+                ->where('NgayKhoiHanh', '>=', \Carbon\Carbon::today()->format('Y-m-d'))
+                ->where('TrangThai', '!=', 'Ngừng hoạt động')
+                ->orderBy('NgayKhoiHanh')
+                ->get(['MaTour', 'NgayKhoiHanh', 'SoCho', 'SoChoDaDat'])
+                ->map(fn($clone) => [
+                    'MaTour' => $clone->MaTour,
+                    'NgayKhoiHanh' => $clone->NgayKhoiHanh,
+                    'SoCho' => $clone->SoCho,
+                    'SoChoDaDat' => $clone->SoChoDaDat,
+                    'SoChoConLai' => max(0, $clone->SoCho - $clone->SoChoDaDat),
+                ]) : [],
         ]);
     }
 }

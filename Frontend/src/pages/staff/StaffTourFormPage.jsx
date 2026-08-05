@@ -7,7 +7,7 @@ import { extractItem, imageSrc, makeMultipart, normalizeError, validateImage } f
 
 const EMPTY_TOUR = {
   TenTour: '', DiaDiem: '', GiaGoc: '', GiaGiam: '', ThoiLuong: '', NgayKhoiHanh: '', NgayKetThuc: '',
-  SoCho: '', Mien: 'Bắc', LoaiTour: 'Cá nhân', PhanTramGiam: '', TrangThai: 'Hoạt động', LoaiAnh: '',
+  SoCho: '', Mien: 'Bắc', LoaiTour: 'Cá nhân', PhanTramGiam: '', TrangThai: 'Hoạt động', LoaiAnh: '', TinhChatTour: 'Theo đợt', LichTrinhTuan: [],
 }
 
 function scheduleRowsFrom(tour) {
@@ -40,7 +40,9 @@ export default function StaffTourFormPage({ mode }) {
     staffTourApi.show(id)
       .then((payload) => {
         const tour = extractItem(payload)
-        setForm({ ...EMPTY_TOUR, ...tour })
+        const lichTrinhTuanStr = tour?.LichTrinhTuan || ''
+        const parsedLichTrinhTuan = lichTrinhTuanStr ? lichTrinhTuanStr.split(',').map(Number) : []
+        setForm({ ...EMPTY_TOUR, ...tour, TinhChatTour: tour?.TinhChatTour || 'Theo đợt', LichTrinhTuan: parsedLichTrinhTuan })
         setSchedules(scheduleRowsFrom(tour))
         setPreview(imageSrc(tour?.AnhChinh || tour?.DuongDan))
       })
@@ -59,6 +61,17 @@ export default function StaffTourFormPage({ mode }) {
   function updateField(event) {
     const { name, value } = event.target
     setForm((current) => ({ ...current, [name]: value }))
+  }
+
+  function handleDayToggle(day) {
+    setForm(prev => {
+      const current = prev.LichTrinhTuan || []
+      if (current.includes(day)) {
+        return { ...prev, LichTrinhTuan: current.filter(d => d !== day) }
+      } else {
+        return { ...prev, LichTrinhTuan: [...current, day] }
+      }
+    })
   }
 
   function updateSchedule(index, field, value) {
@@ -105,7 +118,13 @@ export default function StaffTourFormPage({ mode }) {
       delete dataToSend.AnhChinh // Backend handles via file upload
 
       const payload = makeMultipart(
-        { ...dataToSend, GiaGiam: computedPrice, lich_trinh: schedules, ...(isEdit ? { _method: 'PUT' } : {}) },
+        { 
+          ...dataToSend, 
+          GiaGiam: computedPrice, 
+          lich_trinh: schedules, 
+          ...(form.TinhChatTour === 'Định kỳ' ? { LichTrinhTuan: form.LichTrinhTuan } : {}),
+          ...(isEdit ? { _method: 'PUT' } : {}) 
+        },
         [['AnhChinh', file]]
       )
       
@@ -117,7 +136,9 @@ export default function StaffTourFormPage({ mode }) {
         // Refetch fresh data
         const res = await staffTourApi.show(id)
         const tour = extractItem(res)
-        setForm({ ...EMPTY_TOUR, ...tour })
+        const lichTrinhTuanStr = tour?.LichTrinhTuan || ''
+        const parsedLichTrinhTuan = lichTrinhTuanStr ? lichTrinhTuanStr.split(',').map(Number) : []
+        setForm({ ...EMPTY_TOUR, ...tour, TinhChatTour: tour?.TinhChatTour || 'Theo đợt', LichTrinhTuan: parsedLichTrinhTuan })
         setSchedules(scheduleRowsFrom(tour))
         setPreview(imageSrc(tour?.AnhChinh || tour?.DuongDan))
         setFile(null)
@@ -268,21 +289,53 @@ export default function StaffTourFormPage({ mode }) {
             <div className="form-text text-primary small">Tự động tính khi nhập Giá gốc và %</div>
           </div>
 
-          <div className="col-md-6">
-            <label className="form-label fw-semibold">Ngày khởi hành <span className="text-danger">*</span></label>
-            <input type="date" className={`form-control ${error?.errors?.NgayKhoiHanh ? 'is-invalid' : ''}`} name="NgayKhoiHanh" value={form.NgayKhoiHanh} onChange={updateField} min={isEdit ? undefined : minDate} required />
-            {error?.errors?.NgayKhoiHanh ? (
-              <div className="invalid-feedback d-block">{error.errors.NgayKhoiHanh[0]}</div>
-            ) : (
-              <div className="form-text">Không được chọn ngày ≤ hôm nay</div>
-            )}
+          <div className="col-12 mt-3">
+            <label className="form-label fw-semibold">Tính chất Tour <span className="text-danger">*</span></label>
+            <div className="d-flex gap-4">
+              <div className="form-check">
+                <input className="form-check-input" type="radio" name="TinhChatTour" id="tcTheoDot" value="Theo đợt" checked={form.TinhChatTour === 'Theo đợt'} onChange={updateField} disabled={isEdit} />
+                <label className="form-check-label" htmlFor="tcTheoDot">Theo đợt (Khởi hành cụ thể)</label>
+              </div>
+              <div className="form-check">
+                <input className="form-check-input" type="radio" name="TinhChatTour" id="tcDinhKy" value="Định kỳ" checked={form.TinhChatTour === 'Định kỳ'} onChange={updateField} disabled={isEdit} />
+                <label className="form-check-label text-primary fw-bold" htmlFor="tcDinhKy">Định kỳ (Khuôn đúc tự động)</label>
+              </div>
+            </div>
+            {isEdit && <div className="form-text text-warning">Không thể đổi tính chất tour sau khi đã tạo.</div>}
           </div>
 
-          <div className="col-md-6">
-            <label className="form-label fw-semibold">Ngày kết thúc <span className="text-danger">*</span></label>
-            <input type="date" className="form-control" name="NgayKetThuc" value={form.NgayKetThuc} onChange={updateField} min={form.NgayKhoiHanh || (isEdit ? undefined : minDate)} required />
-            <div className="form-text">Không được chọn ngày ≤ hôm nay, và phải ≥ ngày khởi hành</div>
-          </div>
+          {form.TinhChatTour === 'Định kỳ' ? (
+            <div className="col-12 mt-3 bg-light p-3 rounded border">
+              <label className="form-label fw-semibold text-primary">Lịch trình tuần (Chọn ngày khởi hành lặp lại) <span className="text-danger">*</span></label>
+              <div className="d-flex flex-wrap gap-3 mt-2">
+                {[{ v: 1, l: 'Thứ 2' }, { v: 2, l: 'Thứ 3' }, { v: 3, l: 'Thứ 4' }, { v: 4, l: 'Thứ 5' }, { v: 5, l: 'Thứ 6' }, { v: 6, l: 'Thứ 7' }, { v: 0, l: 'Chủ nhật' }].map(d => (
+                  <div className="form-check" key={d.v}>
+                    <input className="form-check-input" type="checkbox" id={`day-${d.v}`} checked={(form.LichTrinhTuan || []).includes(d.v)} onChange={() => handleDayToggle(d.v)} />
+                    <label className="form-check-label" htmlFor={`day-${d.v}`}>{d.l}</label>
+                  </div>
+                ))}
+              </div>
+              <div className="form-text mt-2">Hệ thống sẽ tự động quét và đúc bản sao cho các ngày được chọn.</div>
+            </div>
+          ) : (
+            <>
+              <div className="col-md-6 mt-3">
+                <label className="form-label fw-semibold">Ngày khởi hành <span className="text-danger">*</span></label>
+                <input type="date" className={`form-control ${error?.errors?.NgayKhoiHanh ? 'is-invalid' : ''}`} name="NgayKhoiHanh" value={form.NgayKhoiHanh} onChange={updateField} min={isEdit ? undefined : minDate} required={form.TinhChatTour === 'Theo đợt'} />
+                {error?.errors?.NgayKhoiHanh ? (
+                  <div className="invalid-feedback d-block">{error.errors.NgayKhoiHanh[0]}</div>
+                ) : (
+                  <div className="form-text">Không được chọn ngày ≤ hôm nay</div>
+                )}
+              </div>
+
+              <div className="col-md-6 mt-3">
+                <label className="form-label fw-semibold">Ngày kết thúc <span className="text-danger">*</span></label>
+                <input type="date" className="form-control" name="NgayKetThuc" value={form.NgayKetThuc} onChange={updateField} min={form.NgayKhoiHanh || (isEdit ? undefined : minDate)} required={form.TinhChatTour === 'Theo đợt'} />
+                <div className="form-text">Không được chọn ngày ≤ hôm nay, và phải ≥ ngày khởi hành</div>
+              </div>
+            </>
+          )}
 
           {/* ===== Section 3: Lịch trình tour ===== */}
           <div className="col-12">

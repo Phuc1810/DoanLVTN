@@ -31,9 +31,14 @@ export default function TourCard({ tour }) {
 
       <div className="tour-body p-3">
         <h5 className="fw-bold mb-1">{tour.TenTour}</h5>
-        <p className="text-muted mb-2">
-          <i className="fa-solid fa-location-dot text-danger"></i> {tour.DiaDiem}
-        </p>
+        <div className="d-flex justify-content-between align-items-center mb-2">
+          <p className="text-muted mb-0">
+            <i className="fa-solid fa-location-dot text-danger"></i> {tour.DiaDiem}
+          </p>
+          {tour.TinhChatTour === 'Định kỳ' && (
+            <span className="badge" style={{ backgroundColor: '#9333ea', fontSize: '0.65rem' }}>Nhiều ngày khởi hành</span>
+          )}
+        </div>
         <hr className="my-2" style={{ opacity: 0.15 }} />
         <div className="d-flex justify-content-between align-items-end pt-1">
           <div className="d-flex flex-column">

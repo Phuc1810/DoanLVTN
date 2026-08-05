@@ -12,6 +12,7 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
   const { id } = useParams()
   const { user } = useAuth()
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [selectedCloneId, setSelectedCloneId] = useState('')
   const [state, setState] = useState({ loading: true, error: '', tour: null, schedules: [], reviews: [], reviewSummary: null })
 
   useEffect(() => {
@@ -44,14 +45,18 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
   const discount = Number(tour.discount_percent || tour.PhanTramGiam || 0)
   const stats = tour.review_stats || {}
   const isBusinessMode = bookingMode === 'business' || tour.LoaiTour === 'Doanh nghiệp'
+  const isPeriodic = tour.TinhChatTour === 'Định kỳ'
   const bookingPath = isBusinessMode
-    ? `/business-requests/create?tour=${tour.MaTour}`
-    : `/bookings/create/${tour.MaTour}`
+    ? `/business-requests/create?tour=${isPeriodic ? selectedCloneId : tour.MaTour}`
+    : `/bookings/create/${isPeriodic ? selectedCloneId : tour.MaTour}`
 
   let bookingLabel = ''
   let isBookingDisabled = false
 
-  if (isBusinessMode) {
+  if (isPeriodic && !selectedCloneId) {
+    bookingLabel = 'CHỌN NGÀY KHỞI HÀNH'
+    isBookingDisabled = true
+  } else if (isBusinessMode) {
     if (tour.TrangThai === 'Ngừng hoạt động') {
       bookingLabel = 'TOUR ĐÃ NGỪNG KHAI THÁC'
       isBookingDisabled = true
@@ -59,16 +64,28 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
       bookingLabel = 'GỬI YÊU CẦU DOANH NGHIỆP'
     }
   } else {
-    if (tour.TrangThai === 'Ngừng hoạt động') {
+    // If periodic, check the selected clone's status/progress
+    let checkTienDo = tour.TienDo
+    let checkTrangThai = tour.TrangThai
+    
+    if (isPeriodic && selectedCloneId) {
+      // Find the clone date to check if it's full (or handled by availableSeats)
+      const clone = tour.available_dates?.find(d => String(d.MaTour) === String(selectedCloneId))
+      if (clone && clone.SoChoConLai <= 0) {
+        checkTrangThai = 'Hết chỗ'
+      }
+    }
+
+    if (checkTrangThai === 'Ngừng hoạt động') {
       bookingLabel = 'TOUR ĐÃ NGỪNG KHAI THÁC'
       isBookingDisabled = true
-    } else if (tour.TrangThai === 'Hết chỗ') {
+    } else if (checkTrangThai === 'Hết chỗ') {
       bookingLabel = 'TOUR ĐÃ HẾT CHỖ'
       isBookingDisabled = true
-    } else if (tour.TienDo === 'Đang diễn ra') {
+    } else if (checkTienDo === 'Đang diễn ra') {
       bookingLabel = 'TOUR ĐÃ KHỞI HÀNH'
       isBookingDisabled = true
-    } else if (tour.TienDo === 'Đã hoàn tất') {
+    } else if (checkTienDo === 'Đã hoàn tất') {
       bookingLabel = 'TOUR ĐÃ KẾT THÚC'
       isBookingDisabled = true
     } else {
@@ -79,8 +96,16 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
     ? 'Bạn cần đăng nhập hoặc đăng ký để gửi yêu cầu tour doanh nghiệp.'
     : 'Bạn cần đăng nhập hoặc đăng ký để tiến hành đặt tour.'
 
-  const totalSeats = Number(tour.SoCho) || 0
-  const bookedSeats = Number(tour.SoChoDaDat) || 0
+  let currentSeatsData = tour
+  if (isPeriodic && selectedCloneId) {
+    const selectedClone = tour.available_dates?.find(d => String(d.MaTour) === String(selectedCloneId))
+    if (selectedClone) {
+       currentSeatsData = selectedClone
+    }
+  }
+
+  const totalSeats = Number(currentSeatsData.SoCho) || 0
+  const bookedSeats = Number(currentSeatsData.SoChoDaDat) || 0
   const availableSeats = Math.max(0, totalSeats - bookedSeats)
   const bookedPercent = totalSeats > 0 ? Math.min(100, (bookedSeats / totalSeats) * 100) : 0
   
@@ -131,10 +156,34 @@ export default function TourDetailPage({ bookingMode = 'personal' }) {
             <p className="mb-2"><i className="fa-solid fa-location-dot text-danger me-2"></i><strong>Địa điểm:</strong> {tour.DiaDiem}</p>
             <p className="mb-2"><i className="fa-regular fa-clock text-primary me-2"></i><strong>Thời lượng:</strong> {tour.ThoiLuong}</p>
             {!isBusinessMode && (
-              <p className="mb-3"><i className="fa-regular fa-calendar-days text-primary me-2"></i><strong>Khởi hành:</strong> {formatDate(tour.NgayKhoiHanh)}</p>
+              <div className="mb-3">
+                <i className="fa-regular fa-calendar-days text-primary me-2"></i><strong>Khởi hành:</strong>{' '}
+                {isPeriodic ? (
+                  <div className="mt-2">
+                    {tour.available_dates && tour.available_dates.length > 0 ? (
+                      <select 
+                        className="form-select form-select-sm border-primary" 
+                        value={selectedCloneId}
+                        onChange={(e) => setSelectedCloneId(e.target.value)}
+                      >
+                        <option value="">-- Chọn ngày khởi hành --</option>
+                        {tour.available_dates.map(date => (
+                          <option key={date.MaTour} value={date.MaTour}>
+                            {formatDate(date.NgayKhoiHanh)} {date.SoChoConLai <= 0 ? '(Hết chỗ)' : `(Còn ${date.SoChoConLai} chỗ)`}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="text-muted fst-italic">Đang cập nhật lịch mới</span>
+                    )}
+                  </div>
+                ) : (
+                  <span>{formatDate(tour.NgayKhoiHanh)}</span>
+                )}
+              </div>
             )}
             
-            {!isBusinessMode && (
+            {!isBusinessMode && (!isPeriodic || selectedCloneId) && (
               <div className="mb-3 p-3 bg-light rounded-3 border">
                 <div className="d-flex justify-content-between align-items-end mb-2">
                   <span className="fw-bold text-dark"><i className="fa-solid fa-users me-2 text-secondary"></i>Tình trạng chỗ</span>

@@ -283,8 +283,10 @@ export default function StaffToursPage() {
                         <img src={imageSrc(firstImageOfTour(tour))} alt={tour.TenTour} style={{ width: '80px', height: '55px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #eee' }} />
                       </td>
                       <td style={{ padding: '16px 20px' }}>
-                        <div className="fw-bold text-dark" style={{ maxWidth: '280px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '15px' }} title={tour.TenTour}>
-                          {tour.TenTour}
+                        <div className="fw-bold text-dark d-flex align-items-center gap-2" style={{ maxWidth: '280px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '15px' }} title={tour.TenTour}>
+                          {tour.TinhChatTour === 'Định kỳ' && <span className="badge bg-purple text-white" style={{ backgroundColor: '#9333ea', fontSize: '10px' }}>Khuôn</span>}
+                          {tour.IDTourGoc != null && <span className="badge bg-light text-dark border" style={{ fontSize: '10px' }}>Bản sao</span>}
+                          <span className="text-truncate">{tour.TenTour}</span>
                         </div>
                         <div className="small text-muted mt-1">
                           <i className="fa-solid fa-location-dot me-1 text-danger"></i>{tour.DiaDiem || '-'}
@@ -304,11 +306,23 @@ export default function StaffToursPage() {
                                 {tour.TienDo}
                               </span>
                             )}
-                            {tour.NgayKhoiHanh && (
+                            {tour.TinhChatTour === 'Định kỳ' ? (
                               <span className="small text-muted fw-medium" style={{ fontSize: '0.8rem' }}>
-                                <i className="fa-regular fa-calendar me-1"></i>
-                                {new Date(tour.NgayKhoiHanh).toLocaleDateString('vi-VN')}
+                                <i className="fa-solid fa-rotate me-1 text-primary"></i>
+                                {(() => {
+                                  if (!tour.LichTrinhTuan) return 'Chưa xếp lịch'
+                                  const daysMap = { 0: 'CN', 1: 'T2', 2: 'T3', 3: 'T4', 4: 'T5', 5: 'T6', 6: 'T7' }
+                                  const days = tour.LichTrinhTuan.split(',').map(d => daysMap[d]).filter(Boolean).join(', ')
+                                  return days ? `${days} hàng tuần` : 'Chưa xếp lịch'
+                                })()}
                               </span>
+                            ) : (
+                              tour.NgayKhoiHanh && (
+                                <span className="small text-muted fw-medium" style={{ fontSize: '0.8rem' }}>
+                                  <i className="fa-regular fa-calendar me-1"></i>
+                                  {new Date(tour.NgayKhoiHanh).toLocaleDateString('vi-VN')}
+                                </span>
+                              )
                             )}
                           </div>
                         )}

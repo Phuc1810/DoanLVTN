@@ -22,7 +22,7 @@ class TourService
 
     public function listActive(array $filters): array
     {
-        $query = $this->baseActiveQuery();
+        $query = $this->baseListQuery();
         $this->applyCommonFilters($query, $filters);
 
         return $this->paginatedResponse(
@@ -56,10 +56,11 @@ class TourService
             ->join('hinhanhtour as h', 't.MaTour', '=', 'h.MaTour')
             ->where('h.LoaiAnh', 'noibat')
             ->whereIn('t.TrangThai', [self::ACTIVE_STATUS, 'Hết chỗ'])
-            ->where('t.TinhChatTour', '!=', 'Định kỳ')
+            ->whereNull('t.IDTourGoc')
             ->where(function ($q) {
                 $q->where('t.LoaiTour', 'Doanh nghiệp')
-                  ->orWhere('t.NgayKhoiHanh', '>', \Carbon\Carbon::today()->format('Y-m-d'));
+                  ->orWhere('t.NgayKhoiHanh', '>', \Carbon\Carbon::today()->format('Y-m-d'))
+                  ->orWhere('t.TinhChatTour', 'Định kỳ');
             })
             ->orderByDesc('t.MaTour')
             ->limit($limit)
@@ -67,6 +68,7 @@ class TourService
                 't.MaTour',
                 't.TenTour',
                 't.GiaGiam',
+                't.TinhChatTour',
                 'h.DuongDan as AnhChinh',
             ])
             ->map(function ($item) {
@@ -77,6 +79,7 @@ class TourService
                     'TenTour' => $item->TenTour,
                     'GiaGiam' => $item->GiaGiam,
                     'AnhChinh' => $path,
+                    'TinhChatTour' => $item->TinhChatTour,
                     'image_url' => app(\App\Services\UploadService::class)->publicUrl($path),
                 ];
             })
@@ -165,7 +168,7 @@ class TourService
 
     public function search(array $filters): array
     {
-        $query = $this->baseActiveQuery();
+        $query = $this->baseListQuery();
         $this->applyCommonFilters($query, $filters);
 
         return $this->paginatedResponse(
@@ -177,7 +180,7 @@ class TourService
     public function byRegion(string $region, array $filters): array
     {
         $mien = $this->normalizeRegion($region);
-        $query = $this->baseActiveQuery()->where('Mien', $mien);
+        $query = $this->baseListQuery()->where('Mien', $mien);
 
         return $this->paginatedResponse(
             $query->orderBy('NgayKhoiHanh')->orderBy('GiaGiam'),
@@ -295,13 +298,19 @@ class TourService
     {
         return Tour::query()
             ->with(['anhChinh', 'danhGias'])
-            ->where('TinhChatTour', '!=', 'Định kỳ')
             ->whereIn('TrangThai', [self::ACTIVE_STATUS, 'Hết chỗ'])
             ->where(function ($q) {
                 $q->where('LoaiTour', 'Doanh nghiệp')
-                  ->orWhere('NgayKhoiHanh', '>', \Carbon\Carbon::today()->format('Y-m-d'));
+                  ->orWhere('NgayKhoiHanh', '>', \Carbon\Carbon::today()->format('Y-m-d'))
+                  ->orWhere('TinhChatTour', 'Định kỳ');
             });
     }
+
+    private function baseListQuery(): Builder
+    {
+        return $this->baseActiveQuery()->whereNull('IDTourGoc');
+    }
+
 
     private function applyCommonFilters(Builder $query, array $filters): void
     {

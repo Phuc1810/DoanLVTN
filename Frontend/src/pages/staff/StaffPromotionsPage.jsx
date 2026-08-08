@@ -8,14 +8,17 @@ import Loading from '../../components/common/Loading'
 import Pagination from '../../components/common/Pagination'
 import { formatDate } from '../../utils/formatDate'
 import { extractList, extractPagination, imageSrc, normalizeError } from './staffPageUtils'
+import { useAuth } from '../../auth/useAuth'
 
 export default function StaffPromotionsPage() {
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [filters, setFilters] = useState({ q: '', tt: '', page: 1, per_page: 5 })
   const [state, setState] = useState({ loading: true, error: '', rows: [], pagination: null })
-  const [stats, setStats] = useState({ total: 0, active: 0, upcoming: 0, ending_soon: 0 })
+  const [stats, setStats] = useState({ total: 0, active: 0, upcoming: 0, ending_soon: 0, pending: 0 })
   const [chartData, setChartData] = useState([])
   const [toggleModal, setToggleModal] = useState({ isOpen: false, id: null, isActive: false })
+  const [approveModal, setApproveModal] = useState({ isOpen: false, id: null })
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
 
   const fetchPromotions = () => {
@@ -54,6 +57,18 @@ export default function StaffPromotionsPage() {
     }
   }
 
+  const handleApprove = async () => {
+    try {
+      await staffPromotionApi.approve(approveModal.id)
+      showToast('Phê duyệt khuyến mãi thành công')
+      fetchPromotions()
+    } catch (err) {
+      showToast('Có lỗi xảy ra: ' + normalizeError(err).message, 'danger')
+    } finally {
+      setApproveModal({ isOpen: false, id: null })
+    }
+  }
+
   function getProgress(start, end) {
     const now = new Date().getTime()
     const s = new Date(start).getTime()
@@ -78,10 +93,13 @@ export default function StaffPromotionsPage() {
           .pill-badge.upcoming { background-color: #ffedd5; color: #ea580c; }
           .pill-badge.expired { background-color: #f3f4f6; color: #6b7280; }
           .pill-badge.disabled { background-color: #fee2e2; color: #dc2626; }
+          .pill-badge.pending { background-color: #fef08a; color: #854d0e; }
           .action-btn-pill {
             width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
             border: 1px solid transparent; background: transparent; transition: all 0.2s;
           }
+          .action-btn-pill.approve { border-color: #10b981; color: #10b981; }
+          .action-btn-pill.approve:hover { background-color: #10b981; color: white; }
           .action-btn-pill.edit { border-color: #0d6efd; color: #0d6efd; }
           .action-btn-pill.edit:hover { background-color: #0d6efd; color: white; }
           .action-btn-pill.toggle-active { border-color: #6c757d; color: #6c757d; }
@@ -112,6 +130,16 @@ export default function StaffPromotionsPage() {
               {toast.message}
             </div>
             <button type="button" className="btn-close btn-close-white me-2 m-auto" onClick={() => setToast({ ...toast, show: false })}></button>
+          </div>
+        </div>
+      )}
+
+      {user?.VaiTro === 'AD' && stats.pending > 0 && (
+        <div className="alert mb-4 d-flex align-items-center" style={{ backgroundColor: '#fef9c3', color: '#854d0e', border: '1px solid #fef08a', borderRadius: '12px' }}>
+          <i className="fa-solid fa-triangle-exclamation fs-4 me-3"></i>
+          <div>
+            <div className="fw-bold fs-6">Bạn có {stats.pending} khuyến mãi chờ duyệt!</div>
+            <div>Hệ thống phát hiện có chương trình khuyến mãi vượt hạn mức do nhân viên tạo đang chờ bạn phê duyệt.</div>
           </div>
         </div>
       )}
@@ -231,6 +259,7 @@ export default function StaffPromotionsPage() {
                   <option value="Sắp diễn ra">Sắp diễn ra</option>
                   <option value="Hết hạn">Hết hạn</option>
                   <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+                  <option value="Chờ duyệt">Chờ duyệt</option>
                 </select>
               </div>
             </form>
@@ -261,6 +290,7 @@ export default function StaffPromotionsPage() {
                         if (item.TrangThai === 'Hoạt động') badgeClass = 'active'
                         else if (item.TrangThai === 'Sắp diễn ra') badgeClass = 'upcoming'
                         else if (item.TrangThai === 'Ngừng hoạt động') badgeClass = 'disabled'
+                        else if (item.TrangThai === 'Chờ duyệt') badgeClass = 'pending'
 
                         const progress = getProgress(item.NgayBatDau, item.NgayKetThuc)
                         let progressColor = '#16a34a' // Green progress bar for old design
@@ -298,11 +328,16 @@ export default function StaffPromotionsPage() {
                               <span className={"pill-badge " + badgeClass}>{item.TrangThai}</span>
                             </td>
                             <td className="table-row-cell text-end">
-                              <div className="d-flex gap-2 justify-content-end">
+                              <div className="d-flex gap-2 justify-content-end align-items-center">
+                                {item.TrangThai === 'Chờ duyệt' && user?.VaiTro === 'AD' && (
+                                  <button type="button" className="action-btn-pill approve" onClick={(e) => { e.stopPropagation(); setApproveModal({ isOpen: true, id: item.MaCTKM }); }} title="Phê duyệt">
+                                    <i className="fa-solid fa-check"></i>
+                                  </button>
+                                )}
                                 <Link to={'/staff/promotions/' + item.MaCTKM + '/edit'} className="action-btn-pill edit" title="Sửa" onClick={(e) => e.stopPropagation()}>
                                   <i className="fa-solid fa-pen"></i>
                                 </Link>
-                                <button type="button" className={"action-btn-pill " + (isActive ? 'toggle-active' : 'toggle-inactive')} onClick={(e) => { e.stopPropagation(); setToggleModal({ isOpen: true, id: item.MaCTKM, isActive }); }} title={isActive ? 'Ngừng hoạt động' : 'Kích hoạt'}>
+                                <button type="button" className={"action-btn-pill " + (isActive ? 'toggle-active' : 'toggle-inactive')} onClick={(e) => { e.stopPropagation(); setToggleModal({ isOpen: true, id: item.MaCTKM, isActive }); }} title={isActive ? 'Ngừng hoạt động' : 'Kích hoạt'} disabled={item.TrangThai === 'Chờ duyệt' && user?.VaiTro !== 'AD'}>
                                   <i className={"fa-regular " + (isActive ? 'fa-eye-slash' : 'fa-eye')}></i>
                                 </button>
                               </div>
@@ -343,6 +378,30 @@ export default function StaffPromotionsPage() {
                 <div className="d-flex justify-content-center gap-3 mt-2">
                   <button type="button" className="btn bg-white border" style={{ borderRadius: '24px', padding: '8px 32px', color: '#6b7280', fontSize: '16px', fontWeight: 500 }} onClick={() => setToggleModal({ isOpen: false, id: null, isActive: false })}>Hủy</button>
                   <button type="button" className="btn text-white" style={{ borderRadius: '24px', padding: '8px 32px', backgroundColor: '#0265d2', fontSize: '16px', fontWeight: 500 }} onClick={confirmToggle}>Đồng ý</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Approve Confirmation Modal */}
+      {approveModal.isOpen && (
+        <div className="modal fade show d-block" tabIndex="-1" style={{ zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content" style={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+              <div className="modal-body text-center p-4">
+                <div className="mb-4 d-flex justify-content-center">
+                  <div style={{ width: '64px', height: '64px', backgroundColor: '#10b981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '32px' }}>
+                    <i className="fa-solid fa-check-to-slot"></i>
+                  </div>
+                </div>
+                <h5 className="mb-4 fw-bold" style={{ color: '#1f2937', fontSize: '20px', lineHeight: '1.5' }}>
+                  Bạn có chắc chắn muốn phê duyệt khuyến mãi này không?
+                </h5>
+                <div className="d-flex justify-content-center gap-3 mt-2">
+                  <button type="button" className="btn bg-white border" style={{ borderRadius: '24px', padding: '8px 32px', color: '#6b7280', fontSize: '16px', fontWeight: 500 }} onClick={() => setApproveModal({ isOpen: false, id: null })}>Hủy</button>
+                  <button type="button" className="btn text-white" style={{ borderRadius: '24px', padding: '8px 32px', backgroundColor: '#10b981', fontSize: '16px', fontWeight: 500 }} onClick={handleApprove}>Phê duyệt</button>
                 </div>
               </div>
             </div>

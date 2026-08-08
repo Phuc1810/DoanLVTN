@@ -181,3 +181,16 @@ body {
 .timeline-item:last-child::before {
   display: none;
 }
+
+/* Fix for rich text content overflow */
+.news-content-wrapper {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+.news-content-wrapper img {
+  max-width: 100% !important;
+  height: auto !important;
+  object-fit: contain;
+  border-radius: 8px;
+}

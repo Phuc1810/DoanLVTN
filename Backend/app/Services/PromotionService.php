@@ -13,14 +13,17 @@ class PromotionService
         $today = now()->toDateString();
 
         ChuongTrinhKhuyenMai::whereDate('NgayKetThuc', '<', $today)
+            ->whereNotIn('TrangThai', ['Ngừng hoạt động', 'Chờ duyệt'])
             ->update(['TrangThai' => 'Hết hạn']);
 
         ChuongTrinhKhuyenMai::whereDate('NgayBatDau', '>', $today)
             ->whereDate('NgayKetThuc', '>=', $today)
+            ->whereNotIn('TrangThai', ['Ngừng hoạt động', 'Chờ duyệt'])
             ->update(['TrangThai' => 'Sắp diễn ra']);
 
         ChuongTrinhKhuyenMai::whereDate('NgayBatDau', '<=', $today)
             ->whereDate('NgayKetThuc', '>=', $today)
+            ->whereNotIn('TrangThai', ['Ngừng hoạt động', 'Chờ duyệt'])
             ->update(['TrangThai' => 'Hoạt động']);
     }
 

@@ -125,6 +125,8 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'role:AD'])->group(function 
     Route::patch('/accounts/{id}/status', [AccountController::class, 'toggleStatus'])->whereNumber('id');
     Route::patch('/accounts/{id}/reset-password', [AccountController::class, 'resetPassword'])->whereNumber('id');
     
+    Route::get('/staff/eligible', [AccountController::class, 'getEligibleStaff']);
+    Route::post('/accounts/{id}/reassign-and-lock', [AccountController::class, 'reassignAndLock'])->whereNumber('id');
     Route::get('/reviews', [\App\Http\Controllers\Api\Admin\ReviewController::class, 'index']);
     Route::patch('/reviews/{id}/toggle-status', [\App\Http\Controllers\Api\Admin\ReviewController::class, 'toggleStatus'])->whereNumber('id');
     Route::post('/reviews/{id}/reply', [\App\Http\Controllers\Api\Admin\ReviewController::class, 'reply'])->whereNumber('id');
@@ -170,6 +172,7 @@ Route::prefix('staff')->middleware(['auth:sanctum', 'role:NV,AD'])->group(functi
     Route::get('/promotions/chart-data', [PromotionManagementController::class, 'chartData']);
     Route::post('/promotions', [PromotionManagementController::class, 'store']);
     Route::patch('/promotions/{id}/toggle', [PromotionManagementController::class, 'toggle'])->whereNumber('id');
+    Route::put('/promotions/{id}/approve', [PromotionManagementController::class, 'approve'])->whereNumber('id');
     Route::post('/promotions/{id}/tours', [PromotionManagementController::class, 'attachTours'])->whereNumber('id');
     Route::delete('/promotions/{id}/tours/{tourId}', [PromotionManagementController::class, 'detachTour'])
         ->whereNumber('id')

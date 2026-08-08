@@ -65,12 +65,15 @@ class StaffPromotionService
         $ending_soon = ChuongTrinhKhuyenMai::where('TrangThai', 'Hoạt động')
             ->whereBetween('NgayKetThuc', [$today, $nextWeek])
             ->count();
+            
+        $pending = ChuongTrinhKhuyenMai::where('TrangThai', 'Chờ duyệt')->count();
 
         return [
             'total' => $total,
             'active' => $active,
             'upcoming' => $upcoming,
             'ending_soon' => $ending_soon,
+            'pending' => $pending,
         ];
     }
 
@@ -119,6 +122,11 @@ class StaffPromotionService
                 'TrangThai' => $this->promotionService->statusForDates($payload['NgayBatDau'], $payload['NgayKetThuc']),
             ]);
 
+            // If Staff and discount > 20%, force Pending status
+            if (auth()->check() && auth()->user()->VaiTro === 'NV' && (float)$payload['PhanTramGiam'] > 20) {
+                $promotion->update(['TrangThai' => 'Chờ duyệt']);
+            }
+
             if ($image) {
                 $promotion->update([
                     'AnhDaiDien' => $this->uploadService->storePromotionImage($image, $promotion->MaCTKM),
@@ -148,6 +156,11 @@ class StaffPromotionService
                 $updates['AnhDaiDien'] = $this->uploadService->storePromotionImage($image, $promotion->MaCTKM);
             }
 
+            // If Staff and discount > 20%, force Pending status
+            if (auth()->check() && auth()->user()->VaiTro === 'NV' && (float)$payload['PhanTramGiam'] > 20) {
+                $updates['TrangThai'] = 'Chờ duyệt';
+            }
+
             $promotion->update($updates);
             $this->replaceTours($promotion->MaCTKM, $payload['tours'] ?? [], (float) $payload['PhanTramGiam']);
 
@@ -167,6 +180,27 @@ class StaffPromotionService
             $newStatus = $this->promotionService->statusForDates($promotion->NgayBatDau, $promotion->NgayKetThuc);
         }
 
+        $promotion->update(['TrangThai' => $newStatus]);
+
+        return [
+            'MaCTKM' => $promotion->MaCTKM,
+            'TrangThai' => $newStatus,
+        ];
+    }
+
+    public function approve(int $id): array
+    {
+        if (!auth()->check() || auth()->user()->VaiTro !== 'AD') {
+            throw new HttpResponseException(response()->json(['message' => 'Bạn không có quyền duyệt khuyến mãi.'], 403));
+        }
+
+        $promotion = $this->findPromotion($id);
+
+        if ($promotion->TrangThai !== 'Chờ duyệt') {
+            $this->throwValidation('TrangThai', 'Khuyến mãi không ở trạng thái chờ duyệt.');
+        }
+
+        $newStatus = $this->promotionService->statusForDates($promotion->NgayBatDau, $promotion->NgayKetThuc);
         $promotion->update(['TrangThai' => $newStatus]);
 
         return [

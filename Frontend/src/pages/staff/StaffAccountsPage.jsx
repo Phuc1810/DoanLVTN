@@ -13,6 +13,7 @@ import Pagination from '../../components/common/Pagination'
 import StaffCreateAccountModal from '../../components/staff/StaffCreateAccountModal'
 import StaffResetPasswordModal from '../../components/staff/StaffResetPasswordModal'
 import StaffAccountStats from '../../components/staff/StaffAccountStats'
+import ReassignModal from '../../components/admin/ReassignModal'
 import { extractList, extractPagination, normalizeError, profileText } from './staffPageUtils'
 
 const SolidKey = ({ size = 18 }) => (
@@ -42,6 +43,7 @@ export default function StaffAccountsPage() {
   const [success, setSuccess] = useState('')
   const [resetAccount, setResetAccount] = useState(null)
   const [resetSubmitting, setResetSubmitting] = useState(false)
+  const [reassignData, setReassignData] = useState(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [stats, setStats] = useState({ data: null, loading: true })
   const [roleConfirm, setRoleConfirm] = useState({ isOpen: false, account: null, targetRole: '' })
@@ -109,7 +111,15 @@ export default function StaffAccountsPage() {
       setTimeout(() => setToast({ show: false, message: '' }), 5000)
       await Promise.all([loadAccounts(), loadStats()])
     } catch (error) {
-      setActionError(normalizeError(error))
+      const err = normalizeError(error)
+      if (err.errors?.pending_requests) {
+        setReassignData({
+          account,
+          requests: err.errors.pending_requests,
+        })
+      } else {
+        setActionError(err)
+      }
     }
   }
 
@@ -225,6 +235,21 @@ export default function StaffAccountsPage() {
       )}
       <Pagination pagination={state.pagination} onPageChange={(page) => setFilters((current) => ({ ...current, page }))} />
       <StaffResetPasswordModal account={resetAccount} error={actionError} submitting={resetSubmitting} onClose={() => setResetAccount(null)} onSubmit={resetPassword} />
+      
+      {reassignData && (
+        <ReassignModal 
+          data={reassignData} 
+          onClose={() => setReassignData(null)} 
+          onSuccess={(msg) => {
+            setReassignData(null)
+            setToast({ show: true, message: msg })
+            setTimeout(() => setToast({ show: false, message: '' }), 5000)
+            loadAccounts()
+            loadStats()
+          }}
+        />
+      )}
+
       {showCreateModal && (
         <StaffCreateAccountModal 
           onClose={() => setShowCreateModal(false)} 

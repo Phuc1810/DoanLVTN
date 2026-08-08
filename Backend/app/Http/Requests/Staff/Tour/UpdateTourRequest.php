@@ -22,9 +22,9 @@ class UpdateTourRequest extends StoreTourRequest
             'TinhChatTour' => ['nullable', Rule::in(['Theo đợt', 'Định kỳ'])],
             'LichTrinhTuan' => ['nullable', 'array'],
             'LichTrinhTuan.*' => ['integer', 'between:0,6'],
-            'NgayKhoiHanh' => ['nullable', 'required_if:TinhChatTour,Theo đợt', 'date', 'after_or_equal:today'],
+            'NgayKhoiHanh' => ['nullable', 'required_if:TinhChatTour,Theo đợt', 'date'],
             'NgayKetThuc' => ['nullable', 'date', 'after_or_equal:NgayKhoiHanh'],
-            'LoaiAnh' => ['nullable', Rule::in(['', 'banner', 'noibat'])],
+            'LoaiAnh' => ['nullable', Rule::in(['banner', 'noibat', 'khuyenmai', 'chitiet'])],
             'AnhChinh' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'lich_trinh' => ['required', 'array', 'min:1'],
             'lich_trinh.*.NgayThu' => ['required', 'integer', 'min:1'],
@@ -35,8 +35,6 @@ class UpdateTourRequest extends StoreTourRequest
 
     public function messages(): array
     {
-        return array_merge(parent::messages(), [
-            'NgayKhoiHanh.after_or_equal' => 'Ngày khởi hành phải từ hôm nay trở đi.',
-        ]);
+        return parent::messages();
     }
 }

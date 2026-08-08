@@ -85,4 +85,26 @@ class AccountController extends Controller
             'data' => $this->adminAccountService->resetPassword($id, $request->validated('new_password'), $request->user()),
         ]);
     }
+    public function getEligibleStaff(Request $request)
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $this->adminAccountService->getEligibleStaff($request->query('start_date'), $request->query('end_date')),
+        ]);
+    }
+
+    public function reassignAndLock(Request $request, int $id)
+    {
+        $assignments = $request->validate([
+            'assignments' => ['required', 'array'],
+            'assignments.*.ma_yc' => ['required', 'integer'],
+            'assignments.*.new_ma_nv' => ['required', 'integer'],
+        ])['assignments'];
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Bàn giao công việc và khóa tài khoản thành công',
+            'data' => $this->adminAccountService->reassignAndLock($id, $assignments, $request->user()),
+        ]);
+    }
 }

@@ -10,4 +10,5 @@ export const staffPromotionApi = {
   toggle: (id) => axiosClient.patch(`/staff/promotions/${id}/toggle`),
   attachTours: (id, payload) => axiosClient.post(`/staff/promotions/${id}/tours`, payload),
   detachTour: (id, tourId) => axiosClient.delete(`/staff/promotions/${id}/tours/${tourId}`),
+  approve: (id) => axiosClient.put(`/staff/promotions/${id}/approve`),
 }

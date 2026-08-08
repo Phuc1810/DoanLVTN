@@ -25,6 +25,19 @@ export default function StaffTourDetailPage() {
 
   const tour = state.tour || {}
   const lichTrinh = tour.lich_trinh || []
+  
+  let endDate = tour.NgayKetThuc;
+  if (!endDate && tour.NgayKhoiHanh && tour.ThoiLuong) {
+    const match = String(tour.ThoiLuong).match(/\d+/);
+    if (match) {
+      const days = parseInt(match[0], 10);
+      if (days > 0) {
+        const start = new Date(tour.NgayKhoiHanh);
+        start.setDate(start.getDate() + (days - 1));
+        endDate = start.toISOString();
+      }
+    }
+  }
 
   return (
     <div className="staff-tour-detail-container">
@@ -104,7 +117,7 @@ export default function StaffTourDetailPage() {
                           })()}
                         </div>
                       ) : (
-                        <>{formatDate(tour.NgayKhoiHanh)} <span className="mx-2">→</span> {formatDate(tour.NgayKetThuc)}</>
+                        <>{formatDate(tour.NgayKhoiHanh)} <span className="mx-2">→</span> {formatDate(endDate)}</>
                       )}
                     </div>
                   </div>

@@ -3,11 +3,13 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { staffPromotionApi } from '../../api/staffPromotionApi'
 import { staffTourApi } from '../../api/staffTourApi'
 import { extractItem, imageSrc, makeMultipart, normalizeError, validateImage } from './staffPageUtils'
+import { useAuth } from '../../auth/useAuth'
 
 const todayStr = new Date().toISOString().split('T')[0]
 const EMPTY = { TenKM: '', NoiDung: '', PhanTramGiam: '', NgayBatDau: todayStr, NgayKetThuc: '', TrangThai: 'Hoạt động' }
 
 export default function StaffPromotionFormPage({ mode }) {
+  const { account } = useAuth()
   const isEdit = mode === 'edit'
   const { id } = useParams()
   const navigate = useNavigate()
@@ -125,8 +127,12 @@ export default function StaffPromotionFormPage({ mode }) {
       }, [['AnhDaiDien', file]])
       
       if (isEdit) {
-        await staffPromotionApi.update(id, payload)
-        showToast('Lưu chương trình khuyến mãi thành công', 'success')
+        const res = await staffPromotionApi.update(id, payload)
+        if (res?.data?.TrangThai === 'Chờ duyệt') {
+          showToast('Thành công! Khuyến mãi đang ở trạng thái Chờ duyệt do mức giảm > 20%', 'success')
+        } else {
+          showToast('Lưu chương trình khuyến mãi thành công', 'success')
+        }
         
         const promoRes = await staffPromotionApi.show(id)
         if (promoRes) {
@@ -151,11 +157,15 @@ export default function StaffPromotionFormPage({ mode }) {
         }
         window.scrollTo({ top: 0, behavior: 'smooth' })
       } else {
-        await staffPromotionApi.create(payload)
-        showToast('Lưu chương trình khuyến mãi thành công', 'success')
+        const res = await staffPromotionApi.create(payload)
+        if (res?.data?.TrangThai === 'Chờ duyệt') {
+          showToast('Thành công! Khuyến mãi đang ở trạng thái Chờ duyệt do mức giảm > 20%', 'success')
+        } else {
+          showToast('Lưu chương trình khuyến mãi thành công', 'success')
+        }
         setTimeout(() => {
           navigate('/staff/promotions')
-        }, 1000)
+        }, 1500)
       }
     } catch (err) {
       const normErr = normalizeError(err)
@@ -254,10 +264,19 @@ export default function StaffPromotionFormPage({ mode }) {
                   <input type="number" min="0" max="100" className="form-control fw-bold text-primary" name="PhanTramGiam" value={form.PhanTramGiam} onChange={updateField} onWheel={(e) => e.target.blur()} required />
                   <span className="input-group-text">%</span>
                 </div>
+                {account?.VaiTro === 'NV' && form.PhanTramGiam > 20 && (
+                  <div className="form-text text-warning fw-bold mt-2">
+                    <i className="fa-solid fa-circle-info me-1"></i>
+                    Khuyến mãi &gt; 20% sẽ cần Admin phê duyệt.
+                  </div>
+                )}
               </div>
               <div className="col-md-6">
                 <label className="form-label fw-bold">Trạng thái</label>
                 <select className="form-select" name="TrangThai" value={form.TrangThai} onChange={updateField}>
+                  {form.TrangThai === 'Chờ duyệt' && (
+                    <option value="Chờ duyệt">Chờ duyệt</option>
+                  )}
                   <option value="Hoạt động">Hoạt động</option>
                   <option value="Ngừng hoạt động">Ngừng hoạt động</option>
                 </select>
@@ -267,7 +286,7 @@ export default function StaffPromotionFormPage({ mode }) {
             <div className="row g-3 mt-1">
               <div className="col-md-6">
                 <label className="form-label fw-bold">Ngày bắt đầu <span className="text-danger">*</span></label>
-                <input type="date" className="form-control" name="NgayBatDau" value={form.NgayBatDau} min={todayStr} onChange={updateField} required />
+                <input type="date" className="form-control" name="NgayBatDau" value={form.NgayBatDau} min={isEdit ? undefined : todayStr} onChange={updateField} required />
               </div>
               <div className="col-md-6">
                 <label className="form-label fw-bold">Ngày kết thúc <span className="text-danger">*</span></label>

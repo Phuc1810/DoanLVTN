@@ -96,4 +96,13 @@ class PromotionManagementController extends Controller
             'data' => $this->staffPromotionService->detachTour($id, $tourId),
         ]);
     }
+
+    public function approve(int $id)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Phê duyệt khuyến mãi thành công',
+            'data' => $this->staffPromotionService->approve($id),
+        ]);
+    }
 }

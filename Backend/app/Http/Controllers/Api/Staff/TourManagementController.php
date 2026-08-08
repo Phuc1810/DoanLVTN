@@ -27,6 +27,9 @@ class TourManagementController extends Controller
                 'mien',
                 'page',
                 'per_page',
+                'parent_id',
+                'tiendo',
+                'tinhchat',
             ])),
         ]);
     }

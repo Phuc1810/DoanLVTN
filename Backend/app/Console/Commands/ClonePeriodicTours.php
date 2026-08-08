@@ -52,9 +52,20 @@ class ClonePeriodicTours extends Command
                         
                     if (!$exists) {
                         try {
+                            $endDateStr = null;
+                            if (!empty($master->ThoiLuong)) {
+                                preg_match('/\d+/', $master->ThoiLuong, $matches);
+                                if (!empty($matches[0])) {
+                                    $days = (int) $matches[0];
+                                    if ($days > 0) {
+                                        $endDateStr = $targetDate->copy()->addDays($days - 1)->format('Y-m-d');
+                                    }
+                                }
+                            }
+                            
                             $payload = [
                                 'NgayKhoiHanh' => $targetDateStr,
-                                'NgayKetThuc' => null, // Hoặc tính ngày kết thúc từ ThoiLuong
+                                'NgayKetThuc' => $endDateStr,
                             ];
                             
                             $tourService->cloneTour($master->MaTour, $payload);

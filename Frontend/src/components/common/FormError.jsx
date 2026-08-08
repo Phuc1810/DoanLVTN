@@ -1,6 +1,6 @@
 export default function FormError({ message, errors }) {
   const fieldMessages = errors
-    ? Object.values(errors).flat().filter(Boolean).filter(msg => msg !== message)
+    ? Object.values(errors).flat().filter(Boolean).filter(msg => typeof msg === 'string' && msg !== message)
     : []
 
   if (!message && !fieldMessages.length) return null

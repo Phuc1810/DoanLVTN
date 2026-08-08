@@ -15,9 +15,12 @@ class StaffTourResource extends JsonResource
         $trangThai = $this->TrangThai;
         $tienDo = 'Sắp khởi hành';
 
-        if ($this->TinhChatTour === 'Định kỳ') {
+        if ($this->TinhChatTour === 'Định kỳ' || (
+            !in_array($trangThai, ['Hoạt động', 'Hết chỗ']) && 
+            (!$this->NgayKetThuc || \Carbon\Carbon::today() <= \Carbon\Carbon::parse($this->NgayKetThuc)->startOfDay())
+        )) {
             $tienDo = null;
-        } elseif (in_array($trangThai, ['Hoạt động', 'Hết chỗ']) && $this->NgayKhoiHanh) {
+        } elseif ($this->NgayKhoiHanh) {
             $today = \Carbon\Carbon::today();
             $khoiHanh = \Carbon\Carbon::parse($this->NgayKhoiHanh)->startOfDay();
             $ketThuc = $this->NgayKetThuc ? \Carbon\Carbon::parse($this->NgayKetThuc)->startOfDay() : null;

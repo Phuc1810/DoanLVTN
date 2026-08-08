@@ -5,6 +5,7 @@ import { useAuth } from '../../auth/useAuth'
 import AccountRoleSelect from '../../components/admin/AccountRoleSelect'
 import AccountStatusBadge, { AccountRoleBadge } from '../../components/admin/AccountStatusBadge'
 import ResetPasswordModal from '../../components/admin/ResetPasswordModal'
+import ReassignModal from '../../components/admin/ReassignModal'
 import EmptyState from '../../components/common/EmptyState'
 import ErrorState from '../../components/common/ErrorState'
 import FormError from '../../components/common/FormError'
@@ -20,6 +21,7 @@ export default function AdminAccountsPage() {
   const [success, setSuccess] = useState('')
   const [resetAccount, setResetAccount] = useState(null)
   const [resetSubmitting, setResetSubmitting] = useState(false)
+  const [reassignData, setReassignData] = useState(null)
 
   const loadAccounts = useCallback((params = filters) => {
     return adminAccountApi.getAccounts(params)
@@ -59,7 +61,15 @@ export default function AdminAccountsPage() {
       setSuccess(`Đã thay đổi trạng thái tài khoản #${account.MaTK}.`)
       await loadAccounts()
     } catch (error) {
-      setActionError(normalizeError(error))
+      const err = normalizeError(error)
+      if (err.errors?.pending_requests) {
+        setReassignData({
+          account,
+          requests: err.errors.pending_requests,
+        })
+      } else {
+        setActionError(err)
+      }
     }
   }
 
@@ -136,6 +146,15 @@ export default function AdminAccountsPage() {
       )}
       <Pagination pagination={state.pagination} onPageChange={(page) => setFilters((current) => ({ ...current, page }))} />
       <ResetPasswordModal account={resetAccount} error={actionError} submitting={resetSubmitting} onClose={() => setResetAccount(null)} onSubmit={resetPassword} />
+      <ReassignModal 
+        data={reassignData} 
+        onClose={() => setReassignData(null)} 
+        onSuccess={(msg) => {
+          setReassignData(null)
+          setSuccess(msg)
+          loadAccounts()
+        }}
+      />
     </>
   )
 }

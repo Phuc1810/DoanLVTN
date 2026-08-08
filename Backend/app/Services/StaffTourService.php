@@ -21,14 +21,41 @@ class StaffTourService
     {
     }
 
+    private function tienDoSql(): string
+    {
+        return "CASE 
+            WHEN TinhChatTour = 'Định kỳ' THEN NULL
+            WHEN TrangThai NOT IN ('Hoạt động', 'Hết chỗ') AND (NgayKetThuc IS NULL OR CURRENT_DATE <= DATE(NgayKetThuc)) THEN NULL
+            WHEN NgayKhoiHanh IS NULL THEN 'Sắp khởi hành'
+            WHEN NgayKetThuc IS NOT NULL THEN
+                CASE 
+                    WHEN CURRENT_DATE > DATE(NgayKetThuc) THEN 'Đã hoàn tất'
+                    WHEN CURRENT_DATE >= DATE(NgayKhoiHanh) AND CURRENT_DATE <= DATE(NgayKetThuc) THEN 'Đang diễn ra'
+                    ELSE 'Sắp khởi hành'
+                END
+            ELSE
+                CASE 
+                    WHEN CURRENT_DATE > DATE(NgayKhoiHanh) THEN 'Đã hoàn tất'
+                    WHEN CURRENT_DATE = DATE(NgayKhoiHanh) THEN 'Đang diễn ra'
+                    ELSE 'Sắp khởi hành'
+                END
+        END";
+    }
+
     public function list(array $filters): array
     {
+        $this->syncTourStatuses();
+        
         $query = Tour::query()->with('anhChinh');
 
         $keyword = trim((string) ($filters['q'] ?? ''));
         if ($keyword !== '') {
             if (str_starts_with($keyword, '#') && ctype_digit(trim(substr($keyword, 1)))) {
-                $query->where('MaTour', (int) trim(substr($keyword, 1)));
+                $id = (int) trim(substr($keyword, 1));
+                $query->where(function (Builder $q) use ($id) {
+                    $q->where('MaTour', $id)
+                      ->orWhere('IDTourGoc', $id);
+                });
             } else {
                 $query->where(function (Builder $q) use ($keyword) {
                     $q->where('TenTour', 'like', '%'.$keyword.'%')
@@ -83,6 +110,28 @@ class StaffTourService
         if (! empty($filters['mien'])) {
             $query->where('Mien', $filters['mien']);
         }
+
+        if (! empty($filters['tiendo'])) {
+            $query->whereRaw('(' . $this->tienDoSql() . ') = ?', [$filters['tiendo']]);
+        }
+
+        if (! empty($filters['parent_id'])) {
+            $query->where('IDTourGoc', $filters['parent_id']);
+        } elseif (! empty($filters['tinhchat'])) {
+            if ($filters['tinhchat'] === 'Khuôn đúc') {
+                $query->where('TinhChatTour', 'Định kỳ');
+            } elseif ($filters['tinhchat'] === 'Bản sao') {
+                $query->whereNotNull('IDTourGoc');
+            } elseif ($filters['tinhchat'] === 'Độc lập') {
+                $query->whereNull('IDTourGoc')->where(function($q) {
+                    $q->where('TinhChatTour', '!=', 'Định kỳ')
+                      ->orWhereNull('TinhChatTour');
+                });
+            }
+        } else {
+            $query->whereNull('IDTourGoc');
+        }
+
         //Phân trang
         $paginator = $query->orderByDesc('MaTour')
             ->paginate($this->normalizePerPage((int) ($filters['per_page'] ?? 10)));
@@ -113,6 +162,7 @@ class StaffTourService
         return [
             'loaiList' => $loaiList,
             'ttList' => [self::STATUS_ACTIVE, 'Hết chỗ', self::STATUS_INACTIVE],
+            'tienDoList' => ['Sắp khởi hành', 'Đang diễn ra', 'Đã hoàn tất'],
         ];
     }
 
@@ -141,10 +191,35 @@ class StaffTourService
             ];
         }
 
+        $tienDoSql = $this->tienDoSql();
+        $tienDoRatioRaw = Tour::select(DB::raw("($tienDoSql) as TienDo"), DB::raw('count(*) as count'))
+            ->groupBy(DB::raw("($tienDoSql)"))
+            ->get();
+
+        $tienDoRatio = [];
+        foreach ($tienDoRatioRaw as $item) {
+            if ($item->TienDo) {
+                $tienDoRatio[] = [
+                    'name' => $item->TienDo,
+                    'value' => $item->count,
+                ];
+            }
+        }
+
         return [
             'departure_trend' => $departureTrend,
             'status_ratio'    => $statusRatio,
+            'tien_do_ratio'   => $tienDoRatio,
         ];
+    }
+
+    private function syncTourStatuses(): void
+    {
+        // Auto-disable tours that have ended
+        Tour::whereNotNull('NgayKetThuc')
+            ->where('NgayKetThuc', '<', now()->startOfDay())
+            ->where('TrangThai', self::STATUS_ACTIVE)
+            ->update(['TrangThai' => self::STATUS_INACTIVE]);
     }
 
     public function detail(int $id): array
@@ -159,6 +234,11 @@ class StaffTourService
     {
         //DB transaction để đảm bảo tính toàn vẹn dữ liệu
         $result = DB::transaction(function () use ($payload, $image) {
+            $ngayKetThuc = $payload['NgayKetThuc'] ?? null;
+            if (!$ngayKetThuc && isset($payload['NgayKhoiHanh']) && isset($payload['ThoiLuong'])) {
+                $ngayKetThuc = $this->calculateEndDate($payload['NgayKhoiHanh'], $payload['ThoiLuong']);
+            }
+
             $tour = Tour::create([
                 'TenTour' => $payload['TenTour'],
                 'DiaDiem' => $payload['DiaDiem'],
@@ -166,7 +246,7 @@ class StaffTourService
                 'GiaGiam' => $payload['GiaGiam'],
                 'ThoiLuong' => $payload['ThoiLuong'],
                 'NgayKhoiHanh' => $payload['NgayKhoiHanh'] ?? null,
-                'NgayKetThuc' => $payload['NgayKetThuc'] ?? null,
+                'NgayKetThuc' => $ngayKetThuc,
                 'SoCho' => (int) $payload['SoCho'],
                 'SoChoDaDat' => 0,
                 'Mien' => $payload['Mien'],
@@ -182,7 +262,7 @@ class StaffTourService
             HinhAnhTour::create([
                 'DuongDan' => $path,
                 'LaAnhChinh' => 1,
-                'LoaiAnh' => $payload['LoaiAnh'] ?? '',
+                'LoaiAnh' => empty($payload['LoaiAnh']) ? null : $payload['LoaiAnh'],
                 'MaTour' => $tour->MaTour,
             ]);
 
@@ -259,6 +339,11 @@ class StaffTourService
                 $this->throwValidation('SoCho', 'Số chỗ mới không được nhỏ hơn số chỗ đã đặt.');
             }
 
+            $ngayKetThuc = $payload['NgayKetThuc'] ?? null;
+            if (!$ngayKetThuc && isset($payload['NgayKhoiHanh']) && isset($payload['ThoiLuong'])) {
+                $ngayKetThuc = $this->calculateEndDate($payload['NgayKhoiHanh'], $payload['ThoiLuong']);
+            }
+
             $tour->update([
                 'TenTour' => $payload['TenTour'],
                 'DiaDiem' => $payload['DiaDiem'],
@@ -266,7 +351,7 @@ class StaffTourService
                 'GiaGiam' => $payload['GiaGiam'],
                 'ThoiLuong' => $payload['ThoiLuong'],
                 'NgayKhoiHanh' => $payload['NgayKhoiHanh'] ?? null,
-                'NgayKetThuc' => $payload['NgayKetThuc'] ?? null,
+                'NgayKetThuc' => $ngayKetThuc,
                 'SoCho' => (int) $payload['SoCho'],
                 'Mien' => $payload['Mien'],
                 'LoaiTour' => $payload['LoaiTour'],
@@ -286,19 +371,19 @@ class StaffTourService
                 if ($mainImage) {
                     $mainImage->update([
                         'DuongDan' => $path,
-                        'LoaiAnh' => $payload['LoaiAnh'] ?? '',
+                        'LoaiAnh' => empty($payload['LoaiAnh']) ? null : $payload['LoaiAnh'],
                     ]);
                 } else {
                     HinhAnhTour::create([
                         'DuongDan' => $path,
                         'LaAnhChinh' => 1,
-                        'LoaiAnh' => $payload['LoaiAnh'] ?? '',
+                        'LoaiAnh' => empty($payload['LoaiAnh']) ? null : $payload['LoaiAnh'],
                         'MaTour' => $tour->MaTour,
                     ]);
                 }
             } elseif ($mainImage) {
                 $mainImage->update([
-                    'LoaiAnh' => $payload['LoaiAnh'] ?? '',
+                    'LoaiAnh' => empty($payload['LoaiAnh']) ? null : $payload['LoaiAnh'],
                 ]);
             }
 
@@ -317,6 +402,20 @@ class StaffTourService
     public function toggle(int $id): array
     {
         $tour = $this->findTour($id);
+        
+        $isExpired = false;
+        if ($tour->NgayKetThuc && \Carbon\Carbon::parse($tour->NgayKetThuc)->startOfDay()->isPast()) {
+            $isExpired = true;
+        } elseif (!$tour->NgayKetThuc && $tour->NgayKhoiHanh && \Carbon\Carbon::parse($tour->NgayKhoiHanh)->startOfDay()->isPast()) {
+            $isExpired = true;
+        }
+
+        if ($tour->TrangThai === self::STATUS_INACTIVE && $isExpired) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'TrangThai' => 'Không thể kích hoạt lại tour đã kết thúc.'
+            ]);
+        }
+
         $newStatus = $tour->TrangThai === self::STATUS_INACTIVE
             ? self::STATUS_ACTIVE
             : self::STATUS_INACTIVE;
@@ -363,6 +462,23 @@ class StaffTourService
     private function resource(Tour $tour): array
     {
         return (new StaffTourResource($tour))->resolve();
+    }
+
+    private function calculateEndDate(?string $ngayKhoiHanh, ?string $thoiLuong): ?string
+    {
+        if (!$ngayKhoiHanh || !$thoiLuong) {
+            return null;
+        }
+
+        preg_match('/\d+/', $thoiLuong, $matches);
+        if (!empty($matches[0])) {
+            $days = (int) $matches[0];
+            if ($days > 0) {
+                return \Carbon\Carbon::parse($ngayKhoiHanh)->addDays($days - 1)->format('Y-m-d');
+            }
+        }
+        
+        return null;
     }
 
     private function normalizePerPage(int $perPage): int

@@ -8,4 +8,6 @@ export const adminAccountApi = {
   updateRole: (id, role) => axiosClient.patch(`/admin/accounts/${id}/role`, { role, VaiTro: role }),
   toggleStatus: (id) => axiosClient.patch(`/admin/accounts/${id}/status`),
   resetPassword: (id, payload) => axiosClient.patch(`/admin/accounts/${id}/reset-password`, payload),
+  getEligibleStaff: (params) => axiosClient.get('/admin/staff/eligible', { params }),
+  reassignAndLock: (id, assignments) => axiosClient.post(`/admin/accounts/${id}/reassign-and-lock`, { assignments }),
 }

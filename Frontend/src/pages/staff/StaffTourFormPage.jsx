@@ -57,6 +57,27 @@ export default function StaffTourFormPage({ mode }) {
     if (!original) return ''
     return Math.round(original * (100 - percent) / 100)
   }, [form.GiaGoc, form.PhanTramGiam])
+
+  // Auto calculate NgayKetThuc based on NgayKhoiHanh and ThoiLuong
+  useEffect(() => {
+    if (form.TinhChatTour !== 'Theo đợt') return;
+    if (!form.NgayKhoiHanh || !form.ThoiLuong) return;
+    
+    const match = String(form.ThoiLuong).match(/\d+/);
+    if (match) {
+      const days = parseInt(match[0], 10);
+      if (days > 0) {
+        const start = new Date(form.NgayKhoiHanh);
+        start.setDate(start.getDate() + (days - 1));
+        const computedEnd = start.toISOString().split('T')[0];
+        
+        if (form.NgayKetThuc !== computedEnd) {
+          setForm(prev => ({ ...prev, NgayKetThuc: computedEnd }));
+        }
+      }
+    }
+  }, [form.NgayKhoiHanh, form.ThoiLuong, form.TinhChatTour]);
+
   // Update form field value based on input changes
   function updateField(event) {
     const { name, value } = event.target
@@ -331,7 +352,7 @@ export default function StaffTourFormPage({ mode }) {
 
               <div className="col-md-6 mt-3">
                 <label className="form-label fw-semibold">Ngày kết thúc <span className="text-danger">*</span></label>
-                <input type="date" className="form-control" name="NgayKetThuc" value={form.NgayKetThuc} onChange={updateField} min={form.NgayKhoiHanh || (isEdit ? undefined : minDate)} required={form.TinhChatTour === 'Theo đợt'} />
+                <input type="date" className="form-control bg-light" name="NgayKetThuc" value={form.NgayKetThuc} readOnly min={form.NgayKhoiHanh || (isEdit ? undefined : minDate)} required={form.TinhChatTour === 'Theo đợt'} />
                 <div className="form-text">Không được chọn ngày ≤ hôm nay, và phải ≥ ngày khởi hành</div>
               </div>
             </>

@@ -6,9 +6,11 @@ use App\Http\Resources\AdminAccountResource;
 use App\Models\KhachHang;
 use App\Models\NhanVien;
 use App\Models\TaiKhoan;
+use App\Models\YeuCauDoanhNghiep;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -269,6 +271,26 @@ class AdminAccountService
             ? self::STATUS_LOCKED
             : self::STATUS_ACTIVE;
 
+        if ($newStatus === self::STATUS_LOCKED && $account->VaiTro === self::ROLE_STAFF) {
+            $nhanVien = $account->nhanVien;
+            if ($nhanVien) {
+                $pendingRequests = YeuCauDoanhNghiep::where('MaNV', $nhanVien->MaNV)
+                    ->whereIn('TrangThai', ['Chờ xử lý', 'Đang xử lý', 'Đã duyệt', 'Đã thanh toán', 'Đang diễn ra', 'Đã liên hệ'])
+                    ->with('tour:MaTour,TenTour,NgayKhoiHanh,NgayKetThuc')
+                    ->get();
+                
+                if ($pendingRequests->isNotEmpty()) {
+                    throw new \Illuminate\Http\Exceptions\HttpResponseException(response()->json([
+                        'message' => 'Dữ liệu không hợp lệ',
+                        'errors' => [
+                            'TrangThai' => ['Tài khoản này đang phụ trách ' . $pendingRequests->count() . ' yêu cầu doanh nghiệp. Vui lòng bàn giao trước khi khóa.'],
+                            'pending_requests' => $pendingRequests->toArray()
+                        ]
+                    ], 422));
+                }
+            }
+        }
+
         $account->update(['TrangThai' => $newStatus]);
 
         return [
@@ -367,6 +389,134 @@ class AdminAccountService
                 $key => [$message],
             ],
         ], 422));
+    }
+
+    public function getEligibleStaff(?string $startDate, ?string $endDate): array
+    {
+        $allStaff = NhanVien::with('taiKhoan')
+            ->whereHas('taiKhoan', function ($q) {
+                $q->where('TrangThai', self::STATUS_ACTIVE);
+            })
+            ->get();
+
+        if (!$startDate) {
+            return $allStaff->map(fn($s) => ['MaNV' => $s->MaNV, 'HoTen' => $s->HoTen])->toArray();
+        }
+
+        $reqStartDate = \Carbon\Carbon::parse($startDate)->startOfDay();
+        $reqEndDate = $endDate 
+            ? \Carbon\Carbon::parse($endDate)->endOfDay()
+            : $reqStartDate->copy()->endOfDay();
+
+        $activeStatuses = ['Chờ xử lý', 'Đang xử lý', 'Đã duyệt', 'Đã thanh toán', 'Đang diễn ra', 'Đã liên hệ'];
+        $ongoingRequests = YeuCauDoanhNghiep::whereIn('TrangThai', $activeStatuses)
+            ->with('tour')
+            ->get();
+
+        $busyStaffIds = [];
+        foreach ($ongoingRequests as $ongoing) {
+            if (empty($ongoing->ThoiGianKhoiHanh) || empty($ongoing->MaNV)) {
+                continue;
+            }
+            
+            $start = \Carbon\Carbon::parse($ongoing->ThoiGianKhoiHanh)->startOfDay();
+            if (!empty($ongoing->NgayKetThuc)) {
+                $end = \Carbon\Carbon::parse($ongoing->NgayKetThuc)->endOfDay();
+            } else {
+                $days = 1;
+                $thoiLuongStr = $ongoing->tour ? $ongoing->tour->ThoiLuong : $ongoing->DiaDiem;
+                if (!empty($thoiLuongStr) && preg_match('/(\d+)\s*(n|ngày)/i', $thoiLuongStr, $matches)) {
+                    $days = (int)$matches[1];
+                }
+                $end = $start->copy()->addDays($days - 1)->endOfDay();
+            }
+            
+            if ($reqStartDate->lte($end) && $reqEndDate->gte($start)) {
+                $busyStaffIds[] = $ongoing->MaNV;
+            }
+        }
+
+        $busyStaffIds = array_unique($busyStaffIds);
+
+        return $allStaff->filter(function($s) use ($busyStaffIds) {
+            return !in_array($s->MaNV, $busyStaffIds);
+        })->map(function($s) {
+            return ['MaNV' => $s->MaNV, 'HoTen' => $s->HoTen];
+        })->values()->toArray();
+    }
+
+    public function reassignAndLock(int $accountId, array $assignments, TaiKhoan $currentUser): array
+    {
+        $this->ensureNotSelf($accountId, $currentUser);
+
+        $account = $this->findAccount($accountId);
+        if ($account->VaiTro !== self::ROLE_STAFF) {
+            $this->throwValidation('VaiTro', 'Chỉ áp dụng cho tài khoản nhân viên.');
+        }
+
+        DB::transaction(function () use ($account, $assignments) {
+            if ($account->nhanVien) {
+                // Cross-check for overlaps
+                $assignmentsByNv = [];
+                foreach ($assignments as $assignment) {
+                    $req = YeuCauDoanhNghiep::with('tour')->find($assignment['ma_yc'] ?? null);
+                    if ($req && $req->MaNV === $account->nhanVien->MaNV) {
+                        $nv = $assignment['new_ma_nv'];
+                        if (!isset($assignmentsByNv[$nv])) {
+                            $assignmentsByNv[$nv] = [];
+                        }
+                        
+                        if (empty($req->ThoiGianKhoiHanh)) {
+                            continue; // Skip requests without start date
+                        }
+                        
+                        $start = \Carbon\Carbon::parse($req->ThoiGianKhoiHanh)->startOfDay();
+                        if (!empty($req->NgayKetThuc)) {
+                            $end = \Carbon\Carbon::parse($req->NgayKetThuc)->endOfDay();
+                        } else {
+                            $days = 1;
+                            $thoiLuongStr = $req->tour ? $req->tour->ThoiLuong : $req->DiaDiem;
+                            if (!empty($thoiLuongStr) && preg_match('/(\d+)\s*(n|ngày)/i', $thoiLuongStr, $matches)) {
+                                $days = (int)$matches[1];
+                            }
+                            $end = $start->copy()->addDays($days - 1)->endOfDay();
+                        }
+                        
+                        $assignmentsByNv[$nv][] = [
+                            'req' => $req,
+                            'start' => $start,
+                            'end' => $end
+                        ];
+                    }
+                }
+                
+                foreach ($assignmentsByNv as $nv => $assignedReqs) {
+                    if (count($assignedReqs) > 1) {
+                        for ($i = 0; $i < count($assignedReqs); $i++) {
+                            for ($j = $i + 1; $j < count($assignedReqs); $j++) {
+                                if ($assignedReqs[$i]['start']->lte($assignedReqs[$j]['end']) && $assignedReqs[$i]['end']->gte($assignedReqs[$j]['start'])) {
+                                    $nvName = NhanVien::find($nv)->HoTen ?? $nv;
+                                    $this->throwValidation('PhanCong', "Lỗi: Bạn đang phân công nhân viên {$nvName} phụ trách nhiều yêu cầu bị trùng lịch nhau. Vui lòng chọn người khác.");
+                                }
+                            }
+                        }
+                    }
+                }
+
+                foreach ($assignments as $assignment) {
+                    $request = YeuCauDoanhNghiep::find($assignment['ma_yc'] ?? null);
+                    if ($request && $request->MaNV === $account->nhanVien->MaNV) {
+                        $request->update(['MaNV' => $assignment['new_ma_nv']]);
+                    }
+                }
+            }
+            $account->update(['TrangThai' => self::STATUS_LOCKED]);
+        });
+
+        return [
+            'MaTK' => $account->MaTK,
+            'TrangThai' => self::STATUS_LOCKED,
+        ];
     }
 
     public function stats(): array

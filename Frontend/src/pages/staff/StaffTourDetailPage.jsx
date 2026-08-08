@@ -41,15 +41,15 @@ export default function StaffTourDetailPage() {
 
   return (
     <div className="staff-tour-detail-container">
-      <div className="page-header d-flex justify-content-between align-items-center mb-4">
-        <div>
+      <div className="page-header d-flex justify-content-between align-items-center mb-4 gap-3">
+        <div className="flex-grow-1" style={{ minWidth: 0 }}>
           <Link to="/staff/tours" className="text-muted text-decoration-none d-flex align-items-center mb-2">
             <ArrowLeft size={16} className="me-1" /> Quay lại danh sách Tour
           </Link>
           <h1 className="page-title mb-0 fs-3 fw-bold">{tour.TenTour}</h1>
         </div>
-        <div className="page-header-actions">
-          <Link className="btn btn-primary d-flex align-items-center" to={`/staff/tours/${id}/edit`}>
+        <div className="page-header-actions flex-shrink-0">
+          <Link className="btn btn-primary d-flex align-items-center text-nowrap" to={`/staff/tours/${id}/edit`}>
             <Edit size={16} className="me-2" /> Sửa Tour
           </Link>
         </div>
@@ -106,7 +106,9 @@ export default function StaffTourDetailPage() {
                   <div>
                     <div className="text-muted small">Khởi hành - Kết thúc</div>
                     <div className="fw-semibold">
-                      {tour.TinhChatTour === 'Định kỳ' ? (
+                      {tour.LoaiTour === 'Doanh nghiệp' ? (
+                        <span className="text-muted" style={{ fontStyle: 'italic', fontWeight: 400 }}>Theo yêu cầu doanh nghiệp</span>
+                      ) : tour.TinhChatTour === 'Định kỳ' ? (
                         <div className="d-flex align-items-center text-primary">
                           <i className="fa-solid fa-rotate me-2"></i>
                           {(() => {
@@ -128,9 +130,15 @@ export default function StaffTourDetailPage() {
                   <div>
                     <div className="text-muted small">Số chỗ đã đặt / Tổng số chỗ</div>
                     <div className="fw-semibold">
-                      <span className={tour.SoChoDaDat >= tour.SoCho ? 'text-danger' : 'text-success'}>
-                        {tour.SoChoDaDat || 0}
-                      </span> / {tour.SoCho || 0} chỗ
+                      {tour.LoaiTour === 'Doanh nghiệp' ? (
+                        <span className="text-muted fw-bold">ー / ー <span className="fw-normal">chỗ</span></span>
+                      ) : (
+                        <>
+                          <span className={tour.SoChoDaDat >= tour.SoCho ? 'text-danger' : 'text-success'}>
+                            {tour.SoChoDaDat || 0}
+                          </span> / {tour.SoCho || 0} chỗ
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

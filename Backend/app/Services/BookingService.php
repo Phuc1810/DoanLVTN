@@ -48,6 +48,12 @@ class BookingService
                 ], 404));
             }
 
+            if ($tour->LoaiTour === 'Doanh nghiệp') {
+                throw ValidationException::withMessages([
+                    'MaTour' => ['Tour doanh nghiệp không thể đặt trực tiếp, vui lòng gửi yêu cầu.'],
+                ]);
+            }
+
             if ($tour->TrangThai !== self::ACTIVE_STATUS) {
                 throw ValidationException::withMessages([
                     'MaTour' => ['Tour không hoạt động.'],

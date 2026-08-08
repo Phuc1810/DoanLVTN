@@ -461,7 +461,7 @@ export default function StaffToursPage() {
                           </div>
                         )}
                       </td>
-                      <td style={{ padding: '16px 20px' }}>
+                      <td className="text-nowrap" style={{ padding: '16px 20px' }}>
                         <div className="fw-bold text-dark">{formatCurrency(price)}</div>
                         {gg > 0 && gg < g0 && (
                           <div className="text-muted small text-decoration-line-through">{formatCurrency(g0)}</div>
@@ -479,7 +479,7 @@ export default function StaffToursPage() {
                           </>
                         )}
                       </td>
-                      <td style={{ padding: '16px 20px' }}>
+                      <td className="text-nowrap" style={{ padding: '16px 20px' }}>
                         <span className="small text-muted">{tour.LoaiTour || tour.Mien || ''}</span>
                       </td>
                       <td style={{ padding: '16px 20px' }}>

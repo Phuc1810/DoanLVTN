@@ -25,6 +25,7 @@ class StaffTourService
     {
         return "CASE 
             WHEN TinhChatTour = 'Định kỳ' THEN NULL
+            WHEN LoaiTour = 'Doanh nghiệp' THEN NULL
             WHEN TrangThai NOT IN ('Hoạt động', 'Hết chỗ') AND (NgayKetThuc IS NULL OR CURRENT_DATE <= DATE(NgayKetThuc)) THEN NULL
             WHEN NgayKhoiHanh IS NULL THEN 'Sắp khởi hành'
             WHEN NgayKetThuc IS NOT NULL THEN
@@ -234,8 +235,10 @@ class StaffTourService
     {
         //DB transaction để đảm bảo tính toàn vẹn dữ liệu
         $result = DB::transaction(function () use ($payload, $image) {
+            $isDoanhNghiep = ($payload['LoaiTour'] ?? '') === 'Doanh nghiệp';
+            
             $ngayKetThuc = $payload['NgayKetThuc'] ?? null;
-            if (!$ngayKetThuc && isset($payload['NgayKhoiHanh']) && isset($payload['ThoiLuong'])) {
+            if (!$isDoanhNghiep && !$ngayKetThuc && isset($payload['NgayKhoiHanh']) && isset($payload['ThoiLuong'])) {
                 $ngayKetThuc = $this->calculateEndDate($payload['NgayKhoiHanh'], $payload['ThoiLuong']);
             }
 
@@ -245,9 +248,9 @@ class StaffTourService
                 'GiaGoc' => $payload['GiaGoc'],
                 'GiaGiam' => $payload['GiaGiam'],
                 'ThoiLuong' => $payload['ThoiLuong'],
-                'NgayKhoiHanh' => $payload['NgayKhoiHanh'] ?? null,
-                'NgayKetThuc' => $ngayKetThuc,
-                'SoCho' => (int) $payload['SoCho'],
+                'NgayKhoiHanh' => $isDoanhNghiep ? null : ($payload['NgayKhoiHanh'] ?? null),
+                'NgayKetThuc' => $isDoanhNghiep ? null : $ngayKetThuc,
+                'SoCho' => $isDoanhNghiep ? 0 : (int) $payload['SoCho'],
                 'SoChoDaDat' => 0,
                 'Mien' => $payload['Mien'],
                 'LoaiTour' => $payload['LoaiTour'],
@@ -334,13 +337,14 @@ class StaffTourService
     {
         $result = DB::transaction(function () use ($id, $payload, $image) {
             $tour = $this->findTour($id);
+            $isDoanhNghiep = ($payload['LoaiTour'] ?? '') === 'Doanh nghiệp';
 
-            if ((int) $payload['SoCho'] < (int) $tour->SoChoDaDat) {
+            if (!$isDoanhNghiep && (int) $payload['SoCho'] < (int) $tour->SoChoDaDat) {
                 $this->throwValidation('SoCho', 'Số chỗ mới không được nhỏ hơn số chỗ đã đặt.');
             }
 
             $ngayKetThuc = $payload['NgayKetThuc'] ?? null;
-            if (!$ngayKetThuc && isset($payload['NgayKhoiHanh']) && isset($payload['ThoiLuong'])) {
+            if (!$isDoanhNghiep && !$ngayKetThuc && isset($payload['NgayKhoiHanh']) && isset($payload['ThoiLuong'])) {
                 $ngayKetThuc = $this->calculateEndDate($payload['NgayKhoiHanh'], $payload['ThoiLuong']);
             }
 
@@ -350,9 +354,9 @@ class StaffTourService
                 'GiaGoc' => $payload['GiaGoc'],
                 'GiaGiam' => $payload['GiaGiam'],
                 'ThoiLuong' => $payload['ThoiLuong'],
-                'NgayKhoiHanh' => $payload['NgayKhoiHanh'] ?? null,
-                'NgayKetThuc' => $ngayKetThuc,
-                'SoCho' => (int) $payload['SoCho'],
+                'NgayKhoiHanh' => $isDoanhNghiep ? null : ($payload['NgayKhoiHanh'] ?? null),
+                'NgayKetThuc' => $isDoanhNghiep ? null : $ngayKetThuc,
+                'SoCho' => $isDoanhNghiep ? 0 : (int) $payload['SoCho'],
                 'Mien' => $payload['Mien'],
                 'LoaiTour' => $payload['LoaiTour'],
                 'PhanTramGiam' => $payload['PhanTramGiam'],

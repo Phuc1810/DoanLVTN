@@ -137,6 +137,13 @@ export default function StaffTourFormPage({ mode }) {
     try {
       const dataToSend = { ...form }
       delete dataToSend.AnhChinh // Backend handles via file upload
+      
+      if (dataToSend.LoaiTour === 'Doanh nghiệp') {
+        delete dataToSend.SoCho
+        delete dataToSend.NgayKhoiHanh
+        delete dataToSend.NgayKetThuc
+        delete dataToSend.TinhChatTour
+      }
 
       const payload = makeMultipart(
         { 
@@ -240,10 +247,17 @@ export default function StaffTourFormPage({ mode }) {
             <input type="text" className="form-control" name="ThoiLuong" value={form.ThoiLuong} onChange={updateField} placeholder="VD: 3N2Đ" required />
           </div>
 
-          <div className="col-md-3">
-            <label className="form-label fw-semibold">Số chỗ <span className="text-danger">*</span></label>
-            <input type="number" className="form-control" name="SoCho" value={form.SoCho} onChange={updateField} onWheel={(e) => e.target.blur()} min="1" required />
-          </div>
+          {form.LoaiTour !== 'Doanh nghiệp' ? (
+            <div className="col-md-3">
+              <label className="form-label fw-semibold">Số chỗ <span className="text-danger">*</span></label>
+              <input type="number" className="form-control" name="SoCho" value={form.SoCho} onChange={updateField} onWheel={(e) => e.target.blur()} min="1" required />
+            </div>
+          ) : (
+            <div className="col-md-3">
+              <label className="form-label fw-semibold text-muted">Số chỗ</label>
+              <input type="text" className="form-control" value="Theo yêu cầu KH" disabled />
+            </div>
+          )}
 
           <div className="col-md-8">
             <div className="row g-3">
@@ -310,22 +324,36 @@ export default function StaffTourFormPage({ mode }) {
             <div className="form-text text-primary small">Tự động tính khi nhập Giá gốc và %</div>
           </div>
 
-          <div className="col-12 mt-3">
-            <label className="form-label fw-semibold">Tính chất Tour <span className="text-danger">*</span></label>
-            <div className="d-flex gap-4">
-              <div className="form-check">
-                <input className="form-check-input" type="radio" name="TinhChatTour" id="tcTheoDot" value="Theo đợt" checked={form.TinhChatTour === 'Theo đợt'} onChange={updateField} disabled={isEdit} />
-                <label className="form-check-label" htmlFor="tcTheoDot">Theo đợt (Khởi hành cụ thể)</label>
+          {form.LoaiTour !== 'Doanh nghiệp' && (
+            <div className="col-12 mt-3">
+              <label className="form-label fw-semibold">Tính chất Tour <span className="text-danger">*</span></label>
+              <div className="d-flex gap-4">
+                <div className="form-check">
+                  <input className="form-check-input" type="radio" name="TinhChatTour" id="tcTheoDot" value="Theo đợt" checked={form.TinhChatTour === 'Theo đợt'} onChange={updateField} disabled={isEdit} />
+                  <label className="form-check-label" htmlFor="tcTheoDot">Theo đợt (Khởi hành cụ thể)</label>
+                </div>
+                <div className="form-check">
+                  <input className="form-check-input" type="radio" name="TinhChatTour" id="tcDinhKy" value="Định kỳ" checked={form.TinhChatTour === 'Định kỳ'} onChange={updateField} disabled={isEdit} />
+                  <label className="form-check-label text-primary fw-bold" htmlFor="tcDinhKy">Định kỳ (Khuôn đúc tự động)</label>
+                </div>
               </div>
-              <div className="form-check">
-                <input className="form-check-input" type="radio" name="TinhChatTour" id="tcDinhKy" value="Định kỳ" checked={form.TinhChatTour === 'Định kỳ'} onChange={updateField} disabled={isEdit} />
-                <label className="form-check-label text-primary fw-bold" htmlFor="tcDinhKy">Định kỳ (Khuôn đúc tự động)</label>
-              </div>
+              {isEdit && <div className="form-text text-warning">Không thể đổi tính chất tour sau khi đã tạo.</div>}
             </div>
-            {isEdit && <div className="form-text text-warning">Không thể đổi tính chất tour sau khi đã tạo.</div>}
-          </div>
+          )}
 
-          {form.TinhChatTour === 'Định kỳ' ? (
+          {form.LoaiTour === 'Doanh nghiệp' ? (
+            <>
+              <div className="col-md-6 mt-3">
+                <label className="form-label fw-semibold text-muted">Ngày khởi hành</label>
+                <input type="text" className="form-control" value="Theo yêu cầu KH" disabled />
+              </div>
+
+              <div className="col-md-6 mt-3">
+                <label className="form-label fw-semibold text-muted">Ngày kết thúc</label>
+                <input type="text" className="form-control bg-light" value="Theo yêu cầu KH" disabled />
+              </div>
+            </>
+          ) : form.TinhChatTour === 'Định kỳ' ? (
             <div className="col-12 mt-3 bg-light p-3 rounded border">
               <label className="form-label fw-semibold text-primary">Lịch trình tuần (Chọn ngày khởi hành lặp lại) <span className="text-danger">*</span></label>
               <div className="d-flex flex-wrap gap-3 mt-2">

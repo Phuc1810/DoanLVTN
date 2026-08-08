@@ -193,7 +193,12 @@ class StaffDashboardService
         $tourStats = [
             'hoat_dong' => Tour::where('TrangThai', 'Hoạt động')->count(),
             'sap_khoi_hanh' => Tour::whereBetween('NgayKhoiHanh', [$now, $next7Days])->count(),
-            'het_cho' => Tour::where('TrangThai', 'Hết chỗ')->orWhereRaw('SoChoDaDat >= SoCho')->count(),
+            'het_cho' => Tour::where('TrangThai', 'Hết chỗ')
+                ->orWhere(function ($query) {
+                    $query->where('LoaiTour', 'Cá nhân')
+                          ->whereRaw('SoChoDaDat >= SoCho');
+                })
+                ->count(),
         ];
 
         // Phần 2: Báo cáo số lượng khách

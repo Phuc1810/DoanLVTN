@@ -32,7 +32,7 @@ class TourDetailResource extends TourResource
             ],
             'khuyenMais' => $this->whenLoaded('khuyenMais'),
             'available_dates' => $this->TinhChatTour === 'Định kỳ' ? \App\Models\Tour::where('IDTourGoc', $this->MaTour)
-                ->where('NgayKhoiHanh', '>=', \Carbon\Carbon::today()->format('Y-m-d'))
+                ->where('NgayKhoiHanh', '>', \Carbon\Carbon::today()->format('Y-m-d'))
                 ->where('TrangThai', '!=', 'Ngừng hoạt động')
                 ->orderBy('NgayKhoiHanh')
                 ->get(['MaTour', 'NgayKhoiHanh', 'SoCho', 'SoChoDaDat'])

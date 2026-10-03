@@ -75,22 +75,7 @@ class StaffTourService
 
         $status = $filters['tt'] ?? $filters['status'] ?? null;
         if (! empty($status)) {
-            if ($status === 'Cần gia hạn') {
-                $query->whereIn('TrangThai', ['Hoạt động', 'Hết chỗ'])
-                      ->whereNotNull('NgayKhoiHanh')
-                      ->where(function ($q) {
-                          $q->whereNull('LoaiTour')
-                            ->orWhere('LoaiTour', '!=', 'Doanh nghiệp');
-                      })
-                      ->where(function (Builder $q) {
-                          $q->whereNotNull('NgayKetThuc')
-                            ->whereDate('NgayKetThuc', '<', \Carbon\Carbon::today())
-                            ->orWhere(function (Builder $q2) {
-                                $q2->whereNull('NgayKetThuc')
-                                   ->whereDate('NgayKhoiHanh', '<', \Carbon\Carbon::today());
-                            });
-                      });
-            } elseif ($status === 'Hết chỗ') {
+            if ($status === 'Hết chỗ') {
                 $query->where('TrangThai', 'Hết chỗ')
                       ->where(function ($q) {
                           $q->whereNull('LoaiTour')

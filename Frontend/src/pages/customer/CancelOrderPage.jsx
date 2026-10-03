@@ -159,7 +159,7 @@ export default function CancelOrderPage() {
         SoTaiKhoan: soTaiKhoan,
         TenTaiKhoan: tenTaiKhoan
       })
-      showToast('Huỷ tour thành công. Đang quay lại trang chi tiết...', 'success')
+      showToast('Gửi yêu cầu huỷ tour thành công. Đang quay lại trang chi tiết...', 'success')
       setTimeout(() => {
         navigate(`/orders/${id}`)
       }, 1500)

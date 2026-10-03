@@ -383,7 +383,6 @@ export default function StaffToursPage() {
               <select className="form-select bg-transparent border-0 shadow-none text-dark fw-medium" name="tt" value={filters.tt} onChange={updateFilter} style={{ fontSize: '14.5px', padding: '10px 12px', cursor: 'pointer' }}>
                 <option value="">-- Tất cả trạng thái --</option>
                 {metadata.ttList.map(x => <option key={x} value={x}>{x}</option>)}
-                <option value="Cần gia hạn">Cần gia hạn</option>
               </select>
             </div>
           </div>

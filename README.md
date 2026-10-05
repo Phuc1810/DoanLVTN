@@ -34,23 +34,27 @@ Dự án được xây dựng theo kiến trúc API-first, tách biệt hoàn to
 
 ## ✨ Tính năng nổi bật (Features)
 Hệ thống được chia làm 3 phân hệ chính với các chức năng nghiệp vụ chuyên biệt:
+
 **1. Phân hệ Khách hàng (Customer Portal):**
 - **Tìm kiếm & Đặt tour (B2C):** Tìm kiếm động, giỏ hàng đặt chỗ, xử lý đụng độ dữ liệu (Race Condition) bằng Database Transactions để chống bán vượt quá số chỗ trống.
 - **Yêu cầu Tour riêng (B2B):** Form điền yêu cầu thiết kế tour dành cho doanh nghiệp.
 - **Thanh toán QR tự động:** Tích hợp API SePay, sinh mã QR động và tự động cập nhật trạng thái đơn hàng ngay khi nhận được chuyển khoản.
 - **Quản lý đơn & Hủy tour:** Theo dõi lịch sử đặt tour, cho phép khách hàng chủ động yêu cầu hủy tour dựa trên chính sách hoàn tiền theo mốc thời gian quy định.
 - **Tương tác:** Viết đánh giá (Review) cho các tour đã hoàn tất, bình luận tin tức.
+
 **2. Phân hệ Nhân viên điều hành (Staff Portal):**
 - **Quản lý Tour:** Hỗ trợ tạo tour theo đợt và **Tour định kỳ** (Tự động nhân bản các tour gối đầu cho 4 tuần tiếp theo).
 - **Quản lý Đơn hàng:** Xử lý đơn đặt chỗ, duyệt yêu cầu hủy tour từ khách hàng, sinh mã QR hoàn tiền cho kế toán xử lý.
 - **Xử lý luồng B2B:** Tiếp nhận yêu cầu doanh nghiệp, khóa quyền xử lý chéo (Nhân viên A không được can thiệp dữ liệu của Nhân viên B).
 - **Quản lý Nội dung & Marketing:** Tạo và quản lý mã giảm giá (Promotions), viết bài đăng tin tức (News).
 - **Lịch trình (Calendar):** Quản lý lịch khởi hành và theo dõi khách hàng.
+
 **3. Phân hệ Quản trị viên (Admin Portal):**
 - **Quản trị Nhân sự:** Tạo tài khoản nhân viên, cấp quyền, vô hiệu hóa tài khoản.
 - **Luân chuyển công việc:** Theo dõi và tái phân công (Reassign) tour hoặc yêu cầu B2B từ nhân viên này sang nhân viên khác khi có biến động nhân sự.
 - **Kiểm duyệt nội dung:** Quản lý, kiểm duyệt, và ẩn các đánh giá (Reviews) hoặc bình luận tin tức không phù hợp.
 - **Báo cáo & Thống kê Tổng (Reports):** Dashboard phân tích doanh thu toàn hệ thống, tỷ lệ lấp đầy, và đánh giá hiệu suất (KPI) của từng nhân viên.
+
 **4. Xử lý ngầm (Background Jobs):**
 - `orders:cancel-unpaid`: Tự động hủy đơn hàng và nhả lại số chỗ (Restore seats) nếu khách không thanh toán sau 15 phút.
 - `tour:generate-clones`: Chạy lúc 00:00 mỗi ngày để tự động sinh các tour định kỳ.
@@ -125,13 +129,13 @@ php artisan schedule:work
 </details>
 
 <details>
-  <summary><b>3. Dashboard Quản lý & điều hành (Staff)</b> <i> </summary>
+  <summary><b>3. Dashboard Quản lý & điều hành (Staff)</b> </summary>
   
   ![Dashboard Quản trị](./docs/images/nv_quanly.PNG)
 </details>
 
 <details>
-  <summary><b>3. Dashboard Quản lý nhân sự, trải nghiệm khách hàng và toàn bộ hệ thống (Staff)</b> <i> </summary>
+  <summary><b>3. Dashboard Quản lý nhân sự, trải nghiệm khách hàng và toàn bộ hệ thống (Staff)</b></summary>
   
   ![Dashboard Quản trị](./docs/images/admin_quanly.PNG)
 </details>

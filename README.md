@@ -117,21 +117,21 @@ php artisan schedule:work
 *Dưới đây là một số hình ảnh giao diện thực tế của hệ thống:*
 
 <details>
-  <summary><b>1. Giao diện Trang chủ & Đặt Tour (Khách hàng)</b> </summary>
+  <summary><b>1. Giao diện Trang chủ & Đặt Tour (Khách hàng)</b></summary>
   
   ![Trang chủ Khách hàng](./docs/images/trang_chu.png)
-  
-</details>
-
-<details>
-  <summary><b>2. Giao diện Thanh toán QR Code tự động</b> </summary>
-  
-  ![Thanh toán SePay](./docs/images/thanh_toan.png)
 
 </details>
 
 <details>
-  <summary><b>3. Dashboard Quản lý & điều hành (Staff)</b> </summary>
+  <summary><b>2. Giao diện Thanh toán QR Code tự động</b></summary>
+  
+   <img src="./docs/images/thanh_toan.png" alt="Thanh toán SePay" width="100%">
+
+</details>
+
+<details>
+  <summary><b>3. Dashboard Quản lý & điều hành (Staff)</b></summary>
   
   ![Dashboard Quản trị](./docs/images/nv_quanly.png)
 

@@ -74,7 +74,7 @@ Hệ thống được chia làm 3 phân hệ chính với các chức năng nghi
 
 Di chuyển vào thư mục Backend và tiến hành cài đặt:
 
-```bash
+`ash
 # 1. Di chuyển vào thư mục Backend
 cd Backend
 
@@ -98,23 +98,27 @@ php artisan migrate --seed
 # 7. Khởi chạy Server Backend
 php artisan serve
 # Backend sẽ chạy tại: http://localhost:8000
-
+`
 
 ### 3. Cài đặt Frontend (ReactJS)
 
+`ash
 # 1. Di chuyển vào thư mục Frontend
 cd Frontend
+
 # 2. Cài đặt các thư viện Node.js
 npm install
+
 # 3. Khởi chạy server Frontend
 npm run dev
 # Frontend sẽ chạy tại: http://localhost:5173 (hoặc port tương ứng)
-
+`
 
 ### 4. Khởi chạy Cronjobs & Queue
 
+`ash
 php artisan schedule:work
-
+`
 
 ## 📸 Hình ảnh Minh họa (Screenshots)
 

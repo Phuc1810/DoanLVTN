@@ -119,28 +119,28 @@ php artisan schedule:work
 <details>
   <summary><b>1. Giao diện Trang chủ & Đặt Tour (Khách hàng)</b></summary>
   
-  ![Trang chủ Khách hàng](./docs/images/trang_chu.PNG)
+<img src=\"docs/images/trang_chu.PNG\" width=\"100%\" alt=\"Trang chủ Khách hàng\">
 
 </details>
 
 <details>
   <summary><b>2. Giao diện Thanh toán QR Code tự động</b></summary>
   
-   <img src="./docs/images/thanh_toan.PNG" alt="Thanh toán SePay" width="100%">
+<img src="docs/images/thanh_toan.PNG" alt="Thanh toán SePay" width="100%">
 
 </details>
 
 <details>
   <summary><b>3. Dashboard Quản lý & điều hành (Staff)</b></summary>
   
-  ![Dashboard Quản trị](./docs/images/nv_quanly.PNG)
+<img src=\"docs/images/nv_quanly.PNG\" width=\"100%\" alt=\"Dashboard Quản trị\">
 
 </details>
 
 <details>
   <summary><b>4. Dashboard Quản lý nhân sự, trải nghiệm khách hàng và toàn bộ hệ thống (Staff)</b></summary>
   
-  ![Dashboard Quản trị](./docs/images/admin_quanly.PNG)
+<img src=\"docs/images/admin_quanly.PNG\" width=\"100%\" alt=\"Dashboard Quản trị\">
 
 </details>
 

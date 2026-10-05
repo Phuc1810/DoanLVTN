@@ -119,25 +119,25 @@ php artisan schedule:work
 <details>
   <summary><b>1. Giao diện Trang chủ & Đặt Tour (Khách hàng)</b> </summary>
   
-  ![Trang chủ Khách hàng](./docs/images/trang_chu.PNG)
+  ![Trang chủ Khách hàng](./docs/images/trang_chu.png)
 </details>
 
 <details>
   <summary><b>2. Giao diện Thanh toán QR Code tự động</b> </summary>
   
-  ![Thanh toán SePay](./docs/images/thanh_toan.PNG)
+  ![Thanh toán SePay](./docs/images/thanh_toan.png)
 </details>
 
 <details>
   <summary><b>3. Dashboard Quản lý & điều hành (Staff)</b> </summary>
   
-  ![Dashboard Quản trị](./docs/images/nv_quanly.PNG)
+  ![Dashboard Quản trị](./docs/images/nv_quanly.png)
 </details>
 
 <details>
-  <summary><b>3. Dashboard Quản lý nhân sự, trải nghiệm khách hàng và toàn bộ hệ thống (Staff)</b></summary>
+  <summary><b>4. Dashboard Quản lý nhân sự, trải nghiệm khách hàng và toàn bộ hệ thống (Staff)</b></summary>
   
-  ![Dashboard Quản trị](./docs/images/admin_quanly.PNG)
+  ![Dashboard Quản trị](./docs/images/admin_quanly.png)
 </details>
 
 *(Mẹo: Bạn có thể thay thế các link `https://via.placeholder.com/...` ở trên bằng đường dẫn ảnh thực tế trên Github của bạn).*

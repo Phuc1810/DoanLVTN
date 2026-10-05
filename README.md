@@ -119,7 +119,7 @@ php artisan schedule:work
 <details>
   <summary><b>1. Giao diện Trang chủ & Đặt Tour (Khách hàng)</b></summary>
   
-<img src=\"docs/images/trang_chu.PNG\" width=\"100%\" alt=\"Trang chủ Khách hàng\">
+<img src="docs/images/trang_chu.PNG" width="100%" alt="Trang chủ Khách hàng">
 
 </details>
 
@@ -133,14 +133,14 @@ php artisan schedule:work
 <details>
   <summary><b>3. Dashboard Quản lý & điều hành (Staff)</b></summary>
   
-<img src=\"docs/images/nv_quanly.PNG\" width=\"100%\" alt=\"Dashboard Quản trị\">
+<img src="docs/images/nv_quanly.PNG" width="100%" alt="Dashboard Quản trị">
 
 </details>
 
 <details>
   <summary><b>4. Dashboard Quản lý nhân sự, trải nghiệm khách hàng và toàn bộ hệ thống (Staff)</b></summary>
   
-<img src=\"docs/images/admin_quanly.PNG\" width=\"100%\" alt=\"Dashboard Quản trị\">
+<img src="docs/images/admin_quanly.PNG" width="100%" alt="Dashboard Quản trị">
 
 </details>
 

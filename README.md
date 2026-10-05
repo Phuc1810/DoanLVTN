@@ -146,13 +146,12 @@ php artisan schedule:work
 </details>
 
 <details>
-  <summary><b>4. Dashboard Quản lý nhân sự, trải nghiệm khách hàng và toàn bộ hệ thống (Staff)</b></summary>
+  <summary><b>4. Dashboard Quản lý nhân sự, trải nghiệm khách hàng và toàn bộ hệ thống (Admin)</b></summary>
   
 <img src="docs/images/admin_quanly.PNG" width="100%" alt="Dashboard Quản trị">
 
 </details>
 
-*(Mẹo: Bạn có thể thay thế các link `https://via.placeholder.com/...` ở trên bằng đường dẫn ảnh thực tế trên Github của bạn).*
 
 ---
 

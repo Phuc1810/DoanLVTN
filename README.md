@@ -65,21 +65,21 @@ Hệ thống được chia làm 3 phân hệ chính với các chức năng nghi
 
 Để đáp ứng được quy mô của một nền tảng OTA thực tế, hệ thống không chỉ tập trung vào CRUD cơ bản mà còn giải quyết triệt để các bài toán hóc búa về toàn vẹn dữ liệu và tối ưu vận hành:
 
-- **🛡️ Xử lý Tranh chấp Dữ liệu (Race Condition & Overbooking):**
+- **Xử lý Tranh chấp Dữ liệu (Race Condition & Overbooking):**
   Trong kịch bản flash-sale hoặc mùa cao điểm, việc nhiều khách hàng cùng thanh toán một tour tại cùng một tích tắc có thể dẫn đến bán vượt số chỗ (overbooking). Hệ thống giải quyết triệt để vấn đề này bằng cách bọc logic đặt chỗ trong **Database Transactions** kết hợp cơ chế Pessimistic Locking (`lockForUpdate()`). Row dữ liệu của tour sẽ bị khóa tạm thời trong vài mili-giây xử lý, đảm bảo tính tuần tự (ACID) và toàn vẹn số lượng chỗ trống tuyệt đối.
 
-- **⚡ Tự động hóa Đối soát Thanh toán (Real-time Webhook):**
+- **Tự động hóa Đối soát Thanh toán (Real-time Webhook):**
   Thay vì quy trình kế toán duyệt tiền thủ công chậm chạp, hệ thống tích hợp API SePay với kiến trúc **Webhook-driven**. Ngay khi dòng tiền chuyển vào tài khoản ngân hàng, webhook sẽ trigger hệ thống tự động xác thực chữ ký điện tử (Signature Validation) và cập nhật trạng thái đơn hàng sang "Đã thanh toán" chỉ trong vòng 1-2 giây, mang lại trải nghiệm 24/7 hoàn toàn không độ trễ.
 
-- **⚙️ Tối ưu Hóa Vận hành bằng Background Jobs:**
+- **Tối ưu Hóa Vận hành bằng Background Jobs:**
   Để hệ thống tự vận hành mà không phụ thuộc vào thao tác con người, **Laravel Task Scheduler** được cấu hình chặt chẽ với hệ điều hành:
   - `orders:cancel-unpaid`: Lắng nghe và tự động quét hủy các đơn hàng bị "ngâm" quá 15 phút, giải phóng chỗ ngồi trả lại kho (Seat Restoring) để tối ưu doanh thu.
   - `tour:generate-clones`: Tiến trình chạy ngầm lúc 00:00 hằng đêm, tự động tính toán và nhân bản các bản sao tour định kỳ (Rolling Window) cho 4 tuần kế tiếp.
 
-- **🔒 Cô lập Dữ liệu & Stateless Authentication:**
+- **Cô lập Dữ liệu & Stateless Authentication:**
   Với định hướng API-first, hệ thống bảo mật hoàn toàn thông qua **Laravel Sanctum** (Token-based). Hệ thống phân quyền RBAC (Role-Based Access Control) được tinh chỉnh ở mức Row-level Security: cô lập tuyệt đối dữ liệu nghiệp vụ B2B giữa các nhân viên điều hành, triệt tiêu rủi ro can thiệp chéo hoặc lộ lọt thông tin khách hàng doanh nghiệp.
 
-  
+
 ## 🛠️ Hướng dẫn Cài đặt & Chạy ứng dụng
 
 ### 1. Điều kiện tiên quyết (Prerequisites)
